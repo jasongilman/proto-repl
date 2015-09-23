@@ -5,3 +5,6 @@ module.exports =
 class ReplScrollView extends ScrollView
   @content: ->
     @div "Hello World"
+
+  getTitle: ->
+    "The REPL"

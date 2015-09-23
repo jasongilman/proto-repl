@@ -1,18 +1,30 @@
 # ProtoReplView = require './proto-repl-view'
 {CompositeDisposable} = require 'atom'
 ReplScrollView = require './repl-scroll-view'
+url = require 'url'
 
 module.exports = ProtoRepl =
-  # protoReplView: null
-  # modalPanel: null
   subscriptions: null
-  replScrollView: null
-  rightPanel: null
+
+  # iex way
+  # replScrollView: null
 
   activate: (state) ->
-    # @protoReplView = new ProtoReplView(state.protoReplViewState)
-    # @modalPanel = atom.workspace.addModalPanel(item: @protoReplView.getElement(), visible: false)
-    @replScrollView = new ReplScrollView()
+    # markdown preview way
+    atom.workspace.addOpener (uriToOpen) ->
+      console.log("Opening:" + uriToOpen)
+      try
+        {protocol} = url.parse(uriToOpen)
+      catch error
+        return
+      console.log("Protocol:" + protocol)
+
+      return unless protocol is 'repl-scroll-view:'
+      console.log("returning a new repl scroll view")
+      new ReplScrollView()
+
+    # iex way
+    # @replScrollView = new ReplScrollView()
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
@@ -21,18 +33,21 @@ module.exports = ProtoRepl =
     @subscriptions.add atom.commands.add 'atom-workspace', 'proto-repl:toggle': => @toggle()
 
   deactivate: ->
-    # @modalPanel.destroy()
     @subscriptions.dispose()
-    # @protoReplView.destroy()
+    # iex way
+    # @replScrollView.destroy()
 
   serialize: ->
-    # protoReplViewState: @protoReplView.serialize()
+    {}
 
   toggle: ->
     console.log 'ProtoRepl was toggled!'
-    @rightPanel = atom.workspace.addRightPanel(item: @replScrollView)
+    
+    # markdown preview way
+    atom.workspace.open("repl-scroll-view://nothing")
 
-    # if @modalPanel.isVisible()
-      # @modalPanel.hide()
-    # else
-      # @modalPanel.show()
+    # iex way
+    # pane = atom.workspace.getActivePane()
+    # item = pane.addItem @replScrollView
+    # pane.activateItem item
+
