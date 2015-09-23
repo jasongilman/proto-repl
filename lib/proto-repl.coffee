@@ -1,4 +1,3 @@
-# ProtoReplView = require './proto-repl-view'
 {CompositeDisposable} = require 'atom'
 ReplScrollView = require './repl-scroll-view'
 url = require 'url'
