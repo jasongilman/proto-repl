@@ -20,7 +20,10 @@ module.exports = ProtoRepl =
 
       return unless protocol is 'repl-scroll-view:'
       console.log("returning a new repl scroll view")
-      new ReplScrollView()
+      repl = new ReplScrollView()
+      # TODO temporary for debugging
+      global.lastRepl = repl
+      repl
 
     # iex way
     # @replScrollView = new ReplScrollView()
