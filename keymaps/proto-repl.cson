@@ -9,3 +9,4 @@
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
   'ctrl-alt-o': 'proto-repl:toggle'
+  'cmd-alt-s': 'proto-repl:execute-selected-text'

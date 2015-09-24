@@ -21,8 +21,8 @@ module.exports = (ptyCwd, shell, args, options={}) ->
     emit('proto-repl-process:exit')
     callback()
 
-#   # process.on 'message', ({event, cols, rows, text}={}) ->
-#   #   switch event
-#   #     when 'resize' then ptyProcess.resize(cols, rows)
-#   #     when 'input' then ptyProcess.write(text)
+  process.on 'message', ({event, cols, rows, text}={}) ->
+    switch event
+      # when 'resize' then ptyProcess.resize(cols, rows)
+      when 'input' then ptyProcess.write(text)
 

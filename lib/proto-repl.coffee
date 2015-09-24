@@ -4,13 +4,11 @@ url = require 'url'
 
 module.exports = ProtoRepl =
   subscriptions: null
-
-  # iex way
-  # replScrollView: null
+  lastRepl: null
 
   activate: (state) ->
     # markdown preview way
-    atom.workspace.addOpener (uriToOpen) ->
+    atom.workspace.addOpener (uriToOpen) =>
       console.log("Opening:" + uriToOpen)
       try
         {protocol} = url.parse(uriToOpen)
@@ -20,24 +18,21 @@ module.exports = ProtoRepl =
 
       return unless protocol is 'repl-scroll-view:'
       console.log("returning a new repl scroll view")
-      repl = new ReplScrollView()
+      @lastRepl = new ReplScrollView()
       # TODO temporary for debugging
-      global.lastRepl = repl
-      repl
-
-    # iex way
-    # @replScrollView = new ReplScrollView()
+      global.lastRepl = @lastRepl
+      @lastRepl
 
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 'proto-repl:toggle': => @toggle()
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'proto-repl:execute-selected-text': => @executeSelectedText()
 
   deactivate: ->
     @subscriptions.dispose()
-    # iex way
-    # @replScrollView.destroy()
 
   serialize: ->
     {}
@@ -48,8 +43,11 @@ module.exports = ProtoRepl =
     # markdown preview way
     atom.workspace.open("repl-scroll-view://nothing")
 
-    # iex way
-    # pane = atom.workspace.getActivePane()
-    # item = pane.addItem @replScrollView
-    # pane.activateItem item
+
+  executeSelectedText: ->
+    if editor = atom.workspace.getActiveTextEditor()
+       selection = editor.getSelectedText()
+       @lastRepl.sendToRepl(selection + "\n")
+
+
 

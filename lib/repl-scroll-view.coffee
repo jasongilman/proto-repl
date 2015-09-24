@@ -10,7 +10,7 @@ class ReplScrollView extends ScrollView
       @div("Starting")
 
   initialize: ->
-    super()
+    super
     projectPath = atom.project.getPaths()[0]
     # TODO make env configurable
     @ptyProcess = Task.once Pty, path.resolve(projectPath), "/Users/jason/work/bin/lein", ["trampoline", "run", "-m", "clojure.main"]
@@ -20,8 +20,26 @@ class ReplScrollView extends ScrollView
     @ptyProcess.on 'proto-repl-process:data', (data) =>
       newElement = $( "<p>" + data + "</p>" )
       @append(newElement)
+      @scrollToBottom()
 
+    console.log @element
+    atom.commands.add @element,
+      'core:move-up': =>
+        console.log("scrolling up")
+        @scrollUp()
+      'core:move-down': =>
+        console.log("scrolling down")
+        @scrollDown()
+      'core:copy': (event) =>
+        console.log("copying")
+        event.stopPropagation() if @copyToClipboard()
 
   getTitle: ->
     "The REPL"
+
+  sendToRepl: (text)->
+    console.log("Sending to repl: " + text)
+    @ptyProcess.send event: 'input', text: text
+
+
 
