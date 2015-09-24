@@ -10,3 +10,4 @@
 'atom-workspace':
   'ctrl-alt-o': 'proto-repl:toggle'
   'cmd-alt-s': 'proto-repl:execute-selected-text'
+  'cmd-alt-b': 'proto-repl:execute-block'
