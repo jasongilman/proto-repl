@@ -8,12 +8,11 @@ filteredEnv = _.omit process.env, 'ATOM_HOME', 'ATOM_SHELL_INTERNAL_RUN_AS_NODE'
 module.exports = (ptyCwd, shell, args, options={}) ->
   callback = @async()
 
-  console.log("Forking with:")
-  console.log({shell: shell, args: args, cmd: ptyCwd, env: filteredEnv})
+  # console.log("Forking with:")
+  # console.log({shell: shell, args: args, cmd: ptyCwd, env: filteredEnv})
   ptyProcess = pty.fork shell, args, cwd: ptyCwd, env: filteredEnv
 
   ptyProcess.on 'data', (data) ->
-    console.log("data!" + data)
     emit('proto-repl-process:data', data)
 
 

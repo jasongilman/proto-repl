@@ -113,7 +113,7 @@ module.exports = ProtoRepl =
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
         text = editor.getTextInBufferRange(new Range(startPos, closingPos))
-        @lastRepl.sendToRepl(text + "\n")
+        @lastRepl.sendToRepl(text)
 
 
 
