@@ -1,7 +1,6 @@
 {Task} = require 'atom'
 path = require 'path'
-# Pty = require.resolve './process'
-Pty = require.resolve './process2'
+ReplProcess = require.resolve './repl-process'
 
 module.exports = 
 class ReplTextEditor
@@ -17,21 +16,24 @@ class ReplTextEditor
       @textEditor.insertText("Loading REPL...\n")
 
     # TODO make env configurable
-    @ptyProcess = Task.once Pty, 
-                            path.resolve(projectPath), 
-                            "/Users/jason/work/bin/lein", 
-                            ["trampoline", "run", "-m", "clojure.main"]
+    @process = Task.once ReplProcess, 
+                         path.resolve(projectPath), 
+                         "/Users/jason/work/bin/lein", 
+                         ["trampoline", "run", "-m", "clojure.main"]
     @attachListeners()
 
   strToBytes: (s)->
     s.charCodeAt(n) for n in [0..s.length]
 
   attachListeners: ->
-    @ptyProcess.on 'proto-repl-process:data', (data) =>
+    @process.on 'proto-repl-process:data', (data) =>
       @textEditor.getBuffer().append(data)
 
+    @process.on 'proto-repl-process:exit', ()=>
+      @textEditor.getBuffer().append("REPL Closed")
+
   sendToRepl: (text)->
-    @ptyProcess.send event: 'input', text: text + "\n"
+    @process.send event: 'input', text: text + "\n"
 
 
 

@@ -1,5 +1,4 @@
 {CompositeDisposable, Range, Point} = require 'atom'
-ReplScrollView = require './repl-scroll-view'
 ReplTextEditor = require './repl-text-editor'
 url = require 'url'
 
@@ -19,7 +18,7 @@ module.exports = ProtoRepl =
 
     #   return unless protocol is 'repl-scroll-view:'
     #   console.log("returning a new repl scroll view")
-    #   @lastRepl = new ReplScrollView()
+    #   @lastRepl = new ReplTextEditor()
     #   # TODO temporary for debugging
     #   global.lastRepl = @lastRepl
     #   @lastRepl
@@ -41,8 +40,6 @@ module.exports = ProtoRepl =
     {}
 
   toggle: ->
-    console.log 'ProtoRepl was toggled!'
-    
     # markdown preview way
     # atom.workspace.open("repl-scroll-view://nothing")
 
