@@ -34,8 +34,6 @@ module.exports = ProtoRepl =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:execute-block': => @executeBlock()
 
-
-
   deactivate: ->
     @subscriptions.dispose()
 
@@ -51,11 +49,28 @@ module.exports = ProtoRepl =
     # Using text editor directly way
     @lastRepl = new ReplTextEditor()
 
+  # TODO extract out these functions into a helper set of functions.
+  # Make all things arguments to this function. (ie. editor)
 
-  executeSelectedText: ->
-    if editor = atom.workspace.getActiveTextEditor()
-       selection = editor.getSelectedText()
-       @lastRepl.sendToRepl(selection + "\n")
+  findNsDeclaration: (editor)->
+    nsName = null
+    editor.scan /\(ns ([^\s\)]+)/, ({match, stop})->
+      nsName = match[1]
+      stop()
+    nsName
+
+  # Puts the given text in the namespace
+  putTextInNamespace: (text, ns) ->
+    # TODO test this approach thoroughly. 
+    
+    ## load string method
+    # text = text.replace(/\\\\/g,"\\\\\\\\").replace(/"/g,"\\\"").replace(/\n/g,"\\n")
+    # text = "(load-string \"#{text}\")"
+    
+    ## eval method
+    text = "(eval '(do #{text}))"
+
+    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] #{text})"
 
   findBlockStartPosition:  (editor, fromPos) ->
     braceClosed = 
@@ -100,11 +115,22 @@ module.exports = ProtoRepl =
           result.stop()
     endPos
 
+  executeCode: (editor, code)->
+    ns = @findNsDeclaration(editor)
+    if ns 
+      code = @putTextInNamespace(code, ns)
+    @lastRepl.sendToRepl(code)
+
+  executeSelectedText: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      @executeCode(editor, editor.getSelectedText())
+
   executeBlock: ->
     if editor = atom.workspace.getActiveTextEditor()
       pos = editor.getCursorBufferPosition()
       startPos = @findBlockStartPosition(editor, pos)
       endPos = @findBlockEndPosition(editor, pos)
+
       if startPos && endPos
         closingPos = endPos.translate(new Point(0, 1))
 
@@ -113,7 +139,8 @@ module.exports = ProtoRepl =
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
         text = editor.getTextInBufferRange(new Range(startPos, closingPos))
-        @lastRepl.sendToRepl(text)
+        @executeCode(editor, text)
+
 
 
 

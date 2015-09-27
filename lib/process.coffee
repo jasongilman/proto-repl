@@ -13,6 +13,7 @@ module.exports = (ptyCwd, shell, args, options={}) ->
   ptyProcess = pty.fork shell, args, cwd: ptyCwd, env: filteredEnv
 
   ptyProcess.on 'data', (data) ->
+    console.log("pty data [#{data}]")
     emit('proto-repl-process:data', data)
 
 
