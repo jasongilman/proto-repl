@@ -32,6 +32,15 @@ module.exports = ProtoRepl =
       'proto-repl:execute-selected-text': => @executeSelectedText()
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:execute-block': => @executeBlock()
+    
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'proto-repl:refresh-namespaces': => @refreshNamespaces()
+
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
+
+    @subscriptions.add atom.commands.add 'atom-workspace',
+      'proto-repl:exit-repl': => @quitRepl()
 
   deactivate: ->
     @subscriptions.dispose()
@@ -46,6 +55,9 @@ module.exports = ProtoRepl =
     # Using text editor directly way
     @lastRepl = new ReplTextEditor()
 
+  executeCode: (code)->
+    @lastRepl.sendToRepl(code)
+
   # TODO extract out these functions into a helper set of functions.
   # Make all things arguments to this function. (ie. editor)
 
@@ -58,16 +70,32 @@ module.exports = ProtoRepl =
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
-    # TODO test this approach thoroughly. 
-    
-    ## load string method
-    # text = text.replace(/\\\\/g,"\\\\\\\\").replace(/"/g,"\\\"").replace(/\n/g,"\\n")
-    # text = "(load-string \"#{text}\")"
-    
-    ## eval method
-    text = "(eval '(do #{text}))"
+    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval '(do #{text})))"
 
-    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] #{text})"
+  executeCodeInNs: (editor, code)->
+    ns = @findNsDeclaration(editor)
+    if ns 
+      code = @putTextInNamespace(code, ns)
+    @executeCode(code)
+
+  ############################################################
+  # Code helpers
+
+  quitRepl: ->
+    @executeCode("(System/exit 0)")
+
+  refreshNamespacesCommand: 
+    "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)))"
+
+  refreshNamespaces: ->
+    @executeCode(@refreshNamespacesCommand)
+  
+  superRefreshNamespaces: ->
+    @executeCode("(clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand)
+
+
+  ############################################################
+
 
   findBlockStartPosition:  (editor, fromPos) ->
     braceClosed = 
@@ -112,15 +140,9 @@ module.exports = ProtoRepl =
           result.stop()
     endPos
 
-  executeCode: (editor, code)->
-    ns = @findNsDeclaration(editor)
-    if ns 
-      code = @putTextInNamespace(code, ns)
-    @lastRepl.sendToRepl(code)
-
   executeSelectedText: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCode(editor, editor.getSelectedText())
+      @executeCodeInNs(editor, editor.getSelectedText())
 
   executeBlock: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -136,7 +158,7 @@ module.exports = ProtoRepl =
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
         text = editor.getTextInBufferRange(new Range(startPos, closingPos))
-        @executeCode(editor, text)
+        @executeCodeInNs(editor, text)
 
 
 

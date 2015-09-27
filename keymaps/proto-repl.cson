@@ -8,6 +8,12 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
-  'ctrl-alt-o': 'proto-repl:toggle'
-  'cmd-alt-s': 'proto-repl:execute-selected-text'
+  'cmd-alt-l': 'proto-repl:toggle'
   'cmd-alt-b': 'proto-repl:execute-block'
+  'cmd-alt-s': 'proto-repl:execute-selected-text'
+  # TODO execute file
+  'cmd-alt-r': 'proto-repl:refresh-namespaces'
+  'cmd-alt-shift-r': 'proto-repl:super-refresh-namespaces'
+  'ctrl-d': 'proto-repl:exit-repl'
+  # TODO pretty print and others
+
