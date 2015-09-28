@@ -28,9 +28,11 @@ class ReplTextEditor
   attachListeners: ->
     @process.on 'proto-repl-process:data', (data) =>
       @textEditor.getBuffer().append(data)
+      @textEditor.scrollToBottom()
 
     @process.on 'proto-repl-process:exit', ()=>
       @textEditor.getBuffer().append("REPL Closed")
+      @textEditor.scrollToBottom()
 
   sendToRepl: (text)->
     @process.send event: 'input', text: text + "\n"

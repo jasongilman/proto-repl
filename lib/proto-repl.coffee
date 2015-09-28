@@ -7,39 +7,17 @@ module.exports = ProtoRepl =
   lastRepl: null
 
   activate: (state) ->
-    # markdown preview way
-    # atom.workspace.addOpener (uriToOpen) =>
-    #   console.log("Opening:" + uriToOpen)
-    #   try
-    #     {protocol} = url.parse(uriToOpen)
-    #   catch error
-    #     return
-    #   console.log("Protocol:" + protocol)
-
-    #   return unless protocol is 'repl-scroll-view:'
-    #   console.log("returning a new repl scroll view")
-    #   @lastRepl = new ReplTextEditor()
-    #   # TODO temporary for debugging
-    #   global.lastRepl = @lastRepl
-    #   @lastRepl
-
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 'proto-repl:toggle': => @toggle()
-    @subscriptions.add atom.commands.add 'atom-workspace',
+    @subscriptions.add atom.commands.add 'atom-workspace', 
+      'proto-repl:toggle': => @toggle()
       'proto-repl:execute-selected-text': => @executeSelectedText()
-    @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:execute-block': => @executeBlock()
-    
-    @subscriptions.add atom.commands.add 'atom-workspace',
+      'proto-repl:load-current-file': => @loadCurrentFile()
       'proto-repl:refresh-namespaces': => @refreshNamespaces()
-
-    @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
-
-    @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:exit-repl': => @quitRepl()
 
   deactivate: ->
@@ -92,6 +70,12 @@ module.exports = ProtoRepl =
   
   superRefreshNamespaces: ->
     @executeCode("(clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand)
+
+  loadCurrentFile: ->
+    console.log("Loading current file")
+    if editor = atom.workspace.getActiveTextEditor()
+      console.log(editor.getPath())
+      @executeCode("(load-file \"#{editor.getPath()}\")")
 
 
   ############################################################
