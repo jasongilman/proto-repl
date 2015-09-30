@@ -25,14 +25,18 @@ class ReplTextEditor
   strToBytes: (s)->
     s.charCodeAt(n) for n in [0..s.length]
 
+  autoscroll: ->
+    if atom.config.get('proto-repl.autoScroll')
+      @textEditor.scrollToBottom()
+
   attachListeners: ->
     @process.on 'proto-repl-process:data', (data) =>
       @textEditor.getBuffer().append(data)
-      @textEditor.scrollToBottom()
+      @autoscroll()
 
     @process.on 'proto-repl-process:exit', ()=>
       @textEditor.getBuffer().append("REPL Closed")
-      @textEditor.scrollToBottom()
+      @autoscroll()
 
   sendToRepl: (text)->
     @process.send event: 'input', text: text + "\n"

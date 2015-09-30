@@ -9,6 +9,7 @@
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
   'cmd-alt-l': 'proto-repl:toggle'
+  'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
   'cmd-alt-b': 'proto-repl:execute-block'
   'cmd-alt-s': 'proto-repl:execute-selected-text'
   'cmd-alt-shift-f': 'proto-repl:load-current-file'
@@ -16,4 +17,6 @@
   'cmd-alt-shift-r': 'proto-repl:super-refresh-namespaces'
   'ctrl-d': 'proto-repl:exit-repl'
   # TODO pretty print and others
+
+  # TODO add way to add your own new commands and keybindings
 

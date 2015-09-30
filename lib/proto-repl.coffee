@@ -3,6 +3,11 @@ ReplTextEditor = require './repl-text-editor'
 url = require 'url'
 
 module.exports = ProtoRepl =
+  config:
+    autoScroll:
+      type: 'boolean'
+      default: true
+
   subscriptions: null
   lastRepl: null
 
@@ -13,6 +18,7 @@ module.exports = ProtoRepl =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace', 
       'proto-repl:toggle': => @toggle()
+      'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
       'proto-repl:execute-block': => @executeBlock()
       'proto-repl:load-current-file': => @loadCurrentFile()
@@ -22,15 +28,17 @@ module.exports = ProtoRepl =
 
   deactivate: ->
     @subscriptions.dispose()
+    # TODO close the repl
 
   serialize: ->
     {}
 
-  toggle: ->
-    # markdown preview way
-    # atom.workspace.open("repl-scroll-view://nothing")
+  toggleAutoScroll: ->
+    cfg = atom.config
+    cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
-    # Using text editor directly way
+  toggle: ->
+    # TODO we don't currently handle more than one repl. We just lose track of it.
     @lastRepl = new ReplTextEditor()
 
   executeCode: (code)->
