@@ -15,7 +15,16 @@
   },
   "dependencies": {
     "atom-space-pen-views": "^2.1.0",
-    "pty.js": "git+https://github.com/jeremyramin/pty.js.git#dbac383",
     "underscore": "^1.8.3"
+  },
+  "package-dependencies": {
+    "tool-bar": "^0.1.0"
+  },
+  "consumedServices": {
+    "tool-bar": {
+      "versions": {
+        "^0.1.0": "consumeToolbar"
+      }
+    }
   }
 }

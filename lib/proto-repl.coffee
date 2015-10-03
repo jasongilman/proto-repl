@@ -6,17 +6,27 @@ module.exports = ProtoRepl =
   config:
     autoScroll:
       type: 'boolean'
+      description: 'Sets whether or not the REPL scrolls when new content is written.'
       default: true
+    leinPath:
+      description: 'The path to the lein executable.'
+      type: 'string'
+      default: 'lein'
+    leinArgs:
+      description: 'The arguments to be passed to leiningen'
+      type: 'string'
+      default: "trampoline run -m clojure.main"
 
   subscriptions: null
   lastRepl: null
+  toolbar: null
 
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
     # Register command that toggles this view
-    @subscriptions.add atom.commands.add 'atom-workspace', 
+    @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:toggle': => @toggle()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
@@ -25,10 +35,49 @@ module.exports = ProtoRepl =
       'proto-repl:refresh-namespaces': => @refreshNamespaces()
       'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
       'proto-repl:exit-repl': => @quitRepl()
+      'proto-repl:pretty-print': => @prettyPrint()
+
+  consumeToolbar: (toolbar) ->
+    console.log("Toolbar consume")
+    @toolbar = toolbar 'proto-repl'
+    @toolbar.addButton
+      icon: 'android-refresh'
+      iconset: 'ion'
+      callback: 'proto-repl:refresh-namespaces'
+      tooltip: 'Refresh Namespaces'
+    @toolbar.addButton
+      icon: 'android-sync'
+      iconset: 'ion'
+      callback: 'proto-repl:super-refresh-namespaces'
+      tooltip: 'Super Refresh Namespaces'
+
+    @toolbar.addSpacer()
+
+    @toolbar.addButton
+      icon: 'paypal'
+      iconset: 'fa'
+      callback: 'proto-repl:pretty-print'
+      tooltip: 'Pretty Print'
+
+    @toolbar.addSpacer()
+
+    @toolbar.addButton
+      icon: 'code-download'
+      iconset: 'ion'
+      callback: 'proto-repl:toggle-auto-scroll'
+      tooltip: 'Toggle Auto Scroll'
+    @toolbar.addButton
+      icon: 'close'
+      iconset: 'ion'
+      callback: 'proto-repl:exit-repl'
+      tooltip: 'Quit REPL'
 
   deactivate: ->
     @subscriptions.dispose()
-    # TODO close the repl
+    @toolbar?.removeItems()
+    if @lastRepl
+      @quitRepl()
+      @lastRepl = null
 
   serialize: ->
     {}
@@ -60,7 +109,7 @@ module.exports = ProtoRepl =
 
   executeCodeInNs: (editor, code)->
     ns = @findNsDeclaration(editor)
-    if ns 
+    if ns
       code = @putTextInNamespace(code, ns)
     @executeCode(code)
 
@@ -70,12 +119,15 @@ module.exports = ProtoRepl =
   quitRepl: ->
     @executeCode("(System/exit 0)")
 
-  refreshNamespacesCommand: 
+  prettyPrint: ->
+    @executeCode("(pp)")
+
+  refreshNamespacesCommand:
     "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)))"
 
   refreshNamespaces: ->
     @executeCode(@refreshNamespacesCommand)
-  
+
   superRefreshNamespaces: ->
     @executeCode("(clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand)
 
@@ -90,11 +142,11 @@ module.exports = ProtoRepl =
 
 
   findBlockStartPosition:  (editor, fromPos) ->
-    braceClosed = 
+    braceClosed =
       "}": 0
       ")": 0
       "]": 0
-    openToClose = 
+    openToClose =
       "{": "}"
       "[": "]"
       "(": ")"
@@ -104,18 +156,18 @@ module.exports = ProtoRepl =
       c = ""+result.match[0]
       if braceClosed[c] != undefined
         braceClosed[c]++
-      else 
+      else
         braceClosed[openToClose[c]]--
         if braceClosed[openToClose[c]] == -1
           result.stop()
     startPos
 
   findBlockEndPosition:  (editor, fromPos) ->
-    braceOpened = 
+    braceOpened =
       "{": 0
       "(": 0
       "[": 0
-    closeToOpen = 
+    closeToOpen =
       "}": "{"
       "]": "["
       ")": "("
@@ -126,7 +178,7 @@ module.exports = ProtoRepl =
       c = ""+result.match[0]
       if braceOpened[c] != undefined
         braceOpened[c]++
-      else 
+      else
         braceOpened[closeToOpen[c]]--
         if braceOpened[closeToOpen[c]] == -1
           result.stop()
@@ -145,14 +197,9 @@ module.exports = ProtoRepl =
       if startPos && endPos
         closingPos = endPos.translate(new Point(0, 1))
 
-        # Note that this will if used instead of executing the code implement expand selection on 
+        # Note that this will if used instead of executing the code implement expand selection on
         # repeated executions
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
         text = editor.getTextInBufferRange(new Range(startPos, closingPos))
         @executeCodeInNs(editor, text)
-
-
-
-
-
