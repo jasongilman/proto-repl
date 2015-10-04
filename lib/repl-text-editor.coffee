@@ -19,6 +19,8 @@ class ReplTextEditor
 
     atom.workspace.open("Clojure REPL", split:'right').done (textEditor) =>
       @textEditor = textEditor
+      grammar = atom.grammars.grammarForScopeName('source.clojure')
+      @textEditor.setGrammar(grammar)
       @textEditor.onDidDestroy(closingHandler)
       @textEditor.insertText("Loading REPL...\n")
 
