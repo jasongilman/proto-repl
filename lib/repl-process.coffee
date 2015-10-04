@@ -28,7 +28,7 @@ module.exports = (currentWorkingDir, shell, args, options={}) ->
   catch error
     processData("Error starting repl: " + error)
 
-  process.on 'message', ({event, cols, rows, text}={}) ->
+  process.on 'message', ({event, text}={}) ->
     switch event
       when 'input'
         try

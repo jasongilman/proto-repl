@@ -36,6 +36,14 @@ module.exports = ProtoRepl =
       'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
       'proto-repl:exit-repl': => @quitRepl()
       'proto-repl:pretty-print': => @prettyPrint()
+      'proto-repl:run-tests-in-namespace': => @runTestsInNamespace()
+      'proto-repl:run-selected-test': => @runSelectedTest()
+      'proto-repl:run-all-tests': => @runAllTests()
+      'proto-repl:print-var-documentation': => @printVarDocumentation()
+      'proto-repl:print-var-code': => @printVarCode()
+      'proto-repl:list-ns-vars': => @listNsVars()
+      'proto-repl:list-ns-vars-with-docs': => @listNsVarsWithDocs()
+      'proto-repl:open-file-containing-var': => @openFileContainingVar()
 
   consumeToolbar: (toolbar) ->
     console.log("Toolbar consume")
@@ -116,6 +124,14 @@ module.exports = ProtoRepl =
   ############################################################
   # Code helpers
 
+  getSelectedText: (editor)->
+    text = editor.getSelectedText()
+    if text == ""
+      @executeCode("(println \"This command requires you to select some text.\")")
+      null
+    else
+      text
+
   quitRepl: ->
     @executeCode("(System/exit 0)")
 
@@ -136,6 +152,104 @@ module.exports = ProtoRepl =
     if editor = atom.workspace.getActiveTextEditor()
       console.log(editor.getPath())
       @executeCode("(load-file \"#{editor.getPath()}\")")
+
+  runTestsInNamespace: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      @executeCodeInNs("(run-tests)")
+
+  runSelectedTest: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if selected = @getSelectedText(editor)
+        text = "(do (test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
+        @executeCodeInNs(text)
+
+  runAllTests: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      @refreshNamespaces()
+      @executeCode("(def all-tests-future (future (time (run-all-tests))))")
+
+  printVarDocumentation: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if selected = @getSelectedText(editor)
+        @executeCode("(clojure.repl/doc #{selected})")
+
+  printVarCode: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if selected = @getSelectedText(editor)
+        @executeCode("(clojure.repl/source #{selected})")
+
+  # Lists all the vars in the selected namespace or namespace alias
+  listNsVars: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if selected = @getSelectedText(editor)
+        text = "(let [selected-symbol '#{selected}
+                      selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
+                  (println \"\\nVars in\" (str selected-ns \":\"))
+                  (println \"------------------------------\")
+                  (doseq [s (clojure.repl/dir-fn selected-ns)]
+                    (println s))
+                  (println \"------------------------------\"))"
+        @executeCode(text)
+
+  # Lists all the vars with their documentation in the selected namespace or namespace alias
+  listNsVarsWithDocs: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if selected = @getSelectedText(editor)
+        text = "(let [selected-symbol '#{selected}
+                      selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
+                  (println (str \"\\n\" selected-ns \":\"))
+                  (println \"\" (:doc (meta (the-ns selected-ns))))
+                  (doseq [s (clojure.repl/dir-fn selected-ns) :let [m (-> (str selected-ns \"/\" s) symbol find-var meta)]]
+                    (println \"---------------------------\")
+                    (println (:name m))
+                    (cond
+                      (:forms m) (doseq [f (:forms m)]
+                                   (print \"  \")
+                                   (prn f))
+                      (:arglists m) (prn (:arglists m)))
+                    (println \" \" (:doc m)))
+                  (println \"------------------------------\"))"
+        @executeCode(text)
+
+  # Opens the file containing the currently selected var or namespace in the REPL. If the file is located
+  # inside of a jar file it will decompress the jar file then open it. It will first check to see if a
+  # jar file has already been decompressed once to avoid doing it multiple times for the same library.
+  # Assumes that the Atom command line alias "atom" can be used to invoke Atom.
+  openFileContainingVar: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if selected = @getSelectedText(editor)
+        text = "(let [var-sym '#{selected}
+                      the-var (or (some->> (find-ns var-sym)
+                                           clojure.repl/dir-fn
+                                           first
+                                           name
+                                           (str (name var-sym) \"/\")
+                                           symbol)
+                                  var-sym)
+                      {:keys [file line]} (meta (eval `(var ~the-var)))
+                      file-path (.getPath (.getResource (clojure.lang.RT/baseLoader) file))]
+                  (if-let [[_
+                            jar-path
+                            partial-jar-path
+                            within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
+                    (let [decompressed-path (str (System/getProperty \"user.home\")
+                                                 \"/.lein/tmp-sublime-jars/\"
+                                                 partial-jar-path)
+                          decompressed-file-path (str decompressed-path \"/\" within-file-path)
+                          decompressed-path-dir (clojure.java.io/file decompressed-path)]
+                      (when-not (.exists decompressed-path-dir)
+                        (println \"decompressing\" jar-path \"to\" decompressed-path)
+                        (.mkdirs decompressed-path-dir)
+                        (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
+                      (println \"Opening file\" decompressed-file-path \"to line\" line)
+                      (clojure.java.shell/sh \"/usr/local/bin/atom\" (str decompressed-file-path \":\" line))
+                      nil)
+                    (do
+                      (println \"Opening file\" file-path)
+                      (clojure.java.shell/sh \"/usr/local/bin/atom\" (str file-path \":\" line))
+                      nil)))"
+        @executeCode(text)
+
 
 
   ############################################################

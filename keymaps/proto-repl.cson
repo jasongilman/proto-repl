@@ -8,6 +8,8 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
+
+  # TODO add some of these to the context menu
   'cmd-alt-l': 'proto-repl:toggle'
   'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
   'cmd-alt-b': 'proto-repl:execute-block'
@@ -16,7 +18,20 @@
   'cmd-alt-r': 'proto-repl:refresh-namespaces'
   'cmd-alt-shift-r': 'proto-repl:super-refresh-namespaces'
   'ctrl-d': 'proto-repl:exit-repl'
-  # TODO pretty print and others
+  'cmd-alt-p': 'proto-repl:pretty-print'
+
+  # TODO command to clear repl
+
+  'cmd-alt-x': 'proto-repl:run-tests-in-namespace'
+  'cmd-alt-t': 'proto-repl:run-selected-test'
+
+  # TODO button for this one
+  'cmd-alt-a': 'proto-repl:run-all-tests'
+
+  'cmd-alt-d': 'proto-repl:print-var-documentation'
+  'cmd-alt-c': 'proto-repl:print-var-code'
+  'cmd-alt-n': 'proto-repl:list-ns-vars'
+  'cmd-alt-shift-n': 'proto-repl:list-ns-vars-with-docs'
+  'cmd-alt-o': 'proto-repl:open-file-containing-var'
 
   # TODO add way to add your own new commands and keybindings
-

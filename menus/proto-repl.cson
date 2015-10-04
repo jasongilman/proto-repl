@@ -2,8 +2,11 @@
 'context-menu':
   'atom-text-editor': [
     {
-      'label': 'Toggle proto-repl'
-      'command': 'proto-repl:toggle'
+      'label': 'proto-repl'
+      'submenu': [
+        {'label': 'Execute Block', 'command': 'proto-repl:execute-block'}
+        {'label': 'Load File', 'command': 'proto-repl:load-current-file'}
+      ]
     }
   ]
 'menu': [
