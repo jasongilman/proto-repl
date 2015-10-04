@@ -48,3 +48,6 @@ class ReplTextEditor
 
   sendToRepl: (text)->
     @process.send event: 'input', text: text + "\n"
+
+  clear: ->
+    @textEditor.setText("")

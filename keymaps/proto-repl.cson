@@ -11,6 +11,7 @@
 
   # TODO add some of these to the context menu
   'cmd-alt-l': 'proto-repl:toggle'
+  'ctrl-l': 'proto-repl:clear-repl'
   'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
   'cmd-alt-b': 'proto-repl:execute-block'
   'cmd-alt-s': 'proto-repl:execute-selected-text'
@@ -20,12 +21,9 @@
   'ctrl-d': 'proto-repl:exit-repl'
   'cmd-alt-p': 'proto-repl:pretty-print'
 
-  # TODO command to clear repl
-
   'cmd-alt-x': 'proto-repl:run-tests-in-namespace'
   'cmd-alt-t': 'proto-repl:run-selected-test'
 
-  # TODO button for this one
   'cmd-alt-a': 'proto-repl:run-all-tests'
 
   'cmd-alt-d': 'proto-repl:print-var-documentation'

@@ -28,6 +28,7 @@ module.exports = ProtoRepl =
     # Register command that toggles this view
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:toggle': => @toggle()
+      'proto-repl:clear-repl': => @clearRepl()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
       'proto-repl:execute-block': => @executeBlock()
@@ -58,6 +59,11 @@ module.exports = ProtoRepl =
       iconset: 'ion'
       callback: 'proto-repl:super-refresh-namespaces'
       tooltip: 'Super Refresh Namespaces'
+    @toolbar.addButton
+      icon: 'speedometer'
+      iconset: 'ion'
+      callback: 'proto-repl:run-all-tests'
+      tooltip: 'Run All Tests'
 
     @toolbar.addSpacer()
 
@@ -75,7 +81,13 @@ module.exports = ProtoRepl =
       callback: 'proto-repl:toggle-auto-scroll'
       tooltip: 'Toggle Auto Scroll'
     @toolbar.addButton
-      icon: 'close'
+      icon: 'trash-a'
+      iconset: 'ion'
+      callback: 'proto-repl:clear-repl'
+      tooltip: 'Clear REPL'
+    @toolbar.addSpacer()
+    @toolbar.addButton
+      icon: 'power'
       iconset: 'ion'
       callback: 'proto-repl:exit-repl'
       tooltip: 'Quit REPL'
@@ -97,6 +109,9 @@ module.exports = ProtoRepl =
   toggle: ->
     # TODO we don't currently handle more than one repl. We just lose track of it.
     @lastRepl = new ReplTextEditor()
+
+  clearRepl: ->
+    @lastRepl.clear()
 
   executeCode: (code)->
     @lastRepl.sendToRepl(code)
