@@ -2,6 +2,31 @@
 path = require 'path'
 ReplProcess = require.resolve './repl-process'
 
+
+replHelpText = ";; This is a text editor and also a Clojure REPL.  It behaves
+differently than a typical Clojure REPL. You can type anywhere and modify any of
+the displayed text. Commands are not sent by typing in the REPL and pressing
+enter. They are sent through keyboard shortcuts.\n
+\n
+;; REPL Execution Keybindings\n
+;; Note: These keybindings can be executed from any file and the results will be displayed in this REPL.\n
+;; See the settings for more keybindings.\n
+\n
+;; cmd+alt+b - execute block. Finds the block of Clojure code your cursor is in
+and executes that.\n
+\n
+;; Try it now. Put your cursor inside this block and press cmd+alt+b\n
+(+ 2 3)\n
+\n
+;; cmd+alt+s - Executes the selection. Sends the selected text to the REPL.\n
+\n
+;; Try it now. Select these three lines and hit cmd + alt + s.\n
+(println \"hello1\")\n
+(println \"hello2\")\n
+(println \"hello3\")\n
+\n
+;; You can disable this help text in the settings.\n"
+
 module.exports =
 class ReplTextEditor
   # This is set to some string to strip out of the text displayed. It is used to remove code that
@@ -22,7 +47,12 @@ class ReplTextEditor
       grammar = atom.grammars.grammarForScopeName('source.clojure')
       @textEditor.setGrammar(grammar)
       @textEditor.onDidDestroy(closingHandler)
-      @textEditor.insertText("Loading REPL...\n")
+      @textEditor.setSoftWrapped(true)
+
+      if atom.config.get("proto-repl.displayHelpText")
+        @textEditor.insertText(replHelpText)
+
+      @textEditor.insertText(";; Loading REPL...\n")
 
     @process = Task.once ReplProcess,
                          path.resolve(projectPath),

@@ -4,6 +4,10 @@ url = require 'url'
 
 module.exports = ProtoRepl =
   config:
+    displayHelpText:
+      type: 'boolean'
+      description: 'Enables the display of help text when the REPL starts.'
+      default: true
     autoScroll:
       type: 'boolean'
       description: 'Sets whether or not the REPL scrolls when new content is written.'
@@ -128,7 +132,11 @@ module.exports = ProtoRepl =
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
-    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval '(do #{text})))"
+    # An alternative that doesn't use text replacement. It has problems if the clojure code is not well formed
+    # "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval '(do #{text})))"
+
+    escaped = text.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
+    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (read-string \"#{escaped}\")))"
 
   executeCodeInNs: (editor, code)->
     ns = @findNsDeclaration(editor)
