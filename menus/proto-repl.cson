@@ -6,6 +6,14 @@
       'submenu': [
         {'label': 'Execute Block', 'command': 'proto-repl:execute-block'}
         {'label': 'Load File', 'command': 'proto-repl:load-current-file'}
+        {'label': 'Execute Selected Text', 'command': 'proto-repl:execute-selected-text'}
+        {'label': 'Run Tests in This Namespace', 'command': 'proto-repl:run-tests-in-namespace'}
+        {'label': 'Run Selected Test', 'command': 'proto-repl:run-selected-test'}
+        {'label': 'Selected Var Documentation', 'command': 'proto-repl:print-var-documentation'}
+        {'label': 'Selected Var Code', 'command': 'proto-repl:print-var-code'}
+        {'label': 'List Vars in Selected Namespace', 'command': 'proto-repl:list-ns-vars'}
+        {'label': 'List Vars in Selected Namespace With Documentation', 'command': 'proto-repl:list-ns-vars-with-docs'}
+        {'label': 'Open Selected Var or Namespace', 'command': 'proto-repl:open-file-containing-var'}
       ]
     }
   ]
@@ -15,10 +23,13 @@
     'submenu': [
       'label': 'proto-repl'
       'submenu': [
-        {
-          'label': 'Toggle'
-          'command': 'proto-repl:toggle'
-        }
+        {'label': 'Start REPL','command': 'proto-repl:toggle'}
+        {'label': 'Clear REPL', 'command': 'proto-repl:clear-repl'}
+        {'label': 'Toggle REPL Autoscroll', 'command': 'proto-repl:toggle-auto-scroll'}
+        {'label': 'Refresh Namespaces', 'command': 'proto-repl:refresh-namespaces'}
+        {'label': 'Clear and Refresh Namespaces', 'command': 'proto-repl:super-refresh-namespaces'}
+        {'label': 'Run All Tests in Project', 'command': 'proto-repl:run-all-tests'}
+        {'label': 'Exit REPL', 'command': 'proto-repl:exit-repl'}
       ]
     ]
   }

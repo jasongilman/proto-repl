@@ -9,7 +9,6 @@
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
 
-  # TODO add some of these to the context menu
   'cmd-alt-l': 'proto-repl:toggle'
   'ctrl-l': 'proto-repl:clear-repl'
   'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
