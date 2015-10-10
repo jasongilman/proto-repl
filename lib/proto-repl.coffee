@@ -34,9 +34,8 @@ module.exports = ProtoRepl =
       'proto-repl:toggle': => @toggle()
       'proto-repl:clear-repl': => @clearRepl()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
-      'proto-repl:execute-selected-text': => @executeSelectedText(false)
-      'proto-repl:execute-block': => @executeBlock(false)
-      'proto-repl:execute-block-insert-result': => @executeBlock(true)
+      'proto-repl:execute-selected-text': => @executeSelectedText()
+      'proto-repl:execute-block': => @executeBlock()
       'proto-repl:load-current-file': => @loadCurrentFile()
       'proto-repl:refresh-namespaces': => @refreshNamespaces()
       'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
@@ -139,21 +138,11 @@ module.exports = ProtoRepl =
     escaped = text.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
     "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (read-string \"#{escaped}\")))"
 
-  # TODO document this
-  executeCodeInNs: (editor, code, insertResultAt=null)->
+  executeCodeInNs: (editor, code)->
     ns = @findNsDeclaration(editor)
     if ns
       code = @putTextInNamespace(code, ns)
-
-    if insertResultAt
-      @executeCode("(do (println \"ProtoReplInsertCodeIntoActiveTextEditor:start:#{insertResultAt}\")
-                        (try
-                          (clojure.pprint/pprint #{code})
-                          (catch Exception e
-                            (.printStackTrace e)))
-                        (println \"ProtoReplInsertCodeIntoActiveTextEditor:end\"))")
-    else
-      @executeCode(code)
+    @executeCode(code)
 
   ############################################################
   # Code helpers
@@ -189,13 +178,13 @@ module.exports = ProtoRepl =
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs(editor, "(run-tests)")
+      @executeCodeInNs("(run-tests)")
 
   runSelectedTest: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
         text = "(do (test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
-        @executeCodeInNs(editor, text)
+        @executeCodeInNs(text)
 
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -332,12 +321,11 @@ module.exports = ProtoRepl =
           result.stop()
     endPos
 
-  executeSelectedText: (insertResult)->
-
+  executeSelectedText: ->
     if editor = atom.workspace.getActiveTextEditor()
       @executeCodeInNs(editor, editor.getSelectedText())
 
-  executeBlock: (insertResult)->
+  executeBlock: ->
     if editor = atom.workspace.getActiveTextEditor()
       pos = editor.getCursorBufferPosition()
       startPos = @findBlockStartPosition(editor, pos)
@@ -351,7 +339,4 @@ module.exports = ProtoRepl =
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
         text = editor.getTextInBufferRange(new Range(startPos, closingPos))
-        if insertResult
-          @executeCodeInNs(editor, text, closingPos.row)
-        else
-          @executeCodeInNs(editor, text)
+        @executeCodeInNs(editor, text)

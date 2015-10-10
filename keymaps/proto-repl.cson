@@ -31,6 +31,4 @@
   'cmd-alt-shift-n': 'proto-repl:list-ns-vars-with-docs'
   'cmd-alt-o': 'proto-repl:open-file-containing-var'
 
-  'cmd-alt-shift-b': 'proto-repl:execute-block-insert-result'
-
   # TODO add way to add your own new commands and keybindings
