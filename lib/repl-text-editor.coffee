@@ -1,4 +1,4 @@
-{Task} = require 'atom'
+{Task, Point} = require 'atom'
 path = require 'path'
 ReplProcess = require.resolve './repl-process'
 
@@ -33,6 +33,11 @@ class ReplTextEditor
   # This is set to some string to strip out of the text displayed. It is used to remove code that
   # is sent to the repl because the repl will print the code that was sent to it.
   textToIgnore: null
+
+  # TODO doc (row num)
+  # TODO rename this
+  activeAppend: null
+
 
   constructor: ->
     projectPath = atom.project.getPaths()[0]
@@ -70,8 +75,23 @@ class ReplTextEditor
 
   attachListeners: ->
     @process.on 'proto-repl-process:data', (data) =>
-      @textEditor.getBuffer().append(data)
-      @autoscroll()
+
+      # TODO We could have different kinds of special code processors that match
+      # on particular prefixes and then end on something else
+      # The code execution would be in the same place as well. 
+
+      # TODO code comments
+      if matches = data.match(/ProtoReplInsertCodeIntoActiveTextEditor:start:(\d+)\s*/)
+        @activeAppend = Number.parseInt(matches[1])
+      else if data.startsWith("ProtoReplInsertCodeIntoActiveTextEditor:end")
+        @activeAppend = null
+      else if @activeAppend
+        buffer = atom.workspace.getActiveTextEditor().getBuffer()
+        buffer.insert(new Point(@activeAppend+1,0), data)
+        @activeAppend = @activeAppend + 1
+      else
+        @textEditor.getBuffer().append(data)
+        @autoscroll()
 
     @process.on 'proto-repl-process:exit', ()=>
       @textEditor.getBuffer().append("REPL Closed")
