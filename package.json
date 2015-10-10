@@ -1,14 +1,15 @@
 {
   "name": "proto-repl",
   "main": "./lib/proto-repl",
-  "version": "0.0.0",
-  "description": "A short description of your package",
+  "version": "0.0.1",
+  "description": "Provides a Clojure Development Environment with an interactive REPL. You can easily send code to the REPL, run tests in your project, view documentation, and much more.",
   "keywords": [
+    "clojure", "lisp", "repl", "interactive"
   ],
   "activationCommands": {
     "atom-workspace": "proto-repl:toggle"
   },
-  "repository": "https://github.com/atom/proto-repl",
+  "repository": "https://github.com/jasongilman/proto-repl",
   "license": "MIT",
   "engines": {
     "atom": ">=1.0.0 <2.0.0"

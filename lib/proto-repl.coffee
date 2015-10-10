@@ -29,7 +29,7 @@ module.exports = ProtoRepl =
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
-    # Register command that toggles this view
+    # Register commands
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:toggle': => @toggle()
       'proto-repl:clear-repl': => @clearRepl()
@@ -62,7 +62,7 @@ module.exports = ProtoRepl =
       icon: 'android-sync'
       iconset: 'ion'
       callback: 'proto-repl:super-refresh-namespaces'
-      tooltip: 'Super Refresh Namespaces'
+      tooltip: 'Clear and Refresh Namespaces'
     @toolbar.addButton
       icon: 'speedometer'
       iconset: 'ion'
@@ -111,8 +111,8 @@ module.exports = ProtoRepl =
     cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
   toggle: ->
-    # TODO we don't currently handle more than one repl. We just lose track of it.
-    @lastRepl = new ReplTextEditor()
+    if @lastRepl == null
+      @lastRepl = new ReplTextEditor()
 
   clearRepl: ->
     @lastRepl.clear()

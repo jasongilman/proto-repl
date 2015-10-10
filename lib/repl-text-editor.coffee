@@ -9,7 +9,8 @@ the displayed text. Commands are not sent by typing in the REPL and pressing
 enter. They are sent through keyboard shortcuts.\n
 \n
 ;; REPL Execution Keybindings\n
-;; Note: These keybindings can be executed from any file and the results will be displayed in this REPL.\n
+;; Note: These keybindings can be executed from any file and the results will be
+displayed in this REPL.\n
 ;; See the settings for more keybindings.\n
 \n
 ;; cmd+alt+b - execute block. Finds the block of Clojure code your cursor is in
@@ -21,9 +22,9 @@ and executes that.\n
 ;; cmd+alt+s - Executes the selection. Sends the selected text to the REPL.\n
 \n
 ;; Try it now. Select these three lines and hit cmd + alt + s.\n
-(println \"hello1\")\n
-(println \"hello2\")\n
-(println \"hello3\")\n
+(println \"hello 1\")\n
+(println \"hello 2\")\n
+(println \"hello 3\")\n
 \n
 ;; You can disable this help text in the settings.\n"
 
