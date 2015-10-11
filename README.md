@@ -1,6 +1,7 @@
-# Proto Repl
+# Proto REPL
 
-A short description of your package.
+Proto REPL is a Clojure development environment and REPL for [Atom](https://atom.io). See the [features](#features) and [installation instructions](#installation).
+
 
 TODO an image of the repl
 ![A screenshot of your package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
@@ -13,26 +14,46 @@ TODO an image of the repl
 * View documentation and code from linked Clojure libraries.
 * [Atom Tool Bar](https://atom.io/packages/tool-bar) integration that allows controlling the REPL.
 
+## Running the REPL
+
+Proto REPL currently only works with projects using [Leiningen](http://leiningen.org).
+
+1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project) for help creating a new project.)
+2. Start the REPL using one of the following methods.
+* Use the keyboard shortcut. Cmd alt L
+* Select the menu item "Packages" -> "proto-repl" -> "Start REPL"
+* Bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
+
+
+### About the REPL
+
+The REPL in Proto REPL is not a typical REPL. It's more of a text editor that is the target for output from REPL execution. You can type anywhere and modify any of
+the displayed text. Commands are not sent by typing in the REPL and pressing
+enter. They are sent through keyboard shortcuts. (See the keyboard shortcuts for executing blocks or selected text below.) You will typically type Clojure forms in one text editor and send them to the REPL for evaluation. You continue the cycle of code modification and REPL evaluation until it does what you want it to do.
+
+### Limitations
+
+These are known current limitations of Proto REPL. They may be addressed in the future.
+
+* Currently only works with Leiningen projects.
+* You can only start one REPL per Atom window.
+
 ## Installation
 
-`apm install proto-repl` or go to your Atom settings, select "+ Install" and search for proto-repl.
+`apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
+
+### Dependencies
+
+* [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+* [Leiningen](http://leiningen.org)
 
 ### Tool Bar Integration
 
 TODO
 
-## Running the REPL
+### Additional Recommended Atom Settings
 
-TODO
-
-### About the REPL
-
-TODO
-
-### Limitations
-
-TODO
-
+These settings and packages are recommended for the best Clojure experience in Atom.
 
 ## Keybindings and Events
 
@@ -60,5 +81,5 @@ TODO
 
 ## Potential Future Enhancements
 
-* Ability to connect to existing Clojure processings using nRepl.
+* Ability to connect to existing Clojure processes using nrepl.
 * Visualize function call graph.
