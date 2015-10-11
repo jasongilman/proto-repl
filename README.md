@@ -26,7 +26,32 @@ Proto REPL currently only works with projects using [Leiningen](http://leiningen
 
 ### About the REPL
 
-The REPL in Proto REPL is not a typical REPL. It's more of a text editor that is the target for output from REPL execution. You can type anywhere and modify any of the displayed text. Commands are not sent by typing in the REPL and pressing enter. They are sent through keyboard shortcuts. (See the [key bindings](#keybindings-and-events) for executing blocks or selected text below.) You will typically type Clojure forms in one text editor and send them to the REPL for evaluation. You continue the cycle of code modification and REPL evaluation until it does what you want it to do.
+The REPL in Proto REPL is not a typical REPL. It's more of a text editor that is the target for output from REPL execution. You can type anywhere and modify any of the displayed text. Commands are not sent by typing in the REPL and pressing enter. They are sent through keyboard shortcuts. (See the [Sending Code to the REPL](#sending-code-to-the-repl) below) You will typically type Clojure forms in one text editor and send them to the REPL for evaluation. You continue the cycle of code modification and REPL evaluation until it does what you want it to do.
+
+### Sending Code to the REPL
+
+Code can be sent to the REPL from within the REPL itself or any other open text editor. For example if you have some Clojure code in a Markdown file that can be sent to the REPL as well.
+
+#### Sending a Block
+
+A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `cmd-alt-b` will can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. A Clojure file can contain many blocks. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
+
+1. A block directly after the cursor.
+2. A block directly before the cursor.
+3. The first block the cursor is nested within.
+
+Examples: The following examples show some sample Clojure code using a `|` to indicate cursor position.
+
+Code                                     | Code sent to REPL   | Why?
+-----------------------------------------|---------------------|-----------------------------
+<code>&#124;(foo 1 2)</code>             | `(foo 1 2)`         | Cursor directly before block
+<code>(foo 1 2)&#124;</code>             | `(foo 1 2)`         | Cursor directly after block
+<code>(a (b &#124;(c (foo 1 2))))</code> | `(c (foo 1 2))`     | Cursor directly before `c` block
+<code>(a (b&#124; (c (foo 1 2))))</code> | `(b (c (foo 1 2)))` | Cursor inside `b` block
+
+#### Sending a Selection
+
+An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `cmd-alt-s`. This allows sending multiple blocks of code at once.
 
 ### Limitations
 
