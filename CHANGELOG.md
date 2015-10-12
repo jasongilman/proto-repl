@@ -8,3 +8,7 @@
 * Block execution temporarily highlights the area that was executed.
 ### Bug Fixes
 * Fixed bug where once REPL was closed it could not be restarted without restarting Atom.
+
+## Next version
+### Bug Fixes
+* Fixed bug where an exception would be received if sending code to a REPL that was closed.

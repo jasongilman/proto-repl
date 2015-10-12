@@ -117,10 +117,10 @@ module.exports = ProtoRepl =
         @replTextEditor = null
 
   clearRepl: ->
-    @replTextEditor.clear()
+    @replTextEditor?.clear()
 
   executeCode: (code)->
-    @replTextEditor.sendToRepl(code)
+    @replTextEditor?.sendToRepl(code)
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
