@@ -143,7 +143,7 @@ module.exports = ProtoRepl =
   executeBlock: ->
     if editor = atom.workspace.getActiveTextEditor()
       if range = EditorUtils.getCursorInBlockRange(editor)
-        text = editor.getTextInBufferRange(range)
+        text = editor.getTextInBufferRange(range).trim()
 
         # Highlight the area that's being executed temporarily
         marker = editor.markBufferRange(range)
@@ -152,7 +152,7 @@ module.exports = ProtoRepl =
         # Remove the highlight after a short period of time
         setTimeout(=>
           marker.destroy()
-        , 250)
+        , 350)
 
         @executeCodeInNs(editor, text)
 
@@ -189,13 +189,13 @@ module.exports = ProtoRepl =
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs("(run-tests)")
+      @executeCodeInNs(editor, "(run-tests)")
 
   runSelectedTest: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
         text = "(do (test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
-        @executeCodeInNs(text)
+        @executeCodeInNs(editor, text)
 
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -205,12 +205,12 @@ module.exports = ProtoRepl =
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCode("(clojure.repl/doc #{selected})")
+        @executeCodeInNs(editor, "(clojure.repl/doc #{selected})")
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCode("(clojure.repl/source #{selected})")
+        @executeCodeInNs(editor, "(clojure.repl/source #{selected})")
 
   # Lists all the vars in the selected namespace or namespace alias
   listNsVars: ->
@@ -223,7 +223,7 @@ module.exports = ProtoRepl =
                   (doseq [s (clojure.repl/dir-fn selected-ns)]
                     (println s))
                   (println \"------------------------------\"))"
-        @executeCode(text)
+        @executeCodeInNs(editor, text)
 
   # Lists all the vars with their documentation in the selected namespace or namespace alias
   listNsVarsWithDocs: ->
@@ -243,7 +243,7 @@ module.exports = ProtoRepl =
                       (:arglists m) (prn (:arglists m)))
                     (println \" \" (:doc m)))
                   (println \"------------------------------\"))"
-        @executeCode(text)
+        @executeCodeInNs(editor, text)
 
   # Opens the file containing the currently selected var or namespace in the REPL. If the file is located
   # inside of a jar file it will decompress the jar file then open it. It will first check to see if a
@@ -282,4 +282,4 @@ module.exports = ProtoRepl =
                       (println \"Opening file\" file-path)
                       (clojure.java.shell/sh \"/usr/local/bin/atom\" (str file-path \":\" line))
                       nil)))"
-        @executeCode(text)
+        @executeCodeInNs(editor, text)

@@ -11,6 +11,33 @@ module.exports = EditorUtils =
       stop()
     nsName
 
+  # Returns true if the position in the text editor is in a Markdown file in a
+  # code block that contains Clojure.
+  isPosInClojureMarkdown: (editor, pos)->
+    scopeDesc = editor.scopeDescriptorForBufferPosition(pos)
+    scopeDesc.scopes.indexOf("markup.code.clojure.gfm") >= 0
+
+  # Finds a starting markdown section like "```clojure" searching backwards
+  # from fromPos.
+  findMarkdownCodeBlockStartPosition:  (editor, fromPos) ->
+    startPos = null
+    # We translate the search range forward in case the cursor is in the middle
+    # of the declaration of the markdown block.
+    scanRange = new Range([0,0], fromPos.translate(new Point(0, 10)))
+    editor.backwardsScanInBufferRange /```clojure/ig, scanRange, (result) ->
+      startPos = result.range.start.translate(new Point(1,0))
+      result.stop()
+    startPos
+
+  # Finds a closing markdown section "```" searching forwards from fromPos.
+  findMarkdownCodeBlockEndPosition:  (editor, fromPos) ->
+    endPos = null
+    scanRange = new Range(fromPos, editor.buffer.getEndPosition())
+    editor.scanInBufferRange /```/g, scanRange, (result) ->
+      endPos = result.range.start
+      result.stop()
+    endPos
+
   findBlockStartPosition:  (editor, fromPos) ->
     braceClosed =
       "}": 0
@@ -22,13 +49,13 @@ module.exports = EditorUtils =
       "(": ")"
     startPos = null
     editor.backwardsScanInBufferRange /[\{\}\[\]\(\)]/g, new Range([0,0], fromPos), (result) ->
-      startPos = result.range.start
       c = ""+result.match[0]
       if braceClosed[c] != undefined
         braceClosed[c]++
       else
         braceClosed[openToClose[c]]--
         if braceClosed[openToClose[c]] == -1
+          startPos = result.range.start
           result.stop()
     startPos
 
@@ -44,13 +71,13 @@ module.exports = EditorUtils =
     endPos = null
     scanRange = new Range(fromPos, editor.buffer.getEndPosition())
     editor.scanInBufferRange /[\{\}\[\]\(\)]/g, scanRange, (result) ->
-      endPos = result.range.start
       c = ""+result.match[0]
       if braceOpened[c] != undefined
         braceOpened[c]++
       else
         braceOpened[closeToOpen[c]]--
         if braceOpened[closeToOpen[c]] == -1
+          endPos = result.range.start
           result.stop()
     endPos
 
@@ -76,9 +103,7 @@ module.exports = EditorUtils =
         closingPos = endPos.translate(new Point(0, 1))
         new Range(pos, closingPos)
 
-  # If the cursor is located in a Clojure block (in parentheses, brackets, or
-  # braces) or next to one returns the text of that block.
-  getCursorInBlockRange: (editor)->
+  getCursorInClojureBlockRange: (editor)->
     if range = @directlyAfterBlockRange(editor)
       range
     else if range = @directlyBeforeBlockRange(editor)
@@ -96,3 +121,20 @@ module.exports = EditorUtils =
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
         new Range(startPos, closingPos)
+
+  getCursorInMarkdownBlockRange: (editor)->
+    pos = editor.getCursorBufferPosition()
+    if @isPosInClojureMarkdown(editor, pos)
+      if startPos = @findMarkdownCodeBlockStartPosition(editor, pos)
+        # It's safer to search from the start of the startPos instead of searching from the end position
+        if endPos = @findMarkdownCodeBlockEndPosition(editor, startPos)
+          new Range(startPos, endPos)
+
+  # If the cursor is located in a Clojure block (in parentheses, brackets, or
+  # braces) or next to one returns the text of that block. Also works with
+  # Markdown blocks of code starting with  ```clojure  and ending with ```.
+  getCursorInBlockRange: (editor)->
+    if range = @getCursorInClojureBlockRange(editor)
+      range
+    else
+      @getCursorInMarkdownBlockRange(editor)

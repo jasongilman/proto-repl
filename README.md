@@ -49,6 +49,11 @@ Code                                     | Code sent to REPL   | Why?
 <code>(a (b &#124;(c (foo 1 2))))</code> | `(c (foo 1 2))`     | Cursor directly before `c` block
 <code>(a (b&#124; (c (foo 1 2))))</code> | `(b (c (foo 1 2)))` | Cursor inside `b` block
 
+##### Markdown Blocks
+
+The block detection also can find the start and end of a Github Flavored Markdown Clojure blocks. If the cursor is outside of a Clojure block but within a Markdown Clojure Block (Starts with ` ```clojure` and ends with ` ``` `) then all of the code in the Markdown block will be sent.
+
+
 #### Sending a Selection
 
 An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `cmd-alt-s`. This allows sending multiple blocks of code at once.
@@ -78,7 +83,7 @@ Proto REPL integrates with the [Atom Tool Bar package](https://atom.io/packages/
 Change the "Non Word Characters" setting in Atom to
 
 ```
-()\"':,;<>~#$%^&*|+=`…
+(){}[]\"',;<>~#$%^&*|+=`…
 ```
 
 Doing this allows you to select namespaces with var definitions in Clojure as a single word.
