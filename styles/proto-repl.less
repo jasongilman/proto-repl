@@ -4,9 +4,18 @@
 // for a full listing of what's available.
 @import "ui-variables";
 
-.replOutput {
-  font-family: monospace;
-  p {
-    margin-bottom: 0px;
+// Hightlights blocks that are executed.
+// Based on https://github.com/richrace/highlight-selected
+:host, atom-text-editor, atom-text-editor::shadow {
+  atom-text-editor .highlight.block-execution .region {
+    position: absolute;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .highlights {
+    .block-execution .region {
+      background-color: rgba(155, 149, 0, 0.6);
+    }
   }
 }

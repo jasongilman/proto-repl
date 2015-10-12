@@ -141,7 +141,18 @@ module.exports = ProtoRepl =
 
   executeBlock: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if text = EditorUtils.getCursorInBlockText(editor)
+      if range = EditorUtils.getCursorInBlockRange(editor)
+        text = editor.getTextInBufferRange(range)
+
+        # Highlight the area that's being executed temporarily
+        marker = editor.markBufferRange(range)
+        decoration = editor.decorateMarker(marker,
+            {type: 'highlight', class: "block-execution"})
+        # Remove the highlight after a short period of time
+        setTimeout(=>
+          marker.destroy()
+        , 250)
+
         @executeCodeInNs(editor, text)
 
   ############################################################

@@ -56,33 +56,33 @@ module.exports = EditorUtils =
 
   # Determines if the cursor is directly after a closed block. If it is returns
   # the text of that block
-  directlyAfterBlockText: (editor)->
+  directlyAfterBlockRange: (editor)->
     pos = editor.getCursorBufferPosition()
     if pos.column > 0
       previousPos = new Point(pos.row, pos.column-1)
       previousChar = editor.getTextInBufferRange(new Range(previousPos, pos))
       if [")","}","]"].indexOf(previousChar) >= 0
         if startPos = @findBlockStartPosition(editor, previousPos)
-          editor.getTextInBufferRange(new Range(startPos, pos))
+          new Range(startPos, pos)
 
   # Determines if the cursor is directly before a block opening. If it is returns
   # the text of that block
-  directlyBeforeBlockText: (editor)->
+  directlyBeforeBlockRange: (editor)->
     pos = editor.getCursorBufferPosition()
     subsequentPos = pos.translate(new Point(0, 1))
     afterChar = editor.getTextInBufferRange(new Range(pos, subsequentPos))
     if ["(","{","["].indexOf(afterChar) >= 0
       if endPos = @findBlockEndPosition(editor, subsequentPos)
         closingPos = endPos.translate(new Point(0, 1))
-        editor.getTextInBufferRange(new Range(pos, closingPos))
+        new Range(pos, closingPos)
 
   # If the cursor is located in a Clojure block (in parentheses, brackets, or
   # braces) or next to one returns the text of that block.
-  getCursorInBlockText: (editor)->
-    if text = @directlyAfterBlockText(editor)
-      text
-    else if text = @directlyBeforeBlockText(editor)
-      text
+  getCursorInBlockRange: (editor)->
+    if range = @directlyAfterBlockRange(editor)
+      range
+    else if range = @directlyBeforeBlockRange(editor)
+      range
     else
       pos = editor.getCursorBufferPosition()
       startPos = @findBlockStartPosition(editor, pos)
@@ -95,4 +95,4 @@ module.exports = EditorUtils =
         # repeated executions
         #editor.setSelectedBufferRange(new Range(startPos, closingPos))
 
-        editor.getTextInBufferRange(new Range(startPos, closingPos))
+        new Range(startPos, closingPos)
