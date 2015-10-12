@@ -23,7 +23,7 @@ module.exports = ProtoRepl =
       default: "trampoline run -m clojure.main"
 
   subscriptions: null
-  lastRepl: null
+  replTextEditor: null
   toolbar: null
 
   activate: (state) ->
@@ -52,7 +52,6 @@ module.exports = ProtoRepl =
       'proto-repl:open-file-containing-var': => @openFileContainingVar()
 
   consumeToolbar: (toolbar) ->
-    console.log("Toolbar consume")
     @toolbar = toolbar 'proto-repl'
     @toolbar.addButton
       icon: 'android-refresh'
@@ -100,9 +99,9 @@ module.exports = ProtoRepl =
   deactivate: ->
     @subscriptions.dispose()
     @toolbar?.removeItems()
-    if @lastRepl
+    if @replTextEditor
       @quitRepl()
-      @lastRepl = null
+      @replTextEditor = null
 
   serialize: ->
     {}
@@ -112,14 +111,16 @@ module.exports = ProtoRepl =
     cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
   toggle: ->
-    if @lastRepl == null
-      @lastRepl = new ReplTextEditor()
+    if @replTextEditor == null
+      @replTextEditor = new ReplTextEditor()
+      @replTextEditor.onDidExit =>
+        @replTextEditor = null
 
   clearRepl: ->
-    @lastRepl.clear()
+    @replTextEditor.clear()
 
   executeCode: (code)->
-    @lastRepl.sendToRepl(code)
+    @replTextEditor.sendToRepl(code)
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->

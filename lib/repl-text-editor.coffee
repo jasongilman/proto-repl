@@ -1,4 +1,4 @@
-{Task} = require 'atom'
+{Task, Emitter} = require 'atom'
 path = require 'path'
 ReplProcess = require.resolve './repl-process'
 
@@ -33,31 +33,44 @@ class ReplTextEditor
   # This is set to some string to strip out of the text displayed. It is used to remove code that
   # is sent to the repl because the repl will print the code that was sent to it.
   textToIgnore: null
+  emitter: null
 
   constructor: ->
+    @emitter = new Emitter
     projectPath = atom.project.getPaths()[0]
 
+    # Handles the text editor being closed.
     closingHandler =  =>
       try
+        # I couldn't refer to sendToRepl directly here. I'm not sure why.
         @process.send event: 'input', text: "(System/exit 0)\n"
       catch error
         console.log("Warning error while closing: " + error)
 
+    # Opens the text editor that will represent the REPL.
     atom.workspace.open("Clojure REPL", split:'right').done (textEditor) =>
       @textEditor = textEditor
       # Change the text editor so it will never require saving.
       @textEditor.isModified = -> false
 
+      # Configure text editor for clojure syntax highlighting
       grammar = atom.grammars.grammarForScopeName('source.clojure')
       @textEditor.setGrammar(grammar)
+
+      # Handle the text editor being closed
       @textEditor.onDidDestroy(closingHandler)
+
+      # Set the text editor not to be wrapped.
+      # TODO make this a config option with keyboard short cut and tool bar button
       @textEditor.setSoftWrapped(true)
 
+      # Display the help text when the repl opens.
       if atom.config.get("proto-repl.displayHelpText")
         @textEditor.insertText(replHelpText)
 
       @textEditor.insertText(";; Loading REPL...\n")
 
+    # Start the repl process as a background task
     @process = Task.once ReplProcess,
                          path.resolve(projectPath),
                          atom.config.get('proto-repl.leinPath'),
@@ -77,8 +90,12 @@ class ReplTextEditor
       @autoscroll()
 
     @process.on 'proto-repl-process:exit', ()=>
-      @textEditor.getBuffer().append("REPL Closed")
+      @emitter.emit 'proto-repl-text-editor:exit'
+      @textEditor.getBuffer().append("\nREPL Closed\n")
       @autoscroll()
+
+  onDidExit: (callback)->
+    @emitter.on 'proto-repl-text-editor:exit', callback
 
   sendToRepl: (text)->
     @process.send event: 'input', text: text + "\n"
