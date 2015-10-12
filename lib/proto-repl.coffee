@@ -171,7 +171,7 @@ module.exports = ProtoRepl =
     @executeCode("(System/exit 0)")
 
   prettyPrint: ->
-    @executeCode("(pp)")
+    @executeCode("(clojure.pprint/pp)")
 
   refreshNamespacesCommand:
     "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)))"
@@ -183,24 +183,24 @@ module.exports = ProtoRepl =
     @executeCode("(clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand)
 
   loadCurrentFile: ->
-    console.log("Loading current file")
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCode("(load-file \"#{editor.getPath()}\")")
+      fileName = editor.getPath()
+      @executeCode("(do (println \"Loading File #{fileName}\") (load-file \"#{fileName}\"))")
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs(editor, "(run-tests)")
+      @executeCodeInNs(editor, "(clojure.test/run-tests)")
 
   runSelectedTest: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        text = "(do (test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
+        text = "(do (clojure.test/test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
         @executeCodeInNs(editor, text)
 
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
       @refreshNamespaces()
-      @executeCode("(def all-tests-future (future (time (run-all-tests))))")
+      @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
 
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -267,7 +267,7 @@ module.exports = ProtoRepl =
                             partial-jar-path
                             within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
                     (let [decompressed-path (str (System/getProperty \"user.home\")
-                                                 \"/.lein/tmp-sublime-jars/\"
+                                                 \"/.lein/tmp-atom-jars/\"
                                                  partial-jar-path)
                           decompressed-file-path (str decompressed-path \"/\" within-file-path)
                           decompressed-path-dir (clojure.java.io/file decompressed-path)]

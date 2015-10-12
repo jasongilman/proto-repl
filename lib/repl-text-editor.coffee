@@ -66,9 +66,9 @@ class ReplTextEditor
 
       # Display the help text when the repl opens.
       if atom.config.get("proto-repl.displayHelpText")
-        @textEditor.insertText(replHelpText)
+        @appendText(replHelpText)
 
-      @textEditor.insertText(";; Loading REPL...\n")
+      @appendText(";; Loading REPL...\n")
 
     # Start the repl process as a background task
     @process = Task.once ReplProcess,
@@ -84,15 +84,17 @@ class ReplTextEditor
     if atom.config.get('proto-repl.autoScroll')
       @textEditor.scrollToBottom()
 
+  appendText: (text)->
+    @textEditor.getBuffer().append(text)
+    @autoscroll()
+
   attachListeners: ->
     @process.on 'proto-repl-process:data', (data) =>
-      @textEditor.getBuffer().append(data)
-      @autoscroll()
+      @appendText(data)
 
     @process.on 'proto-repl-process:exit', ()=>
       @emitter.emit 'proto-repl-text-editor:exit'
-      @textEditor.getBuffer().append("\nREPL Closed\n")
-      @autoscroll()
+      @appendText("\nREPL Closed\n")
 
   onDidExit: (callback)->
     @emitter.on 'proto-repl-text-editor:exit', callback

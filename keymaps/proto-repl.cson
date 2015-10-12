@@ -7,7 +7,7 @@
 
 # For more detailed documentation see
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
-'atom-workspace':
+'.workspace .editor:not(.mini)':
 
   'cmd-alt-l': 'proto-repl:toggle'
   'ctrl-l': 'proto-repl:clear-repl'

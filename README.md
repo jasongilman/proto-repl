@@ -12,21 +12,16 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 * View documentation and code from linked Clojure libraries.
 * [Atom Tool Bar](https://atom.io/packages/tool-bar) integration that allows controlling the REPL.
 
-## Running the REPL
+## Usage
 
 Proto REPL currently only works with projects using [Leiningen](http://leiningen.org).
 
 1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project) for help creating a new project.)
-2. Start the REPL using one of the following methods.
+2. Start the REPL by bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
 
+See https://github.com/jasongilman/proto-repl-demo/blob/master/demos.md for a demonstration of the features of Proto REPL and more of a description on how it works.
 
-* Use the keyboard shortcut - cmd-alt-L
-* Select the menu item "Packages" -> "proto-repl" -> "Start REPL"
-* Bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
-
-### About the REPL
-
-The REPL in Proto REPL is not a typical REPL. It's more of a text editor that is the target for output from REPL execution. You can type anywhere and modify any of the displayed text. Commands are not sent by typing in the REPL and pressing enter. They are sent through keyboard shortcuts. (See the [Sending Code to the REPL](#sending-code-to-the-repl) below) You will typically type Clojure forms in one text editor and send them to the REPL for evaluation. You continue the cycle of code modification and REPL evaluation until it does what you want it to do.
+TODO move this stuff over to demo
 
 ### Sending Code to the REPL
 
@@ -34,7 +29,7 @@ Code can be sent to the REPL from within the REPL itself or any other open text 
 
 #### Sending a Block
 
-A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `cmd-alt-b` will can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. A Clojure file can contain many blocks. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
+A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `cmd-alt-b` can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
 
 1. A block directly after the cursor.
 2. A block directly before the cursor.
@@ -53,7 +48,6 @@ Code                                     | Code sent to REPL   | Why?
 
 The block detection also can find the start and end of a Github Flavored Markdown Clojure blocks. If the cursor is outside of a Clojure block but within a Markdown Clojure Block (Starts with ` ```clojure` and ends with ` ``` `) then all of the code in the Markdown block will be sent.
 
-
 #### Sending a Selection
 
 An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `cmd-alt-s`. This allows sending multiple blocks of code at once.
@@ -68,6 +62,8 @@ These are known current limitations of Proto REPL. They may be addressed in the 
 ## Installation
 
 `apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
+
+Make sure that the path to the `lein` command is correct in the proto-repl settings. Use `which lein` in a terminal to get the path.
 
 ### Dependencies
 
