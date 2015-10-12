@@ -12,7 +12,7 @@
 ### Bug Fixes
 * Fixed bug where once REPL was closed it could not be restarted without restarting Atom.
 
-## 0.3.0
+## 0.2.1
 
 ### New/Modified Features
 * Block execution can detect the beginning and end of a Markdown code section containing Clojure and execute all of the Clojure code in the Markdown.
