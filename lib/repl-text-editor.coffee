@@ -45,6 +45,9 @@ class ReplTextEditor
 
     atom.workspace.open("Clojure REPL", split:'right').done (textEditor) =>
       @textEditor = textEditor
+      # Change the text editor so it will never require saving.
+      @textEditor.isModified = -> false
+
       grammar = atom.grammars.grammarForScopeName('source.clojure')
       @textEditor.setGrammar(grammar)
       @textEditor.onDidDestroy(closingHandler)
