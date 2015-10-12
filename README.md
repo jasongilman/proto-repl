@@ -21,8 +21,6 @@ Proto REPL currently only works with projects using [Leiningen](http://leiningen
 
 See https://github.com/jasongilman/proto-repl-demo/blob/master/demos.md for a demonstration of the features of Proto REPL and more of a description on how it works.
 
-TODO move this stuff over to demo
-
 ### Sending Code to the REPL
 
 Code can be sent to the REPL from within the REPL itself or any other open text editor. For example if you have some Clojure code in a Markdown file that can be sent to the REPL as well.
