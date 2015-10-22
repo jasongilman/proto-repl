@@ -72,7 +72,7 @@ Make sure that the path to the `lein` command is correct in the proto-repl setti
 
 Proto REPL integrates with the [Atom Tool Bar package](https://atom.io/packages/tool-bar) to provide buttons for common REPL actions. Install tool-bar and then restart Proto REPL to get quick access to actions like refreshing namespaces, pretty printing, and toggling REPL scrolling.
 
-### Recommend Atom Settings
+### Recommended Atom Settings
 
 Change the "Non Word Characters" setting in Atom to
 
