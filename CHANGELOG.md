@@ -20,3 +20,8 @@
 ### Bug Fixes
 * Fixed bug where an exception would be received if sending code to a REPL that was closed.
 * Fixed many of the helper capabilities like printing documentation and running tests. The should have been executed in the namespace of the current file.
+
+## 0.2.2
+
+### Bug Fixes
+* Fixed [very first filed issue](https://github.com/jasongilman/proto-repl/issues/1). Executing blocks ignores parentheses, etc inside strings or comments.
