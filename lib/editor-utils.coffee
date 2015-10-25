@@ -38,6 +38,15 @@ module.exports = EditorUtils =
       result.stop()
     endPos
 
+
+  # Takes an editor and the position of a brace found in scanning and Determines
+  # if the brace found at that position can be ignored. If the brace is in a
+  # comment or inside a string it can be ignored.
+  isIgnorableBrace: (editor, pos)->
+    scopes = editor.scopeDescriptorForBufferPosition(pos).scopes
+    scopes.indexOf("string.quoted.double.clojure") >= 0 ||
+      scopes.indexOf("comment.line.semicolon.clojure") >= 0
+
   findBlockStartPosition:  (editor, fromPos) ->
     braceClosed =
       "}": 0
@@ -48,15 +57,16 @@ module.exports = EditorUtils =
       "[": "]"
       "(": ")"
     startPos = null
-    editor.backwardsScanInBufferRange /[\{\}\[\]\(\)]/g, new Range([0,0], fromPos), (result) ->
-      c = ""+result.match[0]
-      if braceClosed[c] != undefined
-        braceClosed[c]++
-      else
-        braceClosed[openToClose[c]]--
-        if braceClosed[openToClose[c]] == -1
-          startPos = result.range.start
-          result.stop()
+    editor.backwardsScanInBufferRange /[\{\}\[\]\(\)]/g, new Range([0,0], fromPos), (result) =>
+      if !(@isIgnorableBrace(editor, result.range.start))
+        c = ""+result.match[0]
+        if braceClosed[c] != undefined
+          braceClosed[c]++
+        else
+          braceClosed[openToClose[c]]--
+          if braceClosed[openToClose[c]] == -1
+            startPos = result.range.start
+            result.stop()
     startPos
 
   findBlockEndPosition:  (editor, fromPos) ->
@@ -70,15 +80,16 @@ module.exports = EditorUtils =
       ")": "("
     endPos = null
     scanRange = new Range(fromPos, editor.buffer.getEndPosition())
-    editor.scanInBufferRange /[\{\}\[\]\(\)]/g, scanRange, (result) ->
-      c = ""+result.match[0]
-      if braceOpened[c] != undefined
-        braceOpened[c]++
-      else
-        braceOpened[closeToOpen[c]]--
-        if braceOpened[closeToOpen[c]] == -1
-          endPos = result.range.start
-          result.stop()
+    editor.scanInBufferRange /[\{\}\[\]\(\)]/g, scanRange, (result) =>
+      if !(@isIgnorableBrace(editor, result.range.start))
+        c = ""+result.match[0]
+        if braceOpened[c] != undefined
+          braceOpened[c]++
+        else
+          braceOpened[closeToOpen[c]]--
+          if braceOpened[closeToOpen[c]] == -1
+            endPos = result.range.start
+            result.stop()
     endPos
 
   # Determines if the cursor is directly after a closed block. If it is returns
