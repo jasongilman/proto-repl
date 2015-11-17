@@ -87,7 +87,44 @@ Doing this allows you to select namespaces with var definitions in Clojure as a 
 These packages go well with Proto REPL.
 
 * [tool-bar](https://atom.io/packages/tool-bar)
-* [lisp-paredit](https://atom.io/packages/lisp-paredit)
+* [parinfer](https://atom.io/packages/parinfer)
+
+## Extending Proto REPL
+
+Proto REPL can be programmatically extended. The global `protoRepl` object can be used to send code to the REPL and perform other actions.
+
+### Defining a new REPL Command
+
+You can define a new Atom command and keyboard shortcut to send code to the REPL. Open your Atom [init](https://atom.io/docs/latest/hacking-atom-the-init-file) file and add the following code.
+
+```CoffeeScript
+atom.commands.add 'atom-text-editor', 'custom:repl-hello', ->
+  protoRepl.executeCode("(println \"Hi there!\")")
+```
+
+This adds a new Atom command called `custom:repl-hello`. It sends the code `(println "Hi there!")` to the REPL when it's invoked. After you edit your init file you'll need to reload Atom.
+
+You can add a keyboard shortcut in the Atom Keymap file. This doesn't require a restart of Atom.
+
+```
+'.platform-darwin atom-text-editor':
+  'cmd-alt-h': 'custom:repl-hello'
+```
+
+Now every time you press `cmd-alt-h` your REPL will print out "Hi there!".
+
+### Defining REPL Commands on Selected Text
+
+You can define more advanced REPL commands that use selected code from the editor or execute code in the namespace of the current file. Here's an example of how you would add a command that displays the documentation of the currently selected var. Note that this command is already part of Proto REPL itself.
+
+```CoffeeScript
+atom.commands.add 'atom-text-editor', 'custom:print-var-documentation', ->
+  if editor = atom.workspace.getActiveTextEditor()
+    if selected = editor.getSelectedText()
+      protoRepl.executeCodeInNs("(clojure.repl/doc #{selected})")
+```
+
+More examples can be seen in the [ProtoRepl class](https://github.com/jasongilman/proto-repl/blob/master/lib/proto-repl.coffee).
 
 ## Keybindings and Events
 
@@ -111,6 +148,7 @@ These packages go well with Proto REPL.
 | `cmd-alt-o`       | `proto-repl:open-file-containing-var` | Opens the code of the current selected var or namespace. This works even with vars defined in libraries.                                 |
 | `cmd-alt-n`       | `proto-repl:list-ns-vars`             | Lists the vars in the selected namespace.                                                                                                |
 | `cmd-alt-shift-n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the selected namespace with documentation.                                                                             |
+
 
 
 ## Potential Future Enhancements

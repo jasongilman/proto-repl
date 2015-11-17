@@ -25,3 +25,8 @@
 
 ### Bug Fixes
 * Fixed [very first filed issue](https://github.com/jasongilman/proto-repl/issues/1). Executing blocks ignores parentheses, etc inside strings or comments.
+
+## 0.3.0
+
+### New/Modified Features
+* Added `protoRepl` global var and changed `executeCodeInNs` to allow users to write their own commands that can send code to the REPL.

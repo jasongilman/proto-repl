@@ -111,6 +111,7 @@ module.exports = ProtoRepl =
     cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
   toggle: ->
+    window.protoRepl = this
     if @replTextEditor == null
       @replTextEditor = new ReplTextEditor()
       @replTextEditor.onDidExit =>
@@ -130,15 +131,16 @@ module.exports = ProtoRepl =
     escaped = text.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
     "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (read-string \"#{escaped}\")))"
 
-  executeCodeInNs: (editor, code)->
-    ns = EditorUtils.findNsDeclaration(editor)
-    if ns
-      code = @putTextInNamespace(code, ns)
-    @executeCode(code)
+  executeCodeInNs: (code)->
+    if editor = atom.workspace.getActiveTextEditor()
+      ns = EditorUtils.findNsDeclaration(editor)
+      if ns
+        code = @putTextInNamespace(code, ns)
+      @executeCode(code)
 
   executeSelectedText: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs(editor, editor.getSelectedText())
+      @executeCodeInNs(editor.getSelectedText())
 
   executeBlock: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -154,7 +156,7 @@ module.exports = ProtoRepl =
           marker.destroy()
         , 350)
 
-        @executeCodeInNs(editor, text)
+        @executeCodeInNs(text)
 
   ############################################################
   # Code helpers
@@ -189,13 +191,13 @@ module.exports = ProtoRepl =
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs(editor, "(clojure.test/run-tests)")
+      @executeCodeInNs("(clojure.test/run-tests)")
 
   runSelectedTest: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
         text = "(do (clojure.test/test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
-        @executeCodeInNs(editor, text)
+        @executeCodeInNs(text)
 
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -205,12 +207,12 @@ module.exports = ProtoRepl =
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCodeInNs(editor, "(clojure.repl/doc #{selected})")
+        @executeCodeInNs("(clojure.repl/doc #{selected})")
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCodeInNs(editor, "(clojure.repl/source #{selected})")
+        @executeCodeInNs("(clojure.repl/source #{selected})")
 
   # Lists all the vars in the selected namespace or namespace alias
   listNsVars: ->
@@ -223,7 +225,7 @@ module.exports = ProtoRepl =
                   (doseq [s (clojure.repl/dir-fn selected-ns)]
                     (println s))
                   (println \"------------------------------\"))"
-        @executeCodeInNs(editor, text)
+        @executeCodeInNs(text)
 
   # Lists all the vars with their documentation in the selected namespace or namespace alias
   listNsVarsWithDocs: ->
@@ -243,7 +245,7 @@ module.exports = ProtoRepl =
                       (:arglists m) (prn (:arglists m)))
                     (println \" \" (:doc m)))
                   (println \"------------------------------\"))"
-        @executeCodeInNs(editor, text)
+        @executeCodeInNs(text)
 
   # Opens the file containing the currently selected var or namespace in the REPL. If the file is located
   # inside of a jar file it will decompress the jar file then open it. It will first check to see if a
@@ -282,4 +284,4 @@ module.exports = ProtoRepl =
                       (println \"Opening file\" file-path)
                       (clojure.java.shell/sh \"/usr/local/bin/atom\" (str file-path \":\" line))
                       nil)))"
-        @executeCodeInNs(editor, text)
+        @executeCodeInNs(text)
