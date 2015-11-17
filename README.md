@@ -128,28 +128,28 @@ More examples can be seen in the [ProtoRepl class](https://github.com/jasongilma
 
 ## Keybindings and Events
 
-| Keybinding        | Event                                 | Action                                                                                                                                   |
-|-------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `cmd-alt-L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
-| `ctrl-L`          | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
-| `ctrl-d`          | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
-| `cmd-alt-shift-s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
-| `cmd-alt-b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
-| `cmd-alt-s`       | `proto-repl:execute-selected-text`    | Sends the selected text to the REPL for execution.                                                                                       |
-| `cmd-alt-shift-f` | `proto-repl:load-current-file`        | Loads the current file in the repl.                                                                                                      |
-| `cmd-alt-r`       | `proto-repl:refresh-namespaces`       | Runs the `user/reset` function. See [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) |
-| `cmd-alt-shift-r` | `proto-repl:super-refresh-namespaces` | Clears all loaded namespaces using `clojure.tools.namespace` the runs the `user/reset` function.                                         |
-| `cmd-alt-p`       | `proto-repl:pretty-print`             | Pretty prints the last value returned at the REPL.                                                                                       |
-| `cmd-alt-x`       | `proto-repl:run-tests-in-namespace`   | Runs all the tests in the current namespace.                                                                                             |
-| `cmd-alt-t`       | `proto-repl:run-selected-test`        | Runs the test that's selected.                                                                                                           |
-| `cmd-alt-a`       | `proto-repl:run-all-tests`            | Runs all the test in the current project.                                                                                                |
-| `cmd-alt-d`       | `proto-repl:print-var-documentation`  | Prints the documentation with the current selected var.                                                                                  |
-| `cmd-alt-c`       | `proto-repl:print-var-code`           | Prints out the code of the current selected var.                                                                                         |
-| `cmd-alt-o`       | `proto-repl:open-file-containing-var` | Opens the code of the current selected var or namespace. This works even with vars defined in libraries.                                 |
-| `cmd-alt-n`       | `proto-repl:list-ns-vars`             | Lists the vars in the selected namespace.                                                                                                |
-| `cmd-alt-shift-n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the selected namespace with documentation.                                                                             |
+Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press the `ctrl` key and the comma key at the same time, release them, and then press the subsequent letter. Some keyboard shortcuts also include the shift key.
 
-
+| Keybinding       | Event                                 | Action                                                                                                                                   |
+|------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `ctrl-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
+| `ctrl-d`         | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
+| `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
+| `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
+| `ctrl-, b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
+| `ctrl-, s`       | `proto-repl:execute-selected-text`    | Sends the selected text to the REPL for execution.                                                                                       |
+| `ctrl-, f`       | `proto-repl:load-current-file`        | Loads the current file in the repl.                                                                                                      |
+| `ctrl-, r`       | `proto-repl:refresh-namespaces`       | Runs the `user/reset` function. See [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) |
+| `ctrl-shift-, r` | `proto-repl:super-refresh-namespaces` | Clears all loaded namespaces using `clojure.tools.namespace` the runs the `user/reset` function.                                         |
+| `ctrl-, p`       | `proto-repl:pretty-print`             | Pretty prints the last value returned at the REPL.                                                                                       |
+| `ctrl-, x`       | `proto-repl:run-tests-in-namespace`   | Runs all the tests in the current namespace.                                                                                             |
+| `ctrl-, t`       | `proto-repl:run-selected-test`        | Runs the test that's selected.                                                                                                           |
+| `ctrl-, a`       | `proto-repl:run-all-tests`            | Runs all the test in the current project.                                                                                                |
+| `ctrl-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation with the current selected var.                                                                                  |
+| `ctrl-, c`       | `proto-repl:print-var-code`           | Prints out the code of the current selected var.                                                                                         |
+| `ctrl-, o`       | `proto-repl:open-file-containing-var` | Opens the code of the current selected var or namespace. This works even with vars defined in libraries.                                 |
+| `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the selected namespace.                                                                                                |
+| `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the selected namespace with documentation.                                                                             |
 
 ## Potential Future Enhancements
 

@@ -30,3 +30,4 @@
 
 ### New/Modified Features
 * Added `protoRepl` global var and changed `executeCodeInNs` to allow users to write their own commands that can send code to the REPL.
+* Added new keybindings for almost every command that should work for Windows, Linux, and OSX. 
