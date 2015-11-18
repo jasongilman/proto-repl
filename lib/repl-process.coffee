@@ -4,16 +4,18 @@ fs = require 'fs'
 _ = require 'underscore'
 
 filteredEnv = _.omit process.env, 'ATOM_HOME', 'ATOM_SHELL_INTERNAL_RUN_AS_NODE', 'GOOGLE_API_KEY', 'NODE_ENV', 'NODE_PATH', 'userAgent', 'taskPath'
+envPath = filteredEnv["PATH"] || ""
 
 processData = (data) ->
   emit('proto-repl-process:data', data.toString())
 
-module.exports = (currentWorkingDir, shell, args, options={}) ->
+module.exports = (currentWorkingDir, leinPath, args) ->
   callback = @async()
   try
+    filteredEnv["PATH"] = envPath + ":" + leinPath
     # console.log("Forking with:")
-    # console.log({shell: shell, args: args, cmd: currentWorkingDir, env: filteredEnv})
-    replProcess = childProcess.spawn shell, args, cwd: currentWorkingDir, env: filteredEnv
+    # console.log({args: args, cmd: currentWorkingDir, env: filteredEnv})
+    replProcess = childProcess.spawn "lein", args, cwd: currentWorkingDir, env: filteredEnv
 
     replProcess.on 'error', (error)->
       processData("Error starting repl: " + error +

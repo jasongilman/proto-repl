@@ -73,7 +73,7 @@ class ReplTextEditor
     # Start the repl process as a background task
     @process = Task.once ReplProcess,
                          path.resolve(projectPath),
-                         atom.config.get('proto-repl.leinPath'),
+                         atom.config.get('proto-repl.leinPath').replace("/lein",""),
                          atom.config.get('proto-repl.leinArgs').split(" ")
     @attachListeners()
 
