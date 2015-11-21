@@ -21,13 +21,17 @@ Proto REPL currently only works with projects using [Leiningen](http://leiningen
 
 See https://github.com/jasongilman/proto-repl-demo/blob/master/demos.md for a demonstration of the features of Proto REPL and more of a description on how it works.
 
+### Usage Outside of Leiningen Projects
+
+Proto REPL can still start a REPL outside of a Leiningen project. It still uses Leiningen to start the REPL but uses a default project shipped with Proto REPL. This allows you to easily open up any Clojure file or even just a new Atom window and kick off a new REPL for experimenting.
+
 ### Sending Code to the REPL
 
 Code can be sent to the REPL from within the REPL itself or any other open text editor. For example if you have some Clojure code in a Markdown file that can be sent to the REPL as well.
 
 #### Sending a Block
 
-A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `cmd-alt-b` can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
+A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `ctrl-, b` (Press ctrl and comma together, release, then press b) can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
 
 1. A block directly after the cursor.
 2. A block directly before the cursor.
@@ -48,7 +52,7 @@ The block detection also can find the start and end of a Github Flavored Markdow
 
 #### Sending a Selection
 
-An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `cmd-alt-s`. This allows sending multiple blocks of code at once.
+An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `ctrl-, s` (Press ctrl and comma together, release, then press s). This allows sending multiple blocks of code at once.
 
 ### Limitations
 

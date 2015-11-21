@@ -37,3 +37,7 @@
 ### Bug Fixes
 
 * Fixing the way leiningen is started to address path issues.
+
+## 0.4.0
+
+* Added ability to start Proto REPL outside of a Leiningen project. It uses a default project bundled with Proto REPL in this case.
