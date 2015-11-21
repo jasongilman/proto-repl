@@ -1,5 +1,6 @@
 {Task, Emitter} = require 'atom'
 path = require 'path'
+fs = require('fs')
 ReplProcess = require.resolve './repl-process'
 
 replHelpText = ";; This is a text editor and also a Clojure REPL.  It behaves
@@ -27,6 +28,9 @@ and executes that.\n
 \n
 ;; You can disable this help text in the settings.\n"
 
+# The path to a default project to use if proto repl is started outside of a leiningen project
+defaultProjectPath = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
+
 module.exports =
 class ReplTextEditor
   # This is set to some string to strip out of the text displayed. It is used to remove code that
@@ -36,7 +40,12 @@ class ReplTextEditor
 
   constructor: ->
     @emitter = new Emitter
-    projectPath = atom.project.getPaths()[0] || "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
+    projectPath = atom.project.getPaths()[0]
+
+    # If we're not in a project or there isn't a leiningen project file use
+    # the default project
+    if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
+      projectPath = defaultProjectPath
 
     # Handles the text editor being closed.
     closingHandler =  =>

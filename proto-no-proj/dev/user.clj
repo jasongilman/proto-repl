@@ -4,3 +4,5 @@
 
 (defn reset []
   (clojure.tools.namespace.repl/refresh))
+
+(println "Default Proto REPL Leiningen project started")
