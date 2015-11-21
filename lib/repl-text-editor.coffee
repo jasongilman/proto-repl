@@ -2,7 +2,6 @@
 path = require 'path'
 ReplProcess = require.resolve './repl-process'
 
-
 replHelpText = ";; This is a text editor and also a Clojure REPL.  It behaves
 differently than a typical Clojure REPL. You can type anywhere and modify any of
 the displayed text. Commands are not sent by typing in the REPL and pressing
@@ -37,7 +36,7 @@ class ReplTextEditor
 
   constructor: ->
     @emitter = new Emitter
-    projectPath = atom.project.getPaths()[0]
+    projectPath = atom.project.getPaths()[0] || "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
 
     # Handles the text editor being closed.
     closingHandler =  =>
