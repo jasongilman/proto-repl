@@ -144,8 +144,36 @@ module.exports = EditorUtils =
   # If the cursor is located in a Clojure block (in parentheses, brackets, or
   # braces) or next to one returns the text of that block. Also works with
   # Markdown blocks of code starting with  ```clojure  and ending with ```.
-  getCursorInBlockRange: (editor)->
-    if range = @getCursorInClojureBlockRange(editor)
+  getCursorInBlockRange: (editor, {topLevel} = {topLevel: false})->
+    if topLevel and range = @getCursorInClojureTopBlockRange(editor)
+      range
+    else if range = @getCursorInClojureBlockRange(editor)
       range
     else
       @getCursorInMarkdownBlockRange(editor)
+
+  # Constructs a list of `Range`s, one for each top level form.
+  getTopLevelRanges:  (editor) ->
+    ranges = []
+    braceOpened = 0
+    editor.scan /[\{\}\[\]\(\)]/g, (result) =>
+      if !(@isIgnorableBrace(editor, result.range.start))
+        c = ""+result.match[0]
+        if ["(","{","["].indexOf(c) >= 0
+          if braceOpened == 0
+            ranges.push([result.range.start])
+          braceOpened++
+        else if [")","}","]"].indexOf(c) >= 0
+          braceOpened--
+          if braceOpened == 0
+            ranges[ranges.length - 1].push(result.range.end)
+    ranges
+      .filter((range) -> range.length == 2)
+      .map((range) -> Range.fromObject(range))
+
+  # Returns the `Range` that corresponds to the top level form that contains the current cursor position.
+  # Doesn't work in Markdown blocks of code.
+  getCursorInClojureTopBlockRange: (editor)->
+    pos = editor.getCursorBufferPosition()
+    topLevelRanges = @getTopLevelRanges(editor)
+    topLevelRanges.find (range) -> range.containsPoint(pos)
