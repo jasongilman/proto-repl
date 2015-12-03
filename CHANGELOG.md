@@ -40,4 +40,12 @@
 
 ## 0.4.0
 
+### New/Modified Features
+
 * Added ability to start Proto REPL outside of a Leiningen project. It uses a default project bundled with Proto REPL in this case.
+
+## 0.4.1
+
+### Bug Fixes
+
+* Corrected keybindings in REPL help text.
