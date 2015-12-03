@@ -11,17 +11,20 @@ enter. They are sent through keyboard shortcuts.\n
 ;; REPL Execution Keybindings\n
 ;; Note: These keybindings can be executed from any file and the results will be
 displayed in this REPL.\n
+;; The keybindings are almost all of the form ctrl + comma, release, and then another key.\n
 ;; See the settings for more keybindings.\n
 \n
-;; cmd+alt+b - execute block. Finds the block of Clojure code your cursor is in
+;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in
 and executes that.\n
 \n
-;; Try it now. Put your cursor inside this block and press cmd+alt+b\n
+;; Try it now. Put your cursor inside this block and press ctrl and comma together, \n
+;; release, then press b.\n
 (+ 2 3)\n
 \n
-;; cmd+alt+s - Executes the selection. Sends the selected text to the REPL.\n
+;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n
 \n
-;; Try it now. Select these three lines and hit cmd + alt + s.\n
+;; Try it now. Select these three lines and press ctrl and comma together, \n
+;; release, then press s.\n
 (println \"hello 1\")\n
 (println \"hello 2\")\n
 (println \"hello 3\")\n
