@@ -37,6 +37,7 @@ module.exports = ProtoRepl =
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
       'proto-repl:execute-block': => @executeBlock()
+      'proto-repl:execute-top-block': => @executeBlock({topLevel: true})
       'proto-repl:load-current-file': => @loadCurrentFile()
       'proto-repl:refresh-namespaces': => @refreshNamespaces()
       'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
@@ -142,9 +143,9 @@ module.exports = ProtoRepl =
     if editor = atom.workspace.getActiveTextEditor()
       @executeCodeInNs(editor.getSelectedText())
 
-  executeBlock: ->
+  executeBlock: (options)->
     if editor = atom.workspace.getActiveTextEditor()
-      if range = EditorUtils.getCursorInBlockRange(editor)
+      if range = EditorUtils.getCursorInBlockRange(editor, options)
         text = editor.getTextInBufferRange(range).trim()
 
         # Highlight the area that's being executed temporarily

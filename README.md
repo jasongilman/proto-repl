@@ -141,6 +141,7 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
 | `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
 | `ctrl-, b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
+|                  | `proto-repl:execute-top-block`        | Sends the current top-level block of Clojure code to the REPL for execution.                                                                       |
 | `ctrl-, s`       | `proto-repl:execute-selected-text`    | Sends the selected text to the REPL for execution.                                                                                       |
 | `ctrl-, f`       | `proto-repl:load-current-file`        | Loads the current file in the repl.                                                                                                      |
 | `ctrl-, r`       | `proto-repl:refresh-namespaces`       | Runs the `user/reset` function. See [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) |
