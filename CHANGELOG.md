@@ -49,3 +49,9 @@
 ### Bug Fixes
 
 * Corrected keybindings in REPL help text.
+
+## 0.5.0
+
+### New/Modified Features
+
+* Added the ability to execute the outermost block. (Thanks [@qwtel](https://github.com/jasongilman/proto-repl/pull/11)!)
