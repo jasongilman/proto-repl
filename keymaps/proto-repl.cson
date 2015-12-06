@@ -12,7 +12,7 @@
 
 '.workspace .editor:not(.mini)':
   'ctrl-, l': 'proto-repl:toggle'
-  'ctrl-d': 'proto-repl:exit-repl'
+  'ctrl-, e': 'proto-repl:exit-repl'
   'ctrl-, k': 'proto-repl:clear-repl'
   'ctrl-< s': 'proto-repl:toggle-auto-scroll'
   'ctrl-, b': 'proto-repl:execute-block'

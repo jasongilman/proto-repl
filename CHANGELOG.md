@@ -52,6 +52,10 @@
 
 ## 0.5.0
 
+### Bug Fixes
+
+* Changed exit REPL keybinding from `ctrl-d` to `ctrl-, e` to avoid conflicting with Vim plugin.
+
 ### New/Modified Features
 
 * Added the ability to execute the outermost block. (Thanks [@qwtel](https://github.com/jasongilman/proto-repl/pull/11)!)

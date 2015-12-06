@@ -137,7 +137,7 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | Keybinding       | Event                                 | Action                                                                                                                                   |
 |------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `ctrl-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
-| `ctrl-d`         | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
+| `ctrl-, e`       | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
 | `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
 | `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
 | `ctrl-, b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
