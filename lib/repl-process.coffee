@@ -12,10 +12,14 @@ processData = (data) ->
 module.exports = (currentWorkingDir, leinPath, args) ->
   callback = @async()
   try
-    filteredEnv["PATH"] = envPath + ":" + leinPath
+    filteredEnv["PATH"] = envPath + path.delimiter + leinPath
+    leinExec = "lein"
+    if process.platform == "win32"
+      leinExec = "lein.bat"
+
     # console.log("Forking with:")
     # console.log({args: args, cmd: currentWorkingDir, env: filteredEnv})
-    replProcess = childProcess.spawn "lein", args, cwd: currentWorkingDir, env: filteredEnv
+    replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
 
     replProcess.on 'error', (error)->
       processData("Error starting repl: " + error +

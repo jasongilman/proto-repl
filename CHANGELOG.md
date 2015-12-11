@@ -59,3 +59,10 @@
 ### New/Modified Features
 
 * Added the ability to execute the outermost block. (Thanks [@qwtel](https://github.com/jasongilman/proto-repl/pull/11)!)
+
+
+## 0.5.1
+
+### Bug Fixes
+
+* Fixed problem with using Proto REPL on Windows.
