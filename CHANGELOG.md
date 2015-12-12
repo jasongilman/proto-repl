@@ -71,6 +71,8 @@
 
 ### Bug Fixes
 
+* Corrected process shutdown when a REPL window is closed.
+
 ### New/Modified Features
 
 * Added setting to disable Clojure syntax in REPL.

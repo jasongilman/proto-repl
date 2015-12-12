@@ -35,9 +35,11 @@ module.exports = (currentWorkingDir, leinPath, args) ->
     processData("Error starting repl: " + error)
 
   process.on 'message', ({event, text}={}) ->
-    switch event
-      when 'input'
-        try
+    try
+      switch event
+        when 'input'
           replProcess.stdin.write(text)
-        catch error
-          console.error error
+        when 'kill'
+          replProcess.kill("SIGKILL")
+    catch error
+      console.error error

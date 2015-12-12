@@ -55,6 +55,8 @@ class ReplTextEditor
       try
         # I couldn't refer to sendToRepl directly here. I'm not sure why.
         @process.send event: 'input', text: "(System/exit 0)\n"
+        @process.send event: 'kill'
+        @textEditor = null
       catch error
         console.log("Warning error while closing: " + error)
 
@@ -94,10 +96,10 @@ class ReplTextEditor
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')
-      @textEditor.scrollToBottom()
+      @textEditor?.scrollToBottom()
 
   appendText: (text)->
-    @textEditor.getBuffer().append(text)
+    @textEditor?.getBuffer().append(text)
     @autoscroll()
 
   attachListeners: ->
@@ -105,6 +107,7 @@ class ReplTextEditor
       @appendText(data)
 
     @process.on 'proto-repl-process:exit', ()=>
+      @textEditor = null
       @emitter.emit 'proto-repl-text-editor:exit'
       @appendText("\nREPL Closed\n")
 
@@ -115,4 +118,4 @@ class ReplTextEditor
     @process.send event: 'input', text: text + "\n"
 
   clear: ->
-    @textEditor.setText("")
+    @textEditor?.setText("")
