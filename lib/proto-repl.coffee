@@ -17,6 +17,10 @@ module.exports = ProtoRepl =
       description: 'The path to the lein executable.'
       type: 'string'
       default: 'lein'
+    useClojureSyntax:
+      type: 'boolean'
+      description: 'Sets whether or not the REPL should use Clojure syntax for highlighting. Disable this if having performance issues with REPL display.'
+      default: true
     leinArgs:
       description: 'The arguments to be passed to leiningen'
       type: 'string'

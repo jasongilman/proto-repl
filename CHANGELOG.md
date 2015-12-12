@@ -66,3 +66,11 @@
 ### Bug Fixes
 
 * Fixed problem with using Proto REPL on Windows.
+
+## 0.6.0
+
+### Bug Fixes
+
+### New/Modified Features
+
+* Added setting to disable Clojure syntax in REPL.

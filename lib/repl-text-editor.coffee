@@ -65,8 +65,9 @@ class ReplTextEditor
       @textEditor.isModified = -> false
 
       # Configure text editor for clojure syntax highlighting
-      grammar = atom.grammars.grammarForScopeName('source.clojure')
-      @textEditor.setGrammar(grammar)
+      if atom.config.get('proto-repl.useClojureSyntax')
+        grammar = atom.grammars.grammarForScopeName('source.clojure')
+        @textEditor.setGrammar(grammar)
 
       # Handle the text editor being closed
       @textEditor.onDidDestroy(closingHandler)
