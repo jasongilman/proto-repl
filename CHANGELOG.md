@@ -72,6 +72,7 @@
 ### Bug Fixes
 
 * Corrected process shutdown when a REPL window is closed.
+* Fixed issue that made the REPL tab title show "untitled"
 
 ### New/Modified Features
 

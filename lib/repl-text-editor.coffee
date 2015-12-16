@@ -34,6 +34,8 @@ and executes that.\n
 # The path to a default project to use if proto repl is started outside of a leiningen project
 defaultProjectPath = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
 
+TAB_TITLE = "Clojure REPL"
+
 module.exports =
 class ReplTextEditor
   # This is set to some string to strip out of the text displayed. It is used to remove code that
@@ -61,8 +63,13 @@ class ReplTextEditor
         console.log("Warning error while closing: " + error)
 
     # Opens the text editor that will represent the REPL.
-    atom.workspace.open("Clojure REPL", split:'right').done (textEditor) =>
+    atom.workspace.open(TAB_TITLE, split:'right').done (textEditor) =>
       @textEditor = textEditor
+
+      # Force the tab to have a title
+      @textEditor.getTitle = -> TAB_TITLE
+      @textEditor.emitter.emit 'did-change-title', TAB_TITLE
+
       # Change the text editor so it will never require saving.
       @textEditor.isModified = -> false
 
