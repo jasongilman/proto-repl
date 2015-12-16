@@ -77,3 +77,4 @@
 ### New/Modified Features
 
 * Added setting to disable Clojure syntax in REPL.
+* Refresh all command prints output to the REPL when it starts. Useful for immediate feedback when used in large projects.

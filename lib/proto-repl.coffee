@@ -125,6 +125,10 @@ module.exports = ProtoRepl =
   clearRepl: ->
     @replTextEditor?.clear()
 
+  # Appends the specified text to the REPL
+  appendText: (text)->
+    @replTextEditor?.appendText(text)
+
   executeCode: (code)->
     @replTextEditor?.sendToRepl(code)
 
@@ -184,9 +188,11 @@ module.exports = ProtoRepl =
     "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)))"
 
   refreshNamespaces: ->
+    @appendText("Refreshing code...\n")
     @executeCode(@refreshNamespacesCommand)
 
   superRefreshNamespaces: ->
+    @appendText("Clearing all and then refreshing code...\n")
     @executeCode("(clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand)
 
   loadCurrentFile: ->
