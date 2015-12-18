@@ -22,9 +22,9 @@ module.exports = ProtoRepl =
       description: 'Sets whether or not the REPL should use Clojure syntax for highlighting. Disable this if having performance issues with REPL display.'
       default: true
     leinArgs:
-      description: 'The arguments to be passed to leiningen'
+      description: 'The arguments to be passed to leiningen. For advanced users only.'
       type: 'string'
-      default: "trampoline run -m clojure.main"
+      default: "repl :headless"
 
   subscriptions: null
   replTextEditor: null
@@ -55,6 +55,7 @@ module.exports = ProtoRepl =
       'proto-repl:list-ns-vars': => @listNsVars()
       'proto-repl:list-ns-vars-with-docs': => @listNsVarsWithDocs()
       'proto-repl:open-file-containing-var': => @openFileContainingVar()
+      'proto-repl:interrupt': => @interrupt()
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
@@ -132,6 +133,13 @@ module.exports = ProtoRepl =
   executeCode: (code)->
     @replTextEditor?.sendToRepl(code)
 
+  # Interrupts the currently executing command.
+  interrupt: ()->
+    @replTextEditor?.interrupt()
+
+  quitRepl: ->
+    @replTextEditor?.exit()
+
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
     # An alternative that doesn't use text replacement. It has problems if the clojure code is not well formed
@@ -177,9 +185,6 @@ module.exports = ProtoRepl =
       null
     else
       text
-
-  quitRepl: ->
-    @executeCode("(System/exit 0)")
 
   prettyPrint: ->
     @executeCode("(clojure.pprint/pp)")

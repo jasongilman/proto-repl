@@ -2,6 +2,7 @@
 path = require 'path'
 fs = require('fs')
 ReplProcess = require.resolve './repl-process'
+nrepl = require('nrepl-client')
 
 replHelpText = ";; This is a text editor and also a Clojure REPL.  It behaves
 differently than a typical Clojure REPL. You can type anywhere and modify any of
@@ -36,6 +37,10 @@ defaultProjectPath = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-
 
 TAB_TITLE = "Clojure REPL"
 
+# The code to send to the repl to exit.
+EXIT_CMD="(System/exit 0)"
+
+
 module.exports =
 class ReplTextEditor
   # This is set to some string to strip out of the text displayed. It is used to remove code that
@@ -56,7 +61,8 @@ class ReplTextEditor
     closingHandler =  =>
       try
         # I couldn't refer to sendToRepl directly here. I'm not sure why.
-        @process.send event: 'input', text: "(System/exit 0)\n"
+        @conn?.eval(EXIT_CMD)
+        @conn = null
         @process.send event: 'kill'
         @textEditor = null
       catch error
@@ -96,10 +102,9 @@ class ReplTextEditor
                          path.resolve(projectPath),
                          atom.config.get('proto-repl.leinPath').replace("/lein",""),
                          atom.config.get('proto-repl.leinArgs').split(" ")
+
     @attachListeners()
 
-  strToBytes: (s)->
-    s.charCodeAt(n) for n in [0..s.length]
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')
@@ -113,6 +118,25 @@ class ReplTextEditor
     @process.on 'proto-repl-process:data', (data) =>
       @appendText(data)
 
+    # Called when the nREPL port is captured from the REPL output.
+    # Setup the nREPL connection
+    @process.on 'proto-repl-process:nrepl-port', (port) =>
+      console.log("Attempting to connect to #{port}")
+      @conn = nrepl.connect({port: port, verbose: false})
+      @conn.once 'connect', =>
+        console.log("connected!")
+
+        # Create a persistent session
+        @conn.clone (err, messages)=>
+          @session = messages[0]["new-session"]
+
+        # Log any output from the nRepl connection messages
+        @conn.messageStream.on "messageSequence", (id, messages)=>
+          for msg in messages
+            if msg.out or msg.err
+              @appendText(msg.out or msg.err)
+        @appendText("user=> ")
+
     @process.on 'proto-repl-process:exit', ()=>
       @textEditor = null
       @emitter.emit 'proto-repl-text-editor:exit'
@@ -122,7 +146,23 @@ class ReplTextEditor
     @emitter.on 'proto-repl-text-editor:exit', callback
 
   sendToRepl: (text)->
-    @process.send event: 'input', text: text + "\n"
+    console.log(text)
+    @conn?.eval text, 'user', @session, (err, results)=>
+      console.log(err)
+      console.log(results)
+      for result in results
+        if result.value
+          @appendText(result.value)
+          @appendText("\nuser=> ")
+
+  exitRepl: ->
+    @sendToRepl(EXIT_CMD)
+    @conn = null
+    @appendText("\nREPL Closed\n")
+
+  interrupt: ->
+    @conn?.interrupt @session, (err, result)->
+      @appendText("interrupted")
 
   clear: ->
     @textEditor?.setText("")

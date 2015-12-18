@@ -30,6 +30,7 @@
   'ctrl-, n': 'proto-repl:list-ns-vars'
   'ctrl-< n': 'proto-repl:list-ns-vars-with-docs'
   'ctrl-, o': 'proto-repl:open-file-containing-var'
+  'ctrl-shift-c': 'proto-repl:interrupt'
 
 ## Mac Specific Keybindings
 '.platform-darwin .workspace .editor:not(.mini)':

@@ -76,5 +76,11 @@
 
 ### New/Modified Features
 
+* Proto REPL now uses nREPL for all communication with the REPL process. This is a much more standard way to send code to the REPL.
+  * Allows interrupting a very long running command or infinite loop. Use ctrl-shift-c to send the interrupt.
+    * TODO test this
+    * TODO add example to proto-repl-demo
+  * TODO keep better track of namespace
+  * TODO retest everything
 * Added setting to disable Clojure syntax in REPL.
 * Refresh all command prints output to the REPL when it starts. Useful for immediate feedback when used in large projects.
