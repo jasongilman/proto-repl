@@ -114,6 +114,10 @@ class ReplTextEditor
     @textEditor?.getBuffer().append(text)
     @autoscroll()
 
+  # Appends the namespace prompt
+  appendPrompt: ()->
+    @appendText("\n#{@currentNs}=> ")
+
   attachListeners: ->
     @process.on 'proto-repl-process:data', (data) =>
       @appendText(data)
@@ -121,10 +125,12 @@ class ReplTextEditor
     # Called when the nREPL port is captured from the REPL output.
     # Setup the nREPL connection
     @process.on 'proto-repl-process:nrepl-port', (port) =>
-      console.log("Attempting to connect to #{port}")
       @conn = nrepl.connect({port: port, verbose: false})
       @conn.once 'connect', =>
-        console.log("connected!")
+
+        # Set the current namespace to user. Currently there is no way to change this.
+        @currentNs = "user"
+        @appendPrompt()
 
         # Create a persistent session
         @conn.clone (err, messages)=>
@@ -133,9 +139,8 @@ class ReplTextEditor
         # Log any output from the nRepl connection messages
         @conn.messageStream.on "messageSequence", (id, messages)=>
           for msg in messages
-            if msg.out or msg.err
-              @appendText(msg.out or msg.err)
-        @appendText("user=> ")
+            if msg.out
+              @appendText(msg.out)
 
     @process.on 'proto-repl-process:exit', ()=>
       @textEditor = null
@@ -146,23 +151,21 @@ class ReplTextEditor
     @emitter.on 'proto-repl-text-editor:exit', callback
 
   sendToRepl: (text)->
-    console.log(text)
-    @conn?.eval text, 'user', @session, (err, results)=>
-      console.log(err)
-      console.log(results)
-      for result in results
-        if result.value
-          @appendText(result.value)
-          @appendText("\nuser=> ")
+    @conn?.eval text, @currentNs, @session, (err, messages)=>
+      for msg in messages
+        if msg.value or msg.err
+          @appendText(msg.value or msg.err)
+      @appendPrompt()
 
-  exitRepl: ->
+  exit: ->
     @sendToRepl(EXIT_CMD)
     @conn = null
     @appendText("\nREPL Closed\n")
 
   interrupt: ->
-    @conn?.interrupt @session, (err, result)->
+    @conn?.interrupt @session, (err, result)=>
       @appendText("interrupted")
+      @appendPrompt()
 
   clear: ->
     @textEditor?.setText("")

@@ -157,7 +157,8 @@ module.exports = ProtoRepl =
 
   executeSelectedText: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs(editor.getSelectedText())
+      # Selected code is executed in a do block so only a single value is returned.
+      @executeCodeInNs("(do #{editor.getSelectedText()})")
 
   executeBlock: (options)->
     if editor = atom.workspace.getActiveTextEditor()
@@ -187,10 +188,10 @@ module.exports = ProtoRepl =
       text
 
   prettyPrint: ->
-    @executeCode("(clojure.pprint/pp)")
+    @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
 
   refreshNamespacesCommand:
-    "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)))"
+    "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)) nil)"
 
   refreshNamespaces: ->
     @appendText("Refreshing code...\n")
@@ -198,7 +199,7 @@ module.exports = ProtoRepl =
 
   superRefreshNamespaces: ->
     @appendText("Clearing all and then refreshing code...\n")
-    @executeCode("(clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand)
+    @executeCode("(do (clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand + ")")
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -223,12 +224,12 @@ module.exports = ProtoRepl =
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCodeInNs("(clojure.repl/doc #{selected})")
+        @executeCodeInNs("(do (require 'clojure.repl) (clojure.repl/doc #{selected}))")
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCodeInNs("(clojure.repl/source #{selected})")
+        @executeCodeInNs("(do (require 'clojure.repl) (clojure.repl/source #{selected}))")
 
   # Lists all the vars in the selected namespace or namespace alias
   listNsVars: ->
@@ -238,6 +239,7 @@ module.exports = ProtoRepl =
                       selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
                   (println \"\\nVars in\" (str selected-ns \":\"))
                   (println \"------------------------------\")
+                  (require 'clojure.repl)
                   (doseq [s (clojure.repl/dir-fn selected-ns)]
                     (println s))
                   (println \"------------------------------\"))"
@@ -251,6 +253,7 @@ module.exports = ProtoRepl =
                       selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
                   (println (str \"\\n\" selected-ns \":\"))
                   (println \"\" (:doc (meta (the-ns selected-ns))))
+                  (require 'clojure.repl)
                   (doseq [s (clojure.repl/dir-fn selected-ns) :let [m (-> (str selected-ns \"/\" s) symbol find-var meta)]]
                     (println \"---------------------------\")
                     (println (:name m))
@@ -270,34 +273,37 @@ module.exports = ProtoRepl =
   openFileContainingVar: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        text = "(let [var-sym '#{selected}
-                      the-var (or (some->> (find-ns var-sym)
-                                           clojure.repl/dir-fn
-                                           first
-                                           name
-                                           (str (name var-sym) \"/\")
-                                           symbol)
-                                  var-sym)
-                      {:keys [file line]} (meta (eval `(var ~the-var)))
-                      file-path (.getPath (.getResource (clojure.lang.RT/baseLoader) file))]
-                  (if-let [[_
-                            jar-path
-                            partial-jar-path
-                            within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
-                    (let [decompressed-path (str (System/getProperty \"user.home\")
-                                                 \"/.lein/tmp-atom-jars/\"
-                                                 partial-jar-path)
-                          decompressed-file-path (str decompressed-path \"/\" within-file-path)
-                          decompressed-path-dir (clojure.java.io/file decompressed-path)]
-                      (when-not (.exists decompressed-path-dir)
-                        (println \"decompressing\" jar-path \"to\" decompressed-path)
-                        (.mkdirs decompressed-path-dir)
-                        (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
-                      (println \"Opening file\" decompressed-file-path \"to line\" line)
-                      (clojure.java.shell/sh \"/usr/local/bin/atom\" (str decompressed-file-path \":\" line))
-                      nil)
-                    (do
-                      (println \"Opening file\" file-path)
-                      (clojure.java.shell/sh \"/usr/local/bin/atom\" (str file-path \":\" line))
-                      nil)))"
+        text = "(do (require 'clojure.repl)
+                    (require 'clojure.java.shell)
+                    (require 'clojure.java.io)
+                    (let [var-sym '#{selected}
+                          the-var (or (some->> (find-ns var-sym)
+                                               clojure.repl/dir-fn
+                                               first
+                                               name
+                                               (str (name var-sym) \"/\")
+                                               symbol)
+                                      var-sym)
+                          {:keys [file line]} (meta (eval `(var ~the-var)))
+                          file-path (.getPath (.getResource (clojure.lang.RT/baseLoader) file))]
+                      (if-let [[_
+                                jar-path
+                                partial-jar-path
+                                within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
+                        (let [decompressed-path (str (System/getProperty \"user.home\")
+                                                     \"/.lein/tmp-atom-jars/\"
+                                                     partial-jar-path)
+                              decompressed-file-path (str decompressed-path \"/\" within-file-path)
+                              decompressed-path-dir (clojure.java.io/file decompressed-path)]
+                          (when-not (.exists decompressed-path-dir)
+                            (println \"decompressing\" jar-path \"to\" decompressed-path)
+                            (.mkdirs decompressed-path-dir)
+                            (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
+                          (println \"Opening file\" decompressed-file-path \"to line\" line)
+                          (clojure.java.shell/sh \"/usr/local/bin/atom\" (str decompressed-file-path \":\" line))
+                          nil)
+                        (do
+                          (println \"Opening file\" file-path)
+                          (clojure.java.shell/sh \"/usr/local/bin/atom\" (str file-path \":\" line))
+                          nil))))"
         @executeCodeInNs(text)
