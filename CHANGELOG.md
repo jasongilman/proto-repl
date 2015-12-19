@@ -78,5 +78,6 @@
 
 * Proto REPL now uses nREPL for all communication with the REPL process. This is a much more standard way to send code to the REPL.
   * Allows interrupting a very long running command or infinite loop. Use ctrl-shift-c to send the interrupt.
+* Added an option to `protoRepl` public execution functions to capture the result of execution in a callback. Added a function for parsing the result. This will allow the creation of extension packages to Proto REPL such as visualizations.
 * Added setting to disable Clojure syntax in REPL.
 * Refresh all command prints output to the REPL when it starts. Useful for immediate feedback when used in large projects.
