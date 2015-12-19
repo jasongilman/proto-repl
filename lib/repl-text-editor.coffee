@@ -139,8 +139,8 @@ class ReplTextEditor
         # Log any output from the nRepl connection messages
         @conn.messageStream.on "messageSequence", (id, messages)=>
           for msg in messages
-            if msg.out
-              @appendText(msg.out)
+            if msg.out or msg.err
+              @appendText(msg.out or msg.err)
 
     @process.on 'proto-repl-process:exit', ()=>
       @textEditor = null
@@ -150,11 +150,15 @@ class ReplTextEditor
   onDidExit: (callback)->
     @emitter.on 'proto-repl-text-editor:exit', callback
 
-  sendToRepl: (text)->
+  sendToRepl: (text, options=null)->
+    resultHandler = options?.resultHandler
     @conn?.eval text, @currentNs, @session, (err, messages)=>
       for msg in messages
-        if msg.value or msg.err
-          @appendText(msg.value or msg.err)
+        if msg.value
+          if resultHandler
+            resultHandler(msg.value)
+          else
+            @appendText(msg.value)
       @appendPrompt()
 
   exit: ->

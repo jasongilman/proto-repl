@@ -3,6 +3,10 @@ ReplTextEditor = require './repl-text-editor'
 url = require 'url'
 EditorUtils = require './editor-utils'
 
+# This is built from the ClojureScript edn-reader project.
+# Rebuild it with lein cljsbuild once.
+require './edn-reader'
+
 module.exports = ProtoRepl =
   config:
     displayHelpText:
@@ -130,8 +134,12 @@ module.exports = ProtoRepl =
   appendText: (text)->
     @replTextEditor?.appendText(text)
 
-  executeCode: (code)->
-    @replTextEditor?.sendToRepl(code)
+  # Executes the given code string.
+  # Valid options:
+  # * resultHandler - a callback function to invoke with the value that was read.
+  #   If this is passed in then the value will not be displayed in the REPL.
+  executeCode: (code, options={})->
+    @replTextEditor?.sendToRepl(code, options)
 
   # Interrupts the currently executing command.
   interrupt: ()->
@@ -142,25 +150,32 @@ module.exports = ProtoRepl =
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
-    # An alternative that doesn't use text replacement. It has problems if the clojure code is not well formed
-    # "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval '(do #{text})))"
-
     escaped = text.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
     "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (read-string \"#{escaped}\")))"
 
-  executeCodeInNs: (code)->
+  executeCodeInNs: (code, options={})->
     if editor = atom.workspace.getActiveTextEditor()
       ns = EditorUtils.findNsDeclaration(editor)
       if ns
         code = @putTextInNamespace(code, ns)
-      @executeCode(code)
+      @executeCode(code, options)
 
-  executeSelectedText: ->
+  # Executes the selected code.
+  # Valid options:
+  # * resultHandler - a callback function to invoke with the value that was read.
+  #   If this is passed in then the value will not be displayed in the REPL.
+  executeSelectedText: (options={})->
     if editor = atom.workspace.getActiveTextEditor()
       # Selected code is executed in a do block so only a single value is returned.
-      @executeCodeInNs("(do #{editor.getSelectedText()})")
+      @executeCodeInNs("(do #{editor.getSelectedText()})", options)
 
-  executeBlock: (options)->
+  # Executes the block of code near the cursor.
+  # Valid options:
+  # * resultHandler - a callback function to invoke with the value that was read.
+  #   If this is passed in then the value will not be displayed in the REPL.
+  # * topLevel - Boolean to indicate if the top level block should be indicated.
+  #   If this is false the the closest block will be executed. Defaults to false.
+  executeBlock: (options={})->
     if editor = atom.workspace.getActiveTextEditor()
       if range = EditorUtils.getCursorInBlockRange(editor, options)
         text = editor.getTextInBufferRange(range).trim()
@@ -174,7 +189,11 @@ module.exports = ProtoRepl =
           marker.destroy()
         , 350)
 
-        @executeCodeInNs(text)
+        @executeCodeInNs(text, options)
+
+  # A helper function for parsing some EDN data into JavaScript objects.
+  parseEdn: (ednString)->
+    edn_reader.core.parse(ednString)
 
   ############################################################
   # Code helpers
