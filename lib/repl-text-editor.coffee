@@ -150,15 +150,11 @@ class ReplTextEditor
   onDidExit: (callback)->
     @emitter.on 'proto-repl-text-editor:exit', callback
 
-  sendToRepl: (text, options=null)->
-    resultHandler = options?.resultHandler
+  sendToRepl: (text, resultHandler)->
     @conn?.eval text, @currentNs, @session, (err, messages)=>
       for msg in messages
         if msg.value
-          if resultHandler
-            resultHandler(msg.value)
-          else
-            @appendText(msg.value)
+          resultHandler(msg.value)
       @appendPrompt()
 
   exit: ->

@@ -81,3 +81,9 @@
 * Added an option to `protoRepl` public execution functions to capture the result of execution in a callback. Added a function for parsing the result. This will allow the creation of extension packages to Proto REPL such as visualizations.
 * Added setting to disable Clojure syntax in REPL.
 * Refresh all command prints output to the REPL when it starts. Useful for immediate feedback when used in large projects.
+
+## 0.7.0
+
+### New/Modified Features
+
+* Added ability to extend Proto REPL with code execution extensions. See proto-repl.coffee for more information. This feature allows the addition of extensions that can be used to visualize results from the REPL.

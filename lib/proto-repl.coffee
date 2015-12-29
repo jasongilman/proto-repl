@@ -34,6 +34,10 @@ module.exports = ProtoRepl =
   replTextEditor: null
   toolbar: null
 
+  # A map of code execution extension names to callback functions.
+  # See registerCodeExecutionExtension documentation for information on code execution extensions.
+  codeExecutionExtensions: {}
+
   activate: (state) ->
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
@@ -134,19 +138,56 @@ module.exports = ProtoRepl =
   appendText: (text)->
     @replTextEditor?.appendText(text)
 
-  # Executes the given code string.
-  # Valid options:
-  # * resultHandler - a callback function to invoke with the value that was read.
-  #   If this is passed in then the value will not be displayed in the REPL.
-  executeCode: (code, options={})->
-    @replTextEditor?.sendToRepl(code, options)
-
   # Interrupts the currently executing command.
   interrupt: ()->
     @replTextEditor?.interrupt()
 
   quitRepl: ->
     @replTextEditor?.exit()
+
+  ##############################################################################
+  ## Code Execution
+
+  # Registers a code execution extension with the given name and callback function.
+  #
+  # Code execution extensions allow other Atom packages to extend Proto REPL
+  # by taking output from the REPL and redirecting it for other uses like
+  # visualization.
+  # Code execution extensions are triggered when the result of code execution is
+  # a vector with the first element is :proto-repl-code-execution-extension. The
+  # second element in the vector should be the name of the extension to trigger.
+  # The name will be used to locate the callback function. The third element in
+  # the vector will be passed to the callback function.
+  registerCodeExecutionExtension: (name, callback)->
+    @codeExecutionExtensions[name] = callback
+
+  # Executes the given code string.
+  # Valid options:
+  # * resultHandler - a callback function to invoke with the value that was read.
+  #   If this is passed in then the value will not be displayed in the REPL.
+  executeCode: (code, options={})->
+    resultHandler = options?.resultHandler
+
+    normalHandler = (value)=>
+      if resultHandler
+        resultHandler(value)
+      else
+        @replTextEditor.appendText(value)
+
+    @replTextEditor?.sendToRepl code, (value)=>
+      # check if it's an extension response
+      if value.match(/\[\s*:proto-repl-code-execution-extension/)
+        parsed = @parseEdn(value)
+        extensionName = parsed[1]
+        data = parsed[2]
+        extensionCallback = @codeExecutionExtensions[extensionName]
+        if extensionCallback
+          extensionCallback(data)
+        else
+          normalHandler(value)
+      else
+        normalHandler(value)
+
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
@@ -195,7 +236,7 @@ module.exports = ProtoRepl =
   parseEdn: (ednString)->
     edn_reader.core.parse(ednString)
 
-  ############################################################
+  #############################################################################
   # Code helpers
 
   getSelectedText: (editor)->
