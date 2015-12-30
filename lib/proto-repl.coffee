@@ -39,6 +39,7 @@ module.exports = ProtoRepl =
   codeExecutionExtensions: {}
 
   activate: (state) ->
+    window.protoRepl = this
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
@@ -125,7 +126,6 @@ module.exports = ProtoRepl =
     cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
   toggle: ->
-    window.protoRepl = this
     if @replTextEditor == null
       @replTextEditor = new ReplTextEditor()
       @replTextEditor.onDidExit =>

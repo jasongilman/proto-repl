@@ -9,9 +9,6 @@
     "repl",
     "interactive"
   ],
-  "activationCommands": {
-    "atom-workspace": "proto-repl:toggle"
-  },
   "repository": "https://github.com/jasongilman/proto-repl",
   "license": "MIT",
   "engines": {
