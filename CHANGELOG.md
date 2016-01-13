@@ -87,3 +87,9 @@
 ### New/Modified Features
 
 * Added ability to extend Proto REPL with code execution extensions. See proto-repl.coffee for more information. This feature allows the addition of extensions that can be used to visualize results from the REPL.
+
+## 0.7.1
+
+### Bug Fixes
+
+* Forcing upgrade of nrepl-client to latest on github so that the newer version of bencode will be used. The previous version was causing the REPL to periodically hang when retrieving large requests.
