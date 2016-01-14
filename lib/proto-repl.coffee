@@ -251,7 +251,13 @@ module.exports = ProtoRepl =
     @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
 
   refreshNamespacesCommand:
-    "(let [r 'user/reset] (if (find-var r) ((resolve r)) (clojure.tools.namespace.repl/refresh :after r)) nil)"
+    "(let [r 'user/reset
+          result (if (find-var r)
+                  ((resolve r))
+                  (clojure.tools.namespace.repl/refresh :after r))]
+      (when (isa? (type result) Exception)
+        (println (.getMessage result)))
+      nil)"
 
   refreshNamespaces: ->
     @appendText("Refreshing code...\n")
