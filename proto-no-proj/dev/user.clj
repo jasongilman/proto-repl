@@ -1,6 +1,7 @@
 (ns user
   (:require clojure.tools.namespace.repl
-            clojure.test))
+            clojure.test
+            prc))
 
 (defn reset []
   (clojure.tools.namespace.repl/refresh))

@@ -93,3 +93,9 @@
 ### Bug Fixes
 
 * Forcing upgrade of nrepl-client to latest on github so that the newer version of bencode will be used. The previous version was causing the REPL to periodically hang when retrieving large requests.
+
+## 0.8.0
+
+### New/Modified Features
+
+* Support for [proto-repl-charts](https://github.com/jasongilman/proto-repl-charts).
