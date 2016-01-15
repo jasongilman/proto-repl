@@ -99,3 +99,15 @@
 ### New/Modified Features
 
 * Support for [proto-repl-charts](https://github.com/jasongilman/proto-repl-charts).
+
+## 0.8.1
+
+### Bug Fixes
+
+* Fixed issue with refreshing the REPL when there's a compile error. The problem is displayed in the REPL now.
+
+## 0.8.2
+
+### New/Modified Features
+
+* Adding alpha level support for [Atom Ink](https://github.com/JunoLab/atom-ink). Install the Atom Ink package and enable inline results in the Proto REPL settings. Results will be displayed inline as well as in the REPL.
