@@ -29,10 +29,15 @@ module.exports = ProtoRepl =
       description: 'The arguments to be passed to leiningen. For advanced users only.'
       type: 'string'
       default: "repl :headless"
+    showInlineResults:
+      description: "ALPHA: Shows inline results of code execution. Must install Atom Ink package to use this."
+      type: 'boolean'
+      default: false
 
   subscriptions: null
   replTextEditor: null
   toolbar: null
+  ink: null
 
   # A map of code execution extension names to callback functions.
   # See registerCodeExecutionExtension documentation for information on code execution extensions.
@@ -146,6 +151,14 @@ module.exports = ProtoRepl =
     @replTextEditor?.exit()
 
   ##############################################################################
+  ## Ink Related
+
+  consumeInk: (ink) ->
+    @ink = ink
+    @loading = new ink.Loading
+    @spinner = new ink.Spinner @loading
+
+  ##############################################################################
   ## Code Execution
 
   # Registers a code execution extension with the given name and callback function.
@@ -167,12 +180,19 @@ module.exports = ProtoRepl =
   #   If this is passed in then the value will not be displayed in the REPL.
   executeCode: (code, options={})->
     resultHandler = options?.resultHandler
-
     normalHandler = (value)=>
       if resultHandler
         resultHandler(value)
       else
         @replTextEditor.appendText(value)
+
+        # Alpha support of inline results using Atom Ink.
+        if options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
+          io = options.inlineOptions
+          view = @ink.tree.fromJson([value])[0]
+          r = @ink.results.showForRange io.editor, io.range,
+            content: view
+            plainresult: value
 
     @replTextEditor?.sendToRepl code, (value)=>
       # check if it's an extension response
@@ -207,6 +227,9 @@ module.exports = ProtoRepl =
   #   If this is passed in then the value will not be displayed in the REPL.
   executeSelectedText: (options={})->
     if editor = atom.workspace.getActiveTextEditor()
+      options.inlineOptions =
+        editor: editor
+        range: editor.getSelectedBufferRange()
       # Selected code is executed in a do block so only a single value is returned.
       @executeCodeInNs("(do #{editor.getSelectedText()})", options)
 
@@ -221,6 +244,8 @@ module.exports = ProtoRepl =
       if range = EditorUtils.getCursorInBlockRange(editor, options)
         text = editor.getTextInBufferRange(range).trim()
 
+        # TODO we could do something with the result handler to unmark this area
+        # when it completes.
         # Highlight the area that's being executed temporarily
         marker = editor.markBufferRange(range)
         decoration = editor.decorateMarker(marker,
@@ -229,6 +254,10 @@ module.exports = ProtoRepl =
         setTimeout(=>
           marker.destroy()
         , 350)
+
+        options.inlineOptions =
+          editor: editor
+          range: range
 
         @executeCodeInNs(text, options)
 
@@ -290,7 +319,10 @@ module.exports = ProtoRepl =
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        @executeCodeInNs("(do (require 'clojure.repl) (clojure.repl/doc #{selected}))")
+        # TODO we could also make it try to find the keyword around the cursor
+        @executeCodeInNs "(do
+                            (require 'clojure.repl)
+                            (clojure.repl/doc #{selected}))"
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()

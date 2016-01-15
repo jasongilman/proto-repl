@@ -27,6 +27,11 @@
       "versions": {
         "^0.1.0": "consumeToolbar"
       }
+    },
+    "ink": {
+      "versions": {
+        "*": "consumeInk"
+      }
     }
   }
 }
