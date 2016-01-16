@@ -298,7 +298,8 @@ module.exports = ProtoRepl =
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()
-      fileName = editor.getPath()
+      # Escape file name
+      fileName = editor.getPath().replace(/\\/g,"\\\\")
       @executeCode("(do (println \"Loading File #{fileName}\") (load-file \"#{fileName}\"))")
 
   runTestsInNamespace: ->

@@ -111,3 +111,9 @@
 ### New/Modified Features
 
 * Adding alpha level support for [Atom Ink](https://github.com/JunoLab/atom-ink). Install the Atom Ink package and enable inline results in the Proto REPL settings. Results will be displayed inline as well as in the REPL.
+
+## 0.8.3
+
+### Bug Fixes
+
+* Fixed #25. File names with slashes can now be loaded into the REPL.
