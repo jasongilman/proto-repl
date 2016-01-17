@@ -1,5 +1,5 @@
 {CompositeDisposable, Range, Point} = require 'atom'
-ReplTextEditor = require './repl-text-editor'
+Repl = require './repl'
 url = require 'url'
 EditorUtils = require './editor-utils'
 
@@ -35,7 +35,7 @@ module.exports = ProtoRepl =
       default: false
 
   subscriptions: null
-  replTextEditor: null
+  repl: null
   toolbar: null
   ink: null
 
@@ -119,9 +119,9 @@ module.exports = ProtoRepl =
   deactivate: ->
     @subscriptions.dispose()
     @toolbar?.removeItems()
-    if @replTextEditor
+    if @repl
       @quitRepl()
-      @replTextEditor = null
+      @repl = null
 
   serialize: ->
     {}
@@ -131,24 +131,24 @@ module.exports = ProtoRepl =
     cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
   toggle: ->
-    if @replTextEditor == null
-      @replTextEditor = new ReplTextEditor()
-      @replTextEditor.onDidExit =>
-        @replTextEditor = null
+    if @repl == null
+      @repl = new Repl()
+      @repl.onDidExit =>
+        @repl = null
 
   clearRepl: ->
-    @replTextEditor?.clear()
+    @repl?.clear()
 
   # Appends the specified text to the REPL
   appendText: (text)->
-    @replTextEditor?.appendText(text)
+    @repl?.appendText(text)
 
   # Interrupts the currently executing command.
   interrupt: ()->
-    @replTextEditor?.interrupt()
+    @repl?.interrupt()
 
   quitRepl: ->
-    @replTextEditor?.exit()
+    @repl?.exit()
 
   ##############################################################################
   ## Ink Related
@@ -179,12 +179,16 @@ module.exports = ProtoRepl =
   # * resultHandler - a callback function to invoke with the value that was read.
   #   If this is passed in then the value will not be displayed in the REPL.
   executeCode: (code, options={})->
+
+
+    # TODO this code should be moved into Repl
+
     resultHandler = options?.resultHandler
     normalHandler = (value)=>
       if resultHandler
         resultHandler(value)
       else
-        @replTextEditor.appendText(value)
+        @repl.appendText("=> " + value)
 
         # Alpha support of inline results using Atom Ink.
         if options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
@@ -194,7 +198,7 @@ module.exports = ProtoRepl =
             content: view
             plainresult: value
 
-    @replTextEditor?.sendToRepl code, (value)=>
+    @repl?.sendToRepl code, (value)=>
       # check if it's an extension response
       if value.match(/\[\s*:proto-repl-code-execution-extension/)
         parsed = @parseEdn(value)

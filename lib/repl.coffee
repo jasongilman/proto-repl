@@ -1,4 +1,4 @@
-{Task, Emitter} = require 'atom'
+{Task, Emitter, Point} = require 'atom'
 path = require 'path'
 fs = require('fs')
 ReplProcess = require.resolve './repl-process'
@@ -40,13 +40,19 @@ TAB_TITLE = "Clojure REPL"
 # The code to send to the repl to exit.
 EXIT_CMD="(System/exit 0)"
 
+# TODO handle the resizing of the text editor or consider making it smaller
+EDIT_DELIMITER="--------------------\n"
 
 module.exports =
-class ReplTextEditor
+class Repl
   # This is set to some string to strip out of the text displayed. It is used to remove code that
   # is sent to the repl because the repl will print the code that was sent to it.
   textToIgnore: null
   emitter: null
+
+  # TODO comment these
+  allowAnyChange: false
+  delimiterRow: 0
 
   constructor: ->
     @emitter = new Emitter
@@ -57,45 +63,9 @@ class ReplTextEditor
     if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
       projectPath = defaultProjectPath
 
-    # Handles the text editor being closed.
-    closingHandler =  =>
-      try
-        # I couldn't refer to sendToRepl directly here. I'm not sure why.
-        @conn?.eval(EXIT_CMD)
-        @conn = null
-        @process.send event: 'kill'
-        @textEditor = null
-      catch error
-        console.log("Warning error while closing: " + error)
-
     # Opens the text editor that will represent the REPL.
     atom.workspace.open(TAB_TITLE, split:'right').done (textEditor) =>
-      @textEditor = textEditor
-
-      # Force the tab to have a title
-      @textEditor.getTitle = -> TAB_TITLE
-      @textEditor.emitter.emit 'did-change-title', TAB_TITLE
-
-      # Change the text editor so it will never require saving.
-      @textEditor.isModified = -> false
-
-      # Configure text editor for clojure syntax highlighting
-      if atom.config.get('proto-repl.useClojureSyntax')
-        grammar = atom.grammars.grammarForScopeName('source.clojure')
-        @textEditor.setGrammar(grammar)
-
-      # Handle the text editor being closed
-      @textEditor.onDidDestroy(closingHandler)
-
-      # Set the text editor not to be wrapped.
-      # TODO make this a config option with keyboard short cut and tool bar button
-      @textEditor.setSoftWrapped(true)
-
-      # Display the help text when the repl opens.
-      if atom.config.get("proto-repl.displayHelpText")
-        @appendText(replHelpText)
-
-      @appendText(";; Loading REPL...\n")
+      @configureNewTextEditor(textEditor)
 
     # Start the repl process as a background task
     @process = Task.once ReplProcess,
@@ -105,18 +75,101 @@ class ReplTextEditor
 
     @attachListeners()
 
+  # TODO comment
+  configureNewTextEditor: (textEditor)->
+    @textEditor = textEditor
+
+    # Force the tab to have a title
+    @textEditor.getTitle = -> TAB_TITLE
+    @textEditor.emitter.emit 'did-change-title', TAB_TITLE
+
+    # Change the text editor so it will never require saving.
+    @textEditor.isModified = -> false
+
+    # Set the delimiter row index so we can keep track of where the user can type.
+    @delimiterRow = 0
+    @textEditor.getBuffer().append(EDIT_DELIMITER)
+
+    # TODO do we have to have this function here?
+    shouldAllowChange = (change)=> @allowsChange(change)
+
+    # The text editor does not allow direct manipulation except below the delimiter
+    # Replace buffer applyChange with our own that decides when the change
+    # can be applied
+    @textEditor.buffer.oldApplyChange = @textEditor.buffer.applyChange
+    @textEditor.buffer.applyChange = (change, skipUndo) ->
+      if shouldAllowChange(change)
+        @oldApplyChange(change, skipUndo)
+
+
+    # TODO if they press enter at the bottom of the text editor we want to
+    # 1. send the code to the repl
+    # 2. clear the delimited area
+    @textEditor.oldInsertText = @textEditor.insertText
+    @textEditor.insertText = (text, options={}) ->
+      console.log("Inserting text", text)
+      @oldInsertText(text, options)
+
+    # TODO if they press up or down cycle through history
+    @textEditor.oldMoveUp = @textEditor.moveUp
+    @textEditor.moveUp = (lineCount)->
+      console.log("Moving up")
+      @oldMoveUp(lineCount)
+
+    # Configure text editor for clojure syntax highlighting
+    if atom.config.get('proto-repl.useClojureSyntax')
+      grammar = atom.grammars.grammarForScopeName('source.clojure')
+      @textEditor.setGrammar(grammar)
+
+    # Handle the text editor being closed
+    @textEditor.onDidDestroy =>
+      try
+        # I couldn't refer to sendToRepl directly here. I'm not sure why.
+        @conn?.eval(EXIT_CMD)
+        @conn = null
+        @process.send event: 'kill'
+        @textEditor = null
+      catch error
+        console.log("Warning error while closing: " + error)
+
+    # Set the text editor not to be wrapped.
+    @textEditor.setSoftWrapped(true)
+
+    # Display the help text when the repl opens.
+    if atom.config.get("proto-repl.displayHelpText")
+      @appendText(replHelpText)
+
+    @appendText(";; Loading REPL...\n")
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')
       @textEditor?.scrollToBottom()
 
-  appendText: (text)->
-    @textEditor?.getBuffer().append(text)
-    @autoscroll()
+  # TODO comment
+  allowsRangeChange: (range)->
+    range.start.row > @delimiterRow && range.end.row > @delimiterRow
 
-  # Appends the namespace prompt
-  appendPrompt: ()->
-    @appendText("\n#{@currentNs}=> ")
+  # TODO comment
+  allowsChange: (change)->
+    @allowAnyChange || (@allowsRangeChange(change.newRange) && @allowsRangeChange(change.oldRange))
+
+  # TODO comment
+  appendText: (text)->
+    if @textEditor && text.length > 0
+
+      # Append newline to text if it doesn't end with one.
+      if text[text.length-1] != "\n"
+        text = text + "\n"
+
+      insertionPoint = new Point(@delimiterRow)
+
+      @allowAnyChange = true
+      insertRange = @textEditor.getBuffer().insert(insertionPoint, text)
+      @allowAnyChange = false
+
+      @delimiterRow = insertRange.end.row
+
+      @autoscroll()
 
   attachListeners: ->
     @process.on 'proto-repl-process:data', (data) =>
@@ -127,10 +180,6 @@ class ReplTextEditor
     @process.on 'proto-repl-process:nrepl-port', (port) =>
       @conn = nrepl.connect({port: port, verbose: false})
       @conn.once 'connect', =>
-
-        # Set the current namespace to user. Currently there is no way to change this.
-        @currentNs = "user"
-        @appendPrompt()
 
         # Create a persistent session
         @conn.clone (err, messages)=>
@@ -151,11 +200,10 @@ class ReplTextEditor
     @emitter.on 'proto-repl-text-editor:exit', callback
 
   sendToRepl: (text, resultHandler)->
-    @conn?.eval text, @currentNs, @session, (err, messages)=>
+    @conn?.eval text, "user", @session, (err, messages)=>
       for msg in messages
         if msg.value
           resultHandler(msg.value)
-      @appendPrompt()
 
   exit: ->
     @sendToRepl(EXIT_CMD)
@@ -165,7 +213,6 @@ class ReplTextEditor
   interrupt: ->
     @conn?.interrupt @session, (err, result)=>
       @appendText("interrupted")
-      @appendPrompt()
 
   clear: ->
     @textEditor?.setText("")
