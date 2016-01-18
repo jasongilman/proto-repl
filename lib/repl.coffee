@@ -36,12 +36,12 @@ class Repl
 
     # Connect together repl text editor and history
     @replTextEditor.onHistoryBack =>
-      console.log("Handling back")
-      @replTextEditor.setEnteredText(@replHistory.back(@replTextEditor.enteredText()))
+      @replHistory.setCurrentText(@replTextEditor.enteredText())
+      @replTextEditor.setEnteredText(@replHistory.back())
 
     @replTextEditor.onHistoryForward =>
-      console.log("Handling forward")
-      @replTextEditor.setEnteredText(@replHistory.forward(@replTextEditor.enteredText()))
+      @replHistory.setCurrentText(@replTextEditor.enteredText())
+      @replTextEditor.setEnteredText(@replHistory.forward())
 
     # Start the repl process as a background task
     @process = Task.once ReplProcess,
@@ -147,8 +147,7 @@ class Repl
       if editor == @replTextEditor.textEditor
         code = @replTextEditor.enteredText()
         @replTextEditor.clearEnteredText()
-        @replHistory.setCurrentText(code)
-        @replHistory.newEntry()
+        @replHistory.setLastTextAndAddNewEntry(code)
         @executeCode(code, displayCode: code)
 
   exit: ->

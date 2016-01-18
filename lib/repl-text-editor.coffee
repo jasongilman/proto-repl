@@ -48,7 +48,7 @@ class ReplTextEditor
   enteredText: ->
     @textEditor.getTextInBufferRange(@enteredTextRange())
 
-  # TODO docs
+  # Sets the text in the entry area.
   setEnteredText: (text)->
     @modifyTextWith =>
       @textEditor.setTextInBufferRange(@enteredTextRange(), text)
@@ -132,9 +132,7 @@ class ReplTextEditor
 
     @textEditor.oldMoveUp = @textEditor.moveUp
     @textEditor.moveUp = (lineCount)->
-      console.log("Moving up")
       if atTopOfEditArea(this)
-        console.log("Triggering history back")
         triggerHistoryBack()
       else
         @oldMoveUp(lineCount)
@@ -148,9 +146,7 @@ class ReplTextEditor
 
     @textEditor.oldMoveDown = @textEditor.moveDown
     @textEditor.moveDown = (lineCount)->
-      console.log("Moving down")
       if atBottomOfEditArea(this)
-        console.log("Triggering history forward")
         triggerHistoryForward()
       else
         @oldMoveDown(lineCount)
