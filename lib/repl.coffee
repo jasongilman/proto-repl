@@ -18,7 +18,10 @@ class Repl
   emitter: null
   replTextEditor: null
 
-  constructor: ->
+  # A map of code execution extension names to callback functions.
+  codeExecutionExtensions: null
+
+  constructor: (@codeExecutionExtensions)->
     @emitter = new Emitter
     projectPath = atom.project.getPaths()[0]
 
@@ -86,6 +89,51 @@ class Repl
       for msg in messages
         if msg.value
           resultHandler(msg.value)
+
+  # Executes the given code string.
+  # Valid options:
+  # * resultHandler - a callback function to invoke with the value that was read.
+  #   If this is passed in then the value will not be displayed in the REPL.
+  executeCode: (code, options={})->
+    resultHandler = options?.resultHandler
+    normalHandler = (value)=>
+      if resultHandler
+        resultHandler(value)
+      else
+        @appendText("=> " + value)
+
+        # Alpha support of inline results using Atom Ink.
+        if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
+          io = options.inlineOptions
+          view = @ink.tree.fromJson([value])[0]
+          r = @ink.results.showForRange io.editor, io.range,
+            content: view
+            plainresult: value
+
+    if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
+      @appendText(options.displayCode)
+
+    @sendToRepl code, (value)=>
+      # check if it's an extension response
+      if value.match(/\[\s*:proto-repl-code-execution-extension/)
+        parsed = @parseEdn(value)
+        extensionName = parsed[1]
+        data = parsed[2]
+        extensionCallback = @codeExecutionExtensions[extensionName]
+        if extensionCallback
+          extensionCallback(data)
+        else
+          normalHandler(value)
+      else
+        normalHandler(value)
+
+  # Executes the text that was entered in the entry area
+  executeEnteredText: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editor == @replTextEditor.textEditor
+        code = @replTextEditor.enteredText()
+        @replTextEditor.clearEnteredText()
+        @executeCode(code, displayCode: code)
 
   exit: ->
     @sendToRepl(EXIT_CMD)

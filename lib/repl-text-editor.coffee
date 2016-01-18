@@ -1,4 +1,4 @@
-{Point, Emitter} = require 'atom'
+{Range, Point, Emitter} = require 'atom'
 
 # TODO handle the resizing of the text editor or consider making it smaller
 EDIT_DELIMITER="--------------------\n"
@@ -14,15 +14,18 @@ class ReplTextEditor
   # The captured real text editor
   textEditor: null
 
-  # Boolean indicates if the underlying text editor  should
+  # Boolean indicates if the underlying text editor should allow text to be modified
+  # in any area of the REPL
   allowAnyChange: false
 
+  # TODO document this
   delimiterRow: 0
 
-  constructor: ->
+  constructor: ()->
     @emitter = new Emitter
     # Opens the text editor that will represent the REPL.
     atom.workspace.open(TAB_TITLE, split:'right').done (textEditor) =>
+      window.textEditor = textEditor
       @configureNewTextEditor(textEditor)
 
   onDidClose: (callback)->
@@ -30,11 +33,32 @@ class ReplTextEditor
 
   clear: ->
     if @textEditor
-      @allowAnyChange = true
-      @textEditor.setText(EDIT_DELIMITER)
-      # Set the delimiter row index so we can keep track of where the user can type.
-      @delimiterRow = 0
-      @allowAnyChange = false
+      @modifyTextWith =>
+        @textEditor.setText(EDIT_DELIMITER)
+        # Set the delimiter row index so we can keep track of where the user can type.
+        @delimiterRow = 0
+
+  # Returns the range where entered text is typed
+  enteredTextRange: ->
+    start = new Point(@delimiterRow+1)
+    end = @textEditor.buffer.getEndPosition()
+    new Range(start, end)
+
+  # Returns the current text typed in the entry area.
+  enteredText: ->
+    @textEditor.getTextInBufferRange(@enteredTextRange())
+
+  # Clears any entered text typed in the entry area.
+  clearEnteredText: ->
+    @modifyTextWith =>
+      @textEditor.setTextInBufferRange(@enteredTextRange(), "")
+
+  # Modifies the text in the text area directly with the given function. This is
+  # normally not allowed but this overrides the protects
+  modifyTextWith: (f)->
+    @allowAnyChange = true
+    f()
+    @allowAnyChange = false
 
   ##############################################################################
   ## Text Editor Configuration
@@ -64,6 +88,15 @@ class ReplTextEditor
       @emitter.emit 'proto-repl-text-editor:close'
       @textEditor = null
 
+  # TODO comment
+  allowsRangeChange: (range)->
+    range.start.row > @delimiterRow && range.end.row > @delimiterRow
+
+  # TODO comment
+  allowsChange: (change)->
+    @allowAnyChange || (@allowsRangeChange(change.newRange) && @allowsRangeChange(change.oldRange))
+
+  # TODO document this
   configureBufferChanges: ()->
     @clear()
 
@@ -78,6 +111,30 @@ class ReplTextEditor
       if shouldAllowChange(change)
         @oldApplyChange(change, skipUndo)
 
+    # TODO if they press enter at the bottom of the text editor we want to
+    # 1. send the code to the repl
+    # 2. clear the delimited area
+    # The following doesn't work because newlines may come in different ways
+    # I need to do it a different way to get this to work.
+
+    # executeEnteredText = =>
+    #   code = @enteredText()
+    #   @clearEnteredText()
+    #   @executeCodeCallback(code)
+
+    # @textEditor.oldInsertText = @textEditor.insertText
+    # @textEditor.insertText = (text, options={}) ->
+    #   console.log("Inserting text", text)
+    #   pos = @getCursorBufferPosition()
+    #   endPos = @buffer.getEndPosition()
+    #   cursorAtEndOfTextEditor = endPos.isEqual(pos)
+    #
+    #   if text == "\n" && cursorAtEndOfTextEditor
+    #     executeEnteredText()
+    #   else
+    #     @oldInsertText(text, options)
+
+
   # TODO comment
   configureNewTextEditor: (textEditor)->
     @textEditor = textEditor
@@ -85,16 +142,9 @@ class ReplTextEditor
     @configureTextEditorClose()
     @configureBufferChanges()
 
-    #TODO move these to their own functions.
-
-    # TODO if they press enter at the bottom of the text editor we want to
-    # 1. send the code to the repl
-    # 2. clear the delimited area
-    @textEditor.oldInsertText = @textEditor.insertText
-    @textEditor.insertText = (text, options={}) ->
-      console.log("Inserting text", text)
-      @oldInsertText(text, options)
-
+    # TODO move to configure history
+    # Need to just trigger an event for history back and then the Repl class
+    # will handle going back or forward through history.
     # TODO if they press up or down cycle through history
     @textEditor.oldMoveUp = @textEditor.moveUp
     @textEditor.moveUp = (lineCount)->
@@ -102,19 +152,12 @@ class ReplTextEditor
       @oldMoveUp(lineCount)
 
 
-    @appendText(";; Loading REPL...\n")
+    @appendText("Loading REPL...\n")
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')
       @textEditor?.scrollToBottom()
 
-  # TODO comment
-  allowsRangeChange: (range)->
-    range.start.row > @delimiterRow && range.end.row > @delimiterRow
-
-  # TODO comment
-  allowsChange: (change)->
-    @allowAnyChange || (@allowsRangeChange(change.newRange) && @allowsRangeChange(change.oldRange))
 
   # TODO comment
   appendText: (text)->
@@ -124,13 +167,10 @@ class ReplTextEditor
       if text[text.length-1] != "\n"
         text = text + "\n"
 
-      insertionPoint = new Point(@delimiterRow)
-
-      @allowAnyChange = true
-      insertRange = @textEditor.getBuffer().insert(insertionPoint, text)
-      @allowAnyChange = false
-
-      @delimiterRow = insertRange.end.row
+      @modifyTextWith =>
+        insertionPoint = new Point(@delimiterRow)
+        insertRange = @textEditor.getBuffer().insert(insertionPoint, text)
+        @delimiterRow = insertRange.end.row
 
       @autoscroll()
 

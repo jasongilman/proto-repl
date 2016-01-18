@@ -33,6 +33,11 @@ module.exports = ProtoRepl =
       description: "ALPHA: Shows inline results of code execution. Must install Atom Ink package to use this."
       type: 'boolean'
       default: false
+    displayExecutedCodeInRepl:
+      description: "Sets whether code sent to the REPL is displayed."
+      type: 'boolean'
+      default: true
+
 
   subscriptions: null
   repl: null
@@ -41,6 +46,7 @@ module.exports = ProtoRepl =
 
   # A map of code execution extension names to callback functions.
   # See registerCodeExecutionExtension documentation for information on code execution extensions.
+  # The same mutable map is shared with the REPL.
   codeExecutionExtensions: {}
 
   activate: (state) ->
@@ -56,6 +62,7 @@ module.exports = ProtoRepl =
       'proto-repl:execute-selected-text': => @executeSelectedText()
       'proto-repl:execute-block': => @executeBlock()
       'proto-repl:execute-top-block': => @executeBlock({topLevel: true})
+      'proto-repl:execute-text-entered-in-repl': => @repl?.executeEnteredText()
       'proto-repl:load-current-file': => @loadCurrentFile()
       'proto-repl:refresh-namespaces': => @refreshNamespaces()
       'proto-repl:super-refresh-namespaces': => @superRefreshNamespaces()
@@ -132,7 +139,8 @@ module.exports = ProtoRepl =
 
   toggle: ->
     if @repl == null
-      @repl = new Repl()
+      @repl = new Repl(@codeExecutionExtensions)
+      @repl.ink = @ink
       @repl.onDidExit =>
         @repl = null
 
@@ -155,6 +163,8 @@ module.exports = ProtoRepl =
 
   consumeInk: (ink) ->
     @ink = ink
+    if @repl
+      @repl.ink = @ink
     @loading = new ink.Loading
     @spinner = new ink.Spinner @loading
 
@@ -174,44 +184,10 @@ module.exports = ProtoRepl =
   registerCodeExecutionExtension: (name, callback)->
     @codeExecutionExtensions[name] = callback
 
-  # Executes the given code string.
-  # Valid options:
-  # * resultHandler - a callback function to invoke with the value that was read.
-  #   If this is passed in then the value will not be displayed in the REPL.
+  # Executes the given code string in the REPL. See Repl.executeCode for supported
+  # options.
   executeCode: (code, options={})->
-
-
-    # TODO this code should be moved into Repl
-
-    resultHandler = options?.resultHandler
-    normalHandler = (value)=>
-      if resultHandler
-        resultHandler(value)
-      else
-        @repl.appendText("=> " + value)
-
-        # Alpha support of inline results using Atom Ink.
-        if options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
-          io = options.inlineOptions
-          view = @ink.tree.fromJson([value])[0]
-          r = @ink.results.showForRange io.editor, io.range,
-            content: view
-            plainresult: value
-
-    @repl?.sendToRepl code, (value)=>
-      # check if it's an extension response
-      if value.match(/\[\s*:proto-repl-code-execution-extension/)
-        parsed = @parseEdn(value)
-        extensionName = parsed[1]
-        data = parsed[2]
-        extensionCallback = @codeExecutionExtensions[extensionName]
-        if extensionCallback
-          extensionCallback(data)
-        else
-          normalHandler(value)
-      else
-        normalHandler(value)
-
+    @repl?.executeCode(code, options)
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
@@ -234,6 +210,7 @@ module.exports = ProtoRepl =
       options.inlineOptions =
         editor: editor
         range: editor.getSelectedBufferRange()
+      options.displayCode = editor.getSelectedText()
       # Selected code is executed in a do block so only a single value is returned.
       @executeCodeInNs("(do #{editor.getSelectedText()})", options)
 
@@ -247,6 +224,7 @@ module.exports = ProtoRepl =
     if editor = atom.workspace.getActiveTextEditor()
       if range = EditorUtils.getCursorInBlockRange(editor, options)
         text = editor.getTextInBufferRange(range).trim()
+        options.displayCode = text
 
         # TODO we could do something with the result handler to unmark this area
         # when it completes.
