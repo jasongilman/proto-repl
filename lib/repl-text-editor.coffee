@@ -1,13 +1,17 @@
 {Range, Point, Emitter} = require 'atom'
 
-# TODO handle the resizing of the text editor
+# Delimits the output area from the text entry area.
 EDIT_DELIMITER="--------------------\n"
 
 TAB_TITLE = "Clojure REPL"
 
 module.exports =
 
-# TODO document this class
+# Creates and configures an Atom Text Editor to act as the REPL. The text editor
+# has various functions overwritten to make it behave in a specialized fashion.
+# The top of the text editor area does not allow editing. It is used for output
+# from executed code. The bottom of the text editor is used for entry of code
+# to execute
 class ReplTextEditor
   emitter: null
 
@@ -18,7 +22,7 @@ class ReplTextEditor
   # in any area of the REPL
   allowAnyChange: false
 
-  # TODO document this
+  # The index of the row that demarcates output area from text entry area.
   delimiterRow: 0
 
   constructor: ()->
@@ -29,6 +33,7 @@ class ReplTextEditor
       @configureNewTextEditor(textEditor)
       @emitter.emit 'proto-repl-text-editor:open'
 
+  # Calls the callback after the text editor has been opened.
   onDidOpen: (callback)->
     if @textEditor
       # Already open
@@ -36,9 +41,12 @@ class ReplTextEditor
     else
       @emitter.on 'proto-repl-text-editor:open', callback
 
+  # Calls the callback after the text editor window has been closed.
   onDidClose: (callback)->
     @emitter.on 'proto-repl-text-editor:close', callback
+    @emitter.dispose()
 
+  # Clears all output and text entry in the REPL.
   clear: ->
     if @textEditor
       @modifyTextWith =>
@@ -102,22 +110,19 @@ class ReplTextEditor
       @emitter.emit 'proto-repl-text-editor:close'
       @textEditor = null
 
-  # TODO comment
+  # Returns true if the range is entirely in the text entry area.
   allowsRangeChange: (range)->
     range.start.row > @delimiterRow && range.end.row > @delimiterRow
 
-  # TODO comment
+  # Returns true if the change to the text editor content is allowed.
   allowsChange: (change)->
     @allowAnyChange || (@allowsRangeChange(change.newRange) && @allowsRangeChange(change.oldRange))
 
-  # TODO document this
+  # Configures text editor by overriding methods to prevent text entry above
+  # delimiter row.
   configureBufferChanges: ()->
     @clear()
-
-    # TODO do we have to have this function here?
     shouldAllowChange = (change)=> @allowsChange(change)
-
-    # The text editor does not allow direct manipulation except below the delimiter
     # Replace buffer applyChange with our own that decides when the change
     # can be applied
     @textEditor.buffer.oldApplyChange = @textEditor.buffer.applyChange
@@ -125,7 +130,8 @@ class ReplTextEditor
       if shouldAllowChange(change)
         @oldApplyChange(change, skipUndo)
 
-  # TODO docs
+  # Configures text editor to detect cursor movement indicating forward and backward
+  # in history navigation.
   configureHistorySupport: ->
     # Add history backward
     atTopOfEditArea = (editor)=>
@@ -155,7 +161,7 @@ class ReplTextEditor
       else
         @oldMoveDown(lineCount)
 
-  # TODO comment
+  # Configures a new text editor.
   configureNewTextEditor: (textEditor)->
     @textEditor = textEditor
     @configureTextEditorBasics()
@@ -167,7 +173,7 @@ class ReplTextEditor
     if atom.config.get('proto-repl.autoScroll')
       @textEditor?.scrollToBottom()
 
-  # TODO comment
+  # Appends text to the display area of the text editor
   appendText: (text)->
     if @textEditor && text.length > 0
 
@@ -181,28 +187,3 @@ class ReplTextEditor
         @delimiterRow = insertRange.end.row
 
       @autoscroll()
-
-  attachListeners: ->
-    @process.on 'proto-repl-process:data', (data) =>
-      @appendText(data)
-
-    # Called when the nREPL port is captured from the REPL output.
-    # Setup the nREPL connection
-    @process.on 'proto-repl-process:nrepl-port', (port) =>
-      @conn = nrepl.connect({port: port, verbose: false})
-      @conn.once 'connect', =>
-
-        # Create a persistent session
-        @conn.clone (err, messages)=>
-          @session = messages[0]["new-session"]
-
-        # Log any output from the nRepl connection messages
-        @conn.messageStream.on "messageSequence", (id, messages)=>
-          for msg in messages
-            if msg.out or msg.err
-              @appendText(msg.out or msg.err)
-
-    @process.on 'proto-repl-process:exit', ()=>
-      @textEditor = null
-      @emitter.emit 'proto-repl-text-editor:exit'
-      @appendText("\nREPL Closed\n")

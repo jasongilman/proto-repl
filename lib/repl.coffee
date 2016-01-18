@@ -15,11 +15,20 @@ defaultProjectPath = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-
 EXIT_CMD="(System/exit 0)"
 
 module.exports =
+
+# Represents the REPL where code is executed and displayed. It is split into three
+# parts. 1. The running process. 2. The nRepl connection, 3. The text editor where
+# results are displayed.
 class Repl
   emitter: null
-  # TODO document these
+
+  # The running java process
   process: null
+
+  # The nrepl connection
   conn: null
+
+  # The text editor where results are displayed or commands can be enterered
   replTextEditor: null
 
   # A map of code execution extension names to callback functions.
@@ -115,7 +124,7 @@ class Repl
   onDidClose: (callback)->
     @emitter.on 'proto-repl-repl:close', callback
 
-  # TODO comment
+  # Appends text to the display area of the text editor.
   appendText: (text)->
     @replTextEditor?.appendText(text)
 
@@ -130,7 +139,9 @@ class Repl
   # Valid options:
   # * resultHandler - a callback function to invoke with the value that was read.
   #   If this is passed in then the value will not be displayed in the REPL.
-  # TODO document display code option
+  # * displayCode - Code to display in the REPL. This can be used when the code
+  # executed is wrapped in eval or other code that shouldn't be displayed to the
+  # user.
   executeCode: (code, options={})->
     return null unless @running()
 
