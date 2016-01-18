@@ -269,9 +269,15 @@ module.exports = ProtoRepl =
 
   refreshNamespacesCommand:
     "(let [r 'user/reset
-          result (if (find-var r)
+          result (cond
+                  (find-var r)
                   ((resolve r))
-                  (clojure.tools.namespace.repl/refresh :after r))]
+
+                  (find-ns 'clojure.tools.namespace.repl)
+                  (eval `(clojure.tools.namespace.repl/refresh :after ~r))
+
+                  :else
+                  (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
       (when (isa? (type result) Exception)
         (println (.getMessage result)))
       nil)"
@@ -282,7 +288,10 @@ module.exports = ProtoRepl =
 
   superRefreshNamespaces: ->
     @appendText("Clearing all and then refreshing code...\n")
-    @executeCode("(do (clojure.tools.namespace.repl/clear) " + @refreshNamespacesCommand + ")")
+    @executeCode("(do
+                    (when (find-ns 'clojure.tools.namespace.repl)
+                      (eval '(clojure.tools.namespace.repl/clear)))
+                    #{@refreshNamespacesCommand})")
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()

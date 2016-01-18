@@ -126,3 +126,7 @@
   * REPL allows entering commands to execute in an entry area at the bottom. The upper area of the REPL is can not be modified. `shift+enter` executes code in the entry area.(#24, #10)
   * The REPL supports a history of commands (#23)
   * Executed code is echo'd in the REPL display area (#26)
+
+### Bug Fixes
+
+* Detects when clojure.tools.namespace is not available and displays error message.
