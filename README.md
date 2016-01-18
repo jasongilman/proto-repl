@@ -1,7 +1,5 @@
 # Proto REPL
 
-TODO add new screen shot (include Proto REPL charts)
-
 Proto REPL is a Clojure development environment and REPL for [Atom](https://atom.io). See the [features](#features) and [installation instructions](#installation). See the [proto-repl-demo](https://github.com/jasongilman/proto-repl-demo) project for a demonstration of the features.
 
 ![A screenshot of Proto REPL](https://github.com/jasongilman/proto-repl/raw/master/front_image.gif)

@@ -117,3 +117,12 @@
 ### Bug Fixes
 
 * Fixed #25. File names with slashes can now be loaded into the REPL.
+
+## 0.9.0
+
+### New/Modified Features
+
+* Major rewrite of the REPL output and interaction to make it behave more like a traditional REPL:
+  * REPL allows entering commands to execute in an entry area at the bottom. The upper area of the REPL is can not be modified. `shift+enter` executes code in the entry area.(#24, #10)
+  * The REPL supports a history of commands (#23)
+  * Executed code is echo'd in the REPL display area (#26)
