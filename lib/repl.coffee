@@ -6,7 +6,7 @@ ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
 nrepl = require('nrepl-client')
 
-replHelpText = "TODO new descriptive text"
+replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
 # The path to a default project to use if proto repl is started outside of a leiningen project
 defaultProjectPath = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
@@ -41,6 +41,13 @@ class Repl
         @replHistory.setCurrentText(@replTextEditor.enteredText())
         @replTextEditor.setEnteredText(@replHistory.forward())
 
+    @replTextEditor.onDidOpen =>
+      # Display the help text when the repl opens.
+      if atom.config.get("proto-repl.displayHelpText")
+        @appendText(replHelpText)
+      @appendText("Starting REPL...\n")
+
+
     # The window was closed
     @replTextEditor.onDidClose =>
       try
@@ -65,7 +72,6 @@ class Repl
   # Starts the process unless it's already running.
   startProcess: ->
     unless @process
-      @appendText("Starting REPL...\n")
       projectPath = atom.project.getPaths()[0]
 
       # If we're not in a project or there isn't a leiningen project file use

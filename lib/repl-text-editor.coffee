@@ -1,6 +1,6 @@
 {Range, Point, Emitter} = require 'atom'
 
-# TODO handle the resizing of the text editor or consider making it smaller
+# TODO handle the resizing of the text editor
 EDIT_DELIMITER="--------------------\n"
 
 TAB_TITLE = "Clojure REPL"
@@ -27,6 +27,14 @@ class ReplTextEditor
     atom.workspace.open(TAB_TITLE, split:'right').done (textEditor) =>
       window.textEditor = textEditor
       @configureNewTextEditor(textEditor)
+      @emitter.emit 'proto-repl-text-editor:open'
+
+  onDidOpen: (callback)->
+    if @textEditor
+      # Already open
+      callback()
+    else
+      @emitter.on 'proto-repl-text-editor:open', callback
 
   onDidClose: (callback)->
     @emitter.on 'proto-repl-text-editor:close', callback
@@ -88,10 +96,6 @@ class ReplTextEditor
 
     # Set the text editor not to be wrapped.
     @textEditor.setSoftWrapped(true)
-
-    # Display the help text when the repl opens.
-    if atom.config.get("proto-repl.displayHelpText")
-      @appendText(replHelpText)
 
   configureTextEditorClose: ()->
     @textEditor.onDidDestroy =>
@@ -158,12 +162,10 @@ class ReplTextEditor
     @configureTextEditorClose()
     @configureBufferChanges()
     @configureHistorySupport()
-    @appendText("Starting REPL...\n")
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')
       @textEditor?.scrollToBottom()
-
 
   # TODO comment
   appendText: (text)->
