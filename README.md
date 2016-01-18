@@ -1,8 +1,10 @@
 # Proto REPL
 
+TODO add new screen shot (include Proto REPL charts)
+
 Proto REPL is a Clojure development environment and REPL for [Atom](https://atom.io). See the [features](#features) and [installation instructions](#installation). See the [proto-repl-demo](https://github.com/jasongilman/proto-repl-demo) project for a demonstration of the features.
 
-![A screenshot of Proto REPL](https://github.com/jasongilman/proto-repl/raw/master/front_image.png)
+![A screenshot of Proto REPL](https://github.com/jasongilman/proto-repl/raw/master/front_image.gif)
 
 ## Features
 
@@ -19,11 +21,15 @@ Proto REPL currently only works with projects using [Leiningen](http://leiningen
 1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project) for help creating a new project.)
 2. Start the REPL by bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
 
-See https://github.com/jasongilman/proto-repl-demo/blob/master/demos.md for a demonstration of the features of Proto REPL and more of a description on how it works.
+See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo) for a demonstration of the features of Proto REPL and more of a description on how it works.
 
 ### Usage Outside of Leiningen Projects
 
 Proto REPL can still start a REPL outside of a Leiningen project. It still uses Leiningen to start the REPL but uses a default project shipped with Proto REPL. This allows you to easily open up any Clojure file or even just a new Atom window and kick off a new REPL for experimenting.
+
+### Typing in the REPL
+
+Code to be executed in the REPL can be entered by typing below the dashed line. Code can be executed by pressing `shift+enter`. The REPL maintains a history of executed commands that were entered in the REPL. The history can be navigated by using the up and down arrow keys after placing the cursor in the text entry area.
 
 ### Sending Code to the REPL
 
@@ -54,13 +60,6 @@ The block detection also can find the start and end of a Github Flavored Markdow
 
 An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `ctrl-, s` (Press ctrl and comma together, release, then press s). This allows sending multiple blocks of code at once.
 
-### Limitations
-
-These are known current limitations of Proto REPL. They may be addressed in the future.
-
-* Currently only works with Leiningen projects.
-* You can only start one REPL per Atom window.
-
 ## Installation
 
 `apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
@@ -90,8 +89,10 @@ Doing this allows you to select namespaces with var definitions in Clojure as a 
 
 These packages go well with Proto REPL.
 
+* [proto-repl-charts](https://atom.io/packages/proto-repl-charts)
 * [tool-bar](https://atom.io/packages/tool-bar)
 * [parinfer](https://atom.io/packages/parinfer)
+* [lisp-paredit](https://atom.io/packages/lisp-paredit)
 
 ## Extending Proto REPL
 
