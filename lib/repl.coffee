@@ -166,7 +166,7 @@ class Repl
     @sendToRepl code, (value)=>
       # check if it's an extension response
       if value.match(/\[\s*:proto-repl-code-execution-extension/)
-        parsed = @parseEdn(value)
+        parsed = window.protoRepl.parseEdn(value)
         extensionName = parsed[1]
         data = parsed[2]
         extensionCallback = @codeExecutionExtensions[extensionName]
