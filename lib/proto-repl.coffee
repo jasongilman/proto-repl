@@ -37,6 +37,10 @@ module.exports = ProtoRepl =
       description: "Sets whether code sent to the REPL is displayed."
       type: 'boolean'
       default: true
+    historySize:
+      description: "The number of elements to keep in the history"
+      type: "number"
+      default: 50
 
 
   subscriptions: null

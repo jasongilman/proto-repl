@@ -3,6 +3,7 @@ path = require 'path'
 fs = require('fs')
 ReplProcess = require.resolve './repl-process'
 ReplTextEditor = require './repl-text-editor'
+ReplHistory = require './repl-history'
 nrepl = require('nrepl-client')
 
 replHelpText = "TODO new descriptive text"
@@ -31,6 +32,16 @@ class Repl
       projectPath = defaultProjectPath
 
     @replTextEditor = new ReplTextEditor()
+    @replHistory = new ReplHistory()
+
+    # Connect together repl text editor and history
+    @replTextEditor.onHistoryBack =>
+      console.log("Handling back")
+      @replTextEditor.setEnteredText(@replHistory.back(@replTextEditor.enteredText()))
+
+    @replTextEditor.onHistoryForward =>
+      console.log("Handling forward")
+      @replTextEditor.setEnteredText(@replHistory.forward(@replTextEditor.enteredText()))
 
     # Start the repl process as a background task
     @process = Task.once ReplProcess,
@@ -90,10 +101,13 @@ class Repl
         if msg.value
           resultHandler(msg.value)
 
+  # TODO REPL history
+
   # Executes the given code string.
   # Valid options:
   # * resultHandler - a callback function to invoke with the value that was read.
   #   If this is passed in then the value will not be displayed in the REPL.
+  # TODO document display code option
   executeCode: (code, options={})->
     resultHandler = options?.resultHandler
     normalHandler = (value)=>
@@ -133,6 +147,8 @@ class Repl
       if editor == @replTextEditor.textEditor
         code = @replTextEditor.enteredText()
         @replTextEditor.clearEnteredText()
+        @replHistory.setCurrentText(code)
+        @replHistory.newEntry()
         @executeCode(code, displayCode: code)
 
   exit: ->

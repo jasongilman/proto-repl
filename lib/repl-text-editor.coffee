@@ -48,10 +48,14 @@ class ReplTextEditor
   enteredText: ->
     @textEditor.getTextInBufferRange(@enteredTextRange())
 
+  # TODO docs
+  setEnteredText: (text)->
+    @modifyTextWith =>
+      @textEditor.setTextInBufferRange(@enteredTextRange(), text)
+
   # Clears any entered text typed in the entry area.
   clearEnteredText: ->
-    @modifyTextWith =>
-      @textEditor.setTextInBufferRange(@enteredTextRange(), "")
+    @setEnteredText("")
 
   # Modifies the text in the text area directly with the given function. This is
   # normally not allowed but this overrides the protects
@@ -59,6 +63,12 @@ class ReplTextEditor
     @allowAnyChange = true
     f()
     @allowAnyChange = false
+
+  onHistoryBack: (callback)->
+    @emitter.on 'proto-repl-text-editor:history-back', callback
+
+  onHistoryForward: (callback)->
+    @emitter.on 'proto-repl-text-editor:history-forward', callback
 
   ##############################################################################
   ## Text Editor Configuration
@@ -111,28 +121,39 @@ class ReplTextEditor
       if shouldAllowChange(change)
         @oldApplyChange(change, skipUndo)
 
-    # TODO if they press enter at the bottom of the text editor we want to
-    # 1. send the code to the repl
-    # 2. clear the delimited area
-    # The following doesn't work because newlines may come in different ways
-    # I need to do it a different way to get this to work.
+  # TODO docs
+  configureHistorySupport: ->
+    # Add history backward
+    atTopOfEditArea = (editor)=>
+      editor.getCursorBufferPosition().row-1 == @delimiterRow
 
-    # executeEnteredText = =>
-    #   code = @enteredText()
-    #   @clearEnteredText()
-    #   @executeCodeCallback(code)
+    triggerHistoryBack = =>
+      @emitter.emit "proto-repl-text-editor:history-back"
 
-    # @textEditor.oldInsertText = @textEditor.insertText
-    # @textEditor.insertText = (text, options={}) ->
-    #   console.log("Inserting text", text)
-    #   pos = @getCursorBufferPosition()
-    #   endPos = @buffer.getEndPosition()
-    #   cursorAtEndOfTextEditor = endPos.isEqual(pos)
-    #
-    #   if text == "\n" && cursorAtEndOfTextEditor
-    #     executeEnteredText()
-    #   else
-    #     @oldInsertText(text, options)
+    @textEditor.oldMoveUp = @textEditor.moveUp
+    @textEditor.moveUp = (lineCount)->
+      console.log("Moving up")
+      if atTopOfEditArea(this)
+        console.log("Triggering history back")
+        triggerHistoryBack()
+      else
+        @oldMoveUp(lineCount)
+
+    # Add history forwoard
+    atBottomOfEditArea = (editor)=>
+      editor.getCursorBufferPosition().row == editor.buffer.getEndPosition().row
+
+    triggerHistoryForward = =>
+      @emitter.emit "proto-repl-text-editor:history-forward"
+
+    @textEditor.oldMoveDown = @textEditor.moveDown
+    @textEditor.moveDown = (lineCount)->
+      console.log("Moving down")
+      if atBottomOfEditArea(this)
+        console.log("Triggering history forward")
+        triggerHistoryForward()
+      else
+        @oldMoveDown(lineCount)
 
 
   # TODO comment
@@ -141,17 +162,8 @@ class ReplTextEditor
     @configureTextEditorBasics()
     @configureTextEditorClose()
     @configureBufferChanges()
-
-    # TODO move to configure history
-    # Need to just trigger an event for history back and then the Repl class
-    # will handle going back or forward through history.
-    # TODO if they press up or down cycle through history
-    @textEditor.oldMoveUp = @textEditor.moveUp
-    @textEditor.moveUp = (lineCount)->
-      console.log("Moving up")
-      @oldMoveUp(lineCount)
-
-
+    @configureHistorySupport()
+    # TODO move this to REPL class. Consider commenting these kinds of things out.
     @appendText("Loading REPL...\n")
 
   autoscroll: ->
