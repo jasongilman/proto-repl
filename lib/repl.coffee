@@ -54,7 +54,6 @@ class Repl
       # Display the help text when the repl opens.
       if atom.config.get("proto-repl.displayHelpText")
         @appendText(replHelpText)
-      @appendText("Starting REPL...\n")
 
 
     # The window was closed
@@ -81,10 +80,12 @@ class Repl
   # Starts the process unless it's already running.
   startProcess: ->
     unless @process
-      projectPath = atom.project.getPaths()[0]
+      @replTextEditor.onDidOpen =>
+        @appendText("Starting REPL...\n")
 
       # If we're not in a project or there isn't a leiningen project file use
       # the default project
+      projectPath = atom.project.getPaths()[0]
       if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
         projectPath = defaultProjectPath
 

@@ -38,8 +38,8 @@ class ReplTextEditor
     if @textEditor
       # Already open
       callback()
-
-    @emitter.on 'proto-repl-text-editor:open', callback
+    else
+      @emitter.on 'proto-repl-text-editor:open', callback
 
   # Calls the callback after the text editor window has been closed.
   onDidClose: (callback)->
