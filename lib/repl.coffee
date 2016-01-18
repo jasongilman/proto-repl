@@ -17,6 +17,9 @@ EXIT_CMD="(System/exit 0)"
 module.exports =
 class Repl
   emitter: null
+  # TODO document these
+  process: null
+  conn: null
   replTextEditor: null
 
   # A map of code execution extension names to callback functions.
@@ -24,84 +27,98 @@ class Repl
 
   constructor: (@codeExecutionExtensions)->
     @emitter = new Emitter
-    projectPath = atom.project.getPaths()[0]
-
-    # If we're not in a project or there isn't a leiningen project file use
-    # the default project
-    if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
-      projectPath = defaultProjectPath
-
     @replTextEditor = new ReplTextEditor()
     @replHistory = new ReplHistory()
 
     # Connect together repl text editor and history
     @replTextEditor.onHistoryBack =>
-      @replHistory.setCurrentText(@replTextEditor.enteredText())
-      @replTextEditor.setEnteredText(@replHistory.back())
+      if @running()
+        @replHistory.setCurrentText(@replTextEditor.enteredText())
+        @replTextEditor.setEnteredText(@replHistory.back())
 
     @replTextEditor.onHistoryForward =>
-      @replHistory.setCurrentText(@replTextEditor.enteredText())
-      @replTextEditor.setEnteredText(@replHistory.forward())
+      if @running()
+        @replHistory.setCurrentText(@replTextEditor.enteredText())
+        @replTextEditor.setEnteredText(@replHistory.forward())
 
-    # Start the repl process as a background task
-    @process = Task.once ReplProcess,
-                         path.resolve(projectPath),
-                         atom.config.get('proto-repl.leinPath').replace("/lein",""),
-                         atom.config.get('proto-repl.leinArgs').split(" ")
+    # The window was closed
+    @replTextEditor.onDidClose =>
+      try
+        # I couldn't refer to sendToRepl directly here. I'm not sure why.
+        # Tell the process to shutdown
+        @conn?.eval(EXIT_CMD)
+        @conn = null
+        # Kill the process to make sure.
+        @process?.send event: 'kill'
+        @process = null
+        @replTextEditor = null
+        @emitter.emit 'proto-repl-repl:close'
+      catch error
+        console.log("Warning error while closing: " + error)
 
-    @attachListeners()
+    @startProcess()
 
+  # Returns true if the process is running
+  running: ->
+    @process != null && @conn != null
+
+  # Starts the process unless it's already running.
+  startProcess: ->
+    unless @process
+      @appendText("Starting REPL...\n")
+      projectPath = atom.project.getPaths()[0]
+
+      # If we're not in a project or there isn't a leiningen project file use
+      # the default project
+      if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
+        projectPath = defaultProjectPath
+
+      # Start the repl process as a background task
+      @process = Task.once ReplProcess,
+                           path.resolve(projectPath),
+                           atom.config.get('proto-repl.leinPath').replace("/lein",""),
+                           atom.config.get('proto-repl.leinArgs').split(" ")
+
+      # The process sends stdout
+      @process.on 'proto-repl-process:data', (data) =>
+        @appendText(data)
+
+      # The nREPL port was captured from output
+      @process.on 'proto-repl-process:nrepl-port', (port) =>
+        # Setup the nREPL connection
+        @conn = nrepl.connect({port: port, verbose: false})
+        @conn.once 'connect', =>
+          # Create a persistent session
+          @conn.clone (err, messages)=>
+            @session = messages[0]["new-session"]
+          # Log any output from the nRepl connection messages
+          @conn.messageStream.on "messageSequence", (id, messages)=>
+            for msg in messages
+              if msg.out or msg.err
+                @appendText(msg.out or msg.err)
+
+      # The process exited.
+      @process.on 'proto-repl-process:exit', ()=>
+        @appendText("\nREPL Closed\n")
+        # The REPL Text editor may or may not be still open at this point. We track
+        # that separately.
+        @process = null
+        @conn = null
+
+  # Invoked when the REPL window is closed.
+  onDidClose: (callback)->
+    @emitter.on 'proto-repl-repl:close', callback
 
   # TODO comment
   appendText: (text)->
     @replTextEditor?.appendText(text)
 
-  attachListeners: ->
-    @replTextEditor.onDidClose =>
-      try
-        # I couldn't refer to sendToRepl directly here. I'm not sure why.
-        @conn?.eval(EXIT_CMD)
-        @conn = null
-        @process.send event: 'kill'
-        @replTextEditor = null
-        @emitter.emit 'proto-repl-repl:exit'
-      catch error
-        console.log("Warning error while closing: " + error)
-
-    @process.on 'proto-repl-process:data', (data) =>
-      @appendText(data)
-
-    # Called when the nREPL port is captured from the REPL output.
-    # Setup the nREPL connection
-    @process.on 'proto-repl-process:nrepl-port', (port) =>
-      @conn = nrepl.connect({port: port, verbose: false})
-      @conn.once 'connect', =>
-
-        # Create a persistent session
-        @conn.clone (err, messages)=>
-          @session = messages[0]["new-session"]
-
-        # Log any output from the nRepl connection messages
-        @conn.messageStream.on "messageSequence", (id, messages)=>
-          for msg in messages
-            if msg.out or msg.err
-              @appendText(msg.out or msg.err)
-
-    @process.on 'proto-repl-process:exit', ()=>
-      @appendText("\nREPL Closed\n")
-      @emitter.emit 'proto-repl-repl:exit'
-      @replTextEditor = null
-
-  onDidExit: (callback)->
-    @emitter.on 'proto-repl-repl:exit', callback
-
   sendToRepl: (text, resultHandler)->
-    @conn?.eval text, "user", @session, (err, messages)=>
+    return null unless @running()
+    @conn.eval text, "user", @session, (err, messages)=>
       for msg in messages
         if msg.value
           resultHandler(msg.value)
-
-  # TODO REPL history
 
   # Executes the given code string.
   # Valid options:
@@ -109,6 +126,8 @@ class Repl
   #   If this is passed in then the value will not be displayed in the REPL.
   # TODO document display code option
   executeCode: (code, options={})->
+    return null unless @running()
+
     resultHandler = options?.resultHandler
     normalHandler = (value)=>
       if resultHandler
@@ -143,6 +162,7 @@ class Repl
 
   # Executes the text that was entered in the entry area
   executeEnteredText: ->
+    return null unless @running()
     if editor = atom.workspace.getActiveTextEditor()
       if editor == @replTextEditor.textEditor
         code = @replTextEditor.enteredText()
@@ -151,13 +171,15 @@ class Repl
         @executeCode(code, displayCode: code)
 
   exit: ->
+    return null unless @running()
+    @appendText("Stopping REPL")
     @sendToRepl(EXIT_CMD)
     @conn = null
-    @appendText("\nREPL Closed\n")
 
   interrupt: ->
-    @conn?.interrupt @session, (err, result)=>
+    return null unless @running()
+    @conn.interrupt @session, (err, result)=>
       @appendText("interrupted")
 
   clear: ->
-    @replTextEditor?.clear()
+    @replTextEditor.clear()

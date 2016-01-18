@@ -151,7 +151,6 @@ class ReplTextEditor
       else
         @oldMoveDown(lineCount)
 
-
   # TODO comment
   configureNewTextEditor: (textEditor)->
     @textEditor = textEditor
@@ -159,8 +158,7 @@ class ReplTextEditor
     @configureTextEditorClose()
     @configureBufferChanges()
     @configureHistorySupport()
-    # TODO move this to REPL class. Consider commenting these kinds of things out.
-    @appendText("Loading REPL...\n")
+    @appendText("Starting REPL...\n")
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')

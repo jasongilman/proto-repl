@@ -145,8 +145,10 @@ module.exports = ProtoRepl =
     if @repl == null
       @repl = new Repl(@codeExecutionExtensions)
       @repl.ink = @ink
-      @repl.onDidExit =>
+      @repl.onDidClose =>
         @repl = null
+    else
+      @repl.startProcess()
 
   clearRepl: ->
     @repl?.clear()
