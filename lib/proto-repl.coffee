@@ -260,7 +260,12 @@ module.exports = ProtoRepl =
   # Helper functions which takes an EDN string and pretty prints it. Returns the
   # string formatted data.
   prettyEdn: (ednString)->
-    edn_reader.core.pretty_print(ednString)
+    try
+      edn_reader.core.pretty_print(ednString)
+    catch error
+      # Some responses from the REPL may be unparseable as in the case of var refs
+      # like #'user/reset. We'll just return the original string in that case.
+      return ednString
 
   #############################################################################
   # Code helpers

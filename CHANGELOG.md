@@ -142,3 +142,9 @@
 ### Bug Fixes
 
 * Fixed requiring of clojure.repl when listing namespace contents.
+
+## 0.10.1
+
+### Bug Fixes
+
+* Fixed issue with trying to pretty print certain REPL output.
