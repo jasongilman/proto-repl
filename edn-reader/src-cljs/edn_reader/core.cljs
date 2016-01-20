@@ -6,6 +6,11 @@
 
 (nodejs/enable-util-print!)
 
+; Register a default tag parser that just ignores parsing tags we don't recognize.
+(r/register-default-tag-parser!
+ (fn [tag data]
+   data))
+
 (defn ^:export parse
   "Parses EDN into a JavaScript data."
   [s]
