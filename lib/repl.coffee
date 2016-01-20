@@ -151,12 +151,18 @@ class Repl
       if resultHandler
         resultHandler(value)
       else
-        @appendText("=> " + value)
+        if atom.config.get("proto-repl.autoPrettyPrint")
+          @appendText("=>\n" + protoRepl.prettyEdn(value))
+        else
+          @appendText("=> " + value)
 
         # Alpha support of inline results using Atom Ink.
         if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
           io = options.inlineOptions
-          view = @ink.tree.fromJson([value])[0]
+          toplevelValue = value
+          if toplevelValue.length > 50
+            toplevelValue = toplevelValue.substr(0, 50) + "..."
+          view = @ink.tree.fromJson([toplevelValue, [protoRepl.prettyEdn(value)]])[0]
           r = @ink.results.showForRange io.editor, io.range,
             content: view
             plainresult: value

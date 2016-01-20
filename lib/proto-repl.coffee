@@ -41,6 +41,10 @@ module.exports = ProtoRepl =
       description: "The number of elements to keep in the history"
       type: "number"
       default: 50
+    autoPrettyPrint:
+      description: "Configures whether the REPL automatically pretty prints values."
+      type: "boolean"
+      default: false
 
 
   subscriptions: null
@@ -253,6 +257,11 @@ module.exports = ProtoRepl =
   parseEdn: (ednString)->
     edn_reader.core.parse(ednString)
 
+  # Helper functions which takes an EDN string and pretty prints it. Returns the
+  # string formatted data.
+  prettyEdn: (ednString)->
+    edn_reader.core.pretty_print(ednString)
+
   #############################################################################
   # Code helpers
 
@@ -331,35 +340,38 @@ module.exports = ProtoRepl =
   listNsVars: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        text = "(let [selected-symbol '#{selected}
-                      selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
-                  (println \"\\nVars in\" (str selected-ns \":\"))
-                  (println \"------------------------------\")
+        text = "(do
                   (require 'clojure.repl)
-                  (doseq [s (clojure.repl/dir-fn selected-ns)]
-                    (println s))
-                  (println \"------------------------------\"))"
+                  (let [selected-symbol '#{selected}
+                        selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
+                    (println \"\\nVars in\" (str selected-ns \":\"))
+                    (println \"------------------------------\")
+                    (doseq [s (clojure.repl/dir-fn selected-ns)]
+                      (println s))
+                    (println \"------------------------------\")))"
         @executeCodeInNs(text)
 
   # Lists all the vars with their documentation in the selected namespace or namespace alias
   listNsVarsWithDocs: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        text = "(let [selected-symbol '#{selected}
-                      selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
-                  (println (str \"\\n\" selected-ns \":\"))
-                  (println \"\" (:doc (meta (the-ns selected-ns))))
+        text = "(do
                   (require 'clojure.repl)
-                  (doseq [s (clojure.repl/dir-fn selected-ns) :let [m (-> (str selected-ns \"/\" s) symbol find-var meta)]]
-                    (println \"---------------------------\")
-                    (println (:name m))
-                    (cond
-                      (:forms m) (doseq [f (:forms m)]
-                                   (print \"  \")
-                                   (prn f))
-                      (:arglists m) (prn (:arglists m)))
-                    (println \" \" (:doc m)))
-                  (println \"------------------------------\"))"
+                  (let [selected-symbol '#{selected}
+                        selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
+                    (println (str \"\\n\" selected-ns \":\"))
+                    (println \"\" (:doc (meta (the-ns selected-ns))))
+                    (doseq [s (clojure.repl/dir-fn selected-ns) :let [m (-> (str selected-ns \"/\" s) symbol find-var meta)]]
+                      (println \"---------------------------\")
+                      (println (:name m))
+                      (cond
+                        (:forms m) (doseq [f (:forms m)]
+                                     (print \"  \")
+                                     (prn f))
+                        (:arglists m) (prn (:arglists m)))
+                      (println \" \" (:doc m)))
+                    (println \"------------------------------\")))"
+
         @executeCodeInNs(text)
 
   # Opens the file containing the currently selected var or namespace in the REPL. If the file is located

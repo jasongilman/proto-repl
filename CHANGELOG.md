@@ -130,3 +130,14 @@
 ### Bug Fixes
 
 * Detects when clojure.tools.namespace is not available and displays error message.
+
+## 0.10.0
+
+### New/Modified Features
+
+* Added config option to automatically pretty print results at the REPL. Uses [fipp](https://github.com/brandonbloom/fipp)
+* Improved inline display of Clojure results by pretty printing results as secondary tree level.
+
+### Bug Fixes
+
+* Fixed requiring of clojure.repl when listing namespace contents.
