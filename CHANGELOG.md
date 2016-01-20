@@ -137,6 +137,7 @@
 
 * Added config option to automatically pretty print results at the REPL. Uses [fipp](https://github.com/brandonbloom/fipp)
 * Improved inline display of Clojure results by pretty printing results as secondary tree level.
+* Added inline display of documentation when inline is enabled.
 
 ### Bug Fixes
 

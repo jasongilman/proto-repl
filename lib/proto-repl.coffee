@@ -327,9 +327,21 @@ module.exports = ProtoRepl =
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
         # TODO we could also make it try to find the keyword around the cursor
-        @executeCodeInNs "(do
-                            (require 'clojure.repl)
-                            (clojure.repl/doc #{selected}))"
+
+        if @ink && atom.config.get('proto-repl.showInlineResults')
+          range = editor.getSelectedBufferRange()
+          range.end.column = Infinity
+          inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
+            # Strip off the "----" at the beginning
+            [selected, [@parseEdn(value).substr(26)]])
+          @executeCodeInNs "(do
+                              (require 'clojure.repl)
+                              (with-out-str (clojure.repl/doc #{selected})))",
+                          resultHandler: inlineHandler
+        else
+          @executeCodeInNs "(do
+                              (require 'clojure.repl)
+                              (clojure.repl/doc #{selected}))"
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()

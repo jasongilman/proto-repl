@@ -136,6 +136,19 @@ class Repl
         if msg.value
           resultHandler(msg.value)
 
+  # Makes an inline displaying result handler
+  # * editor - the text editor to show the inline display in
+  # * range - the range of code to display the inline result next to
+  # * valueToTreeFn - a function that can convert the result value into the tree
+  # of content for inline display.
+  makeInlineHandler: (editor, range, valueToTreeFn)->
+    (value) =>
+      tree = valueToTreeFn(value)
+      view = @ink.tree.fromJson(tree)[0]
+      @ink.results.showForRange editor, range,
+        content: view
+        plainresult: value
+
   # Executes the given code string.
   # Valid options:
   # * resultHandler - a callback function to invoke with the value that was read.
@@ -162,8 +175,14 @@ class Repl
           toplevelValue = value
           if toplevelValue.length > 50
             toplevelValue = toplevelValue.substr(0, 50) + "..."
-          view = @ink.tree.fromJson([toplevelValue, [protoRepl.prettyEdn(value)]])[0]
-          r = @ink.results.showForRange io.editor, io.range,
+          prettyPrinted = protoRepl.prettyEdn(value).trim()
+          if prettyPrinted == toplevelValue
+            tree = [toplevelValue]
+          else
+            tree = [toplevelValue, [prettyPrinted]]
+
+          view = @ink.tree.fromJson(tree)[0]
+          @ink.results.showForRange io.editor, io.range,
             content: view
             plainresult: value
 
