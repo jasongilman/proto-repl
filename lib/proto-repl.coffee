@@ -288,7 +288,7 @@ module.exports = ProtoRepl =
                   ((resolve r))
 
                   (find-ns 'clojure.tools.namespace.repl)
-                  (eval `(clojure.tools.namespace.repl/refresh :after ~r))
+                  (eval `(clojure.tools.namespace.repl/refresh :after '~r))
 
                   :else
                   (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]

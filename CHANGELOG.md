@@ -148,3 +148,9 @@
 ### Bug Fixes
 
 * Fixed issue with trying to pretty print certain REPL output.
+
+## 0.10.3
+
+### Bug Fixes
+
+* Fixed issue with refreshing the repl during a compilation problem.
