@@ -201,8 +201,7 @@ module.exports = ProtoRepl =
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
-    escaped = text.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
-    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (read-string \"#{escaped}\")))"
+    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] #{text})"
 
   executeCodeInNs: (code, options={})->
     if editor = atom.workspace.getActiveTextEditor()

@@ -149,6 +149,13 @@ class Repl
         content: view
         plainresult: value
 
+  # Wraps the given code in an eval and a read-string. This safely handles
+  # unbalanced parentheses, other kinds of invalid code, and handling reader
+  # conditionals. http://clojure.org/guides/reader_conditionals
+  wrapCodeInReadEval: (code)->
+    escaped = code.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
+    "(eval (read-string {:read-cond :allow} \"#{escaped}\"))"
+
   # Executes the given code string.
   # Valid options:
   # * resultHandler - a callback function to invoke with the value that was read.
@@ -158,6 +165,9 @@ class Repl
   # user.
   executeCode: (code, options={})->
     return null unless @running()
+
+    # Wrap code in read eval to handle invalid code and reader conditionals
+    code = @wrapCodeInReadEval(code)
 
     resultHandler = options?.resultHandler
     normalHandler = (value)=>
@@ -211,7 +221,9 @@ class Repl
         code = @replTextEditor.enteredText()
         @replTextEditor.clearEnteredText()
         @replHistory.setLastTextAndAddNewEntry(code)
-        @executeCode(code, displayCode: code)
+        # Wrap code in do block so that multiple statements entered at the REPL
+        # will execute all of them
+        @executeCode("(do #{code})", displayCode: code)
 
   exit: ->
     return null unless @running()

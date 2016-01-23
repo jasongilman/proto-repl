@@ -154,3 +154,9 @@
 ### Bug Fixes
 
 * Fixed issue with refreshing the repl during a compilation problem.
+
+## 0.10.4
+
+### Bug Fixes
+
+* Fixed issue 31. Reader conditionals can be evaluated either by sending them from a block of code or entered at the REPL.
