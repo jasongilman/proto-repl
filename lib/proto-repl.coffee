@@ -1,6 +1,7 @@
 {CompositeDisposable, Range, Point} = require 'atom'
 Repl = require './repl'
 url = require 'url'
+path = require 'path'
 EditorUtils = require './editor-utils'
 
 # This is built from the ClojureScript edn-reader project.
@@ -65,6 +66,7 @@ module.exports = ProtoRepl =
     # Register commands
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:toggle': => @toggle()
+      'proto-repl:toggle-current-project-clj': => @toggleCurrentEditorDir()
       'proto-repl:clear-repl': => @clearRepl()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
@@ -145,14 +147,23 @@ module.exports = ProtoRepl =
     cfg = atom.config
     cfg.set('proto-repl.autoScroll', !(cfg.get('proto-repl.autoScroll')))
 
-  toggle: ->
+  # Starts the REPL if it's not currently running.
+  toggle: (projectPath=null)->
     if @repl == null
       @repl = new Repl(@codeExecutionExtensions)
       @repl.ink = @ink
       @repl.onDidClose =>
         @repl = null
+      @repl.startProcessIfNotRunning(projectPath)
     else
-      @repl.startProcess()
+      @repl.startProcessIfNotRunning(projectPath)
+
+  # Starts the REPL in the directory of the file in the current editor.
+  # TODO try with a file that has no path
+  toggleCurrentEditorDir: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editorPath = editor.getPath()
+        @toggle(path.dirname(editorPath))
 
   clearRepl: ->
     @repl?.clear()

@@ -12,6 +12,7 @@
 
 '.workspace .editor:not(.mini)':
   'ctrl-, l': 'proto-repl:toggle'
+  'ctrl-, shift-l': 'proto-repl:toggle-current-project-clj'
   'ctrl-, e': 'proto-repl:exit-repl'
   'ctrl-, k': 'proto-repl:clear-repl'
   'ctrl-< s': 'proto-repl:toggle-auto-scroll'
@@ -37,6 +38,7 @@
 ## Mac Specific Keybindings
 '.platform-darwin .workspace .editor:not(.mini)':
   'cmd-alt-l': 'proto-repl:toggle'
+  'cmd-alt-shift-l': 'proto-repl:toggle-current-project-clj'
   'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
   'cmd-alt-b': 'proto-repl:execute-block'
   'cmd-alt-shift-b': 'proto-repl:execute-top-block'

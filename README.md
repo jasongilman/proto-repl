@@ -18,6 +18,7 @@ Proto REPL currently only works with projects using [Leiningen](http://leiningen
 
 1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project) for help creating a new project.)
 2. Start the REPL by bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
+  * The REPL can also be started by using the [keyboard shortcuts documented below](#keybindings-and-events). 
 
 See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo) for a demonstration of the features of Proto REPL and more of a description on how it works.
 
@@ -136,11 +137,12 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | Keybinding       | Event                                 | Action                                                                                                                                   |
 |------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `ctrl-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
+| `ctrl-, shift-L` | `proto-repl:toggle`                   | Starts the REPL using the current project.clj                                                                                            |
 | `ctrl-, e`       | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
 | `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
 | `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
 | `ctrl-, b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
-| `ctrl-, B`       | `proto-repl:execute-top-block`        | Sends the current top-level block of Clojure code to the REPL for execution.                                                                       |
+| `ctrl-, B`       | `proto-repl:execute-top-block`        | Sends the current top-level block of Clojure code to the REPL for execution.                                                             |
 | `ctrl-, s`       | `proto-repl:execute-selected-text`    | Sends the selected text to the REPL for execution.                                                                                       |
 | `ctrl-, f`       | `proto-repl:load-current-file`        | Loads the current file in the repl.                                                                                                      |
 | `ctrl-, r`       | `proto-repl:refresh-namespaces`       | Runs the `user/reset` function. See [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) |

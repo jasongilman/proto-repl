@@ -159,5 +159,11 @@
 
 ### Bug Fixes
 
-* Fixed issue 31. Reader conditionals can be evaluated either by sending them from a block of code or entered at the REPL.
-* Fixed issue 32. Added callback for refreshing code. Running all tests will be triggered after a successful refresh.
+* Fixed issue #31. Reader conditionals can be evaluated either by sending them from a block of code or entered at the REPL.
+* Fixed issue #32. Added callback for refreshing code. Running all tests will be triggered after a successful refresh.
+
+## 0.11.0
+
+### New/Modified Features
+
+* Fixed #19 -  A REPL can be started from a specific project.clj file instead of the root one by opening the project.clj and pressing keyboard shortcut ctl-, shift-L (ctrl and comma together, release, then shift and L).

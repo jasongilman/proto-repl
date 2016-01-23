@@ -71,55 +71,59 @@ class Repl
       catch error
         console.log("Warning error while closing: " + error)
 
-    @startProcess()
-
   # Returns true if the process is running
   running: ->
     @process != null && @conn != null
 
   # Starts the process unless it's already running.
-  startProcess: ->
-    unless @process
-      @replTextEditor.onDidOpen =>
-        @appendText("Starting REPL...\n")
-
-      # If we're not in a project or there isn't a leiningen project file use
-      # the default project
+  startProcessIfNotRunning: (projectPath=null)->
+    if @process
+      @appendText("REPL already running")
+      return
+      
+    # Use the projectPath passed in or default to the root directory of the project.
+    unless projectPath?
       projectPath = atom.project.getPaths()[0]
-      if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
-        projectPath = defaultProjectPath
 
-      # Start the repl process as a background task
-      @process = Task.once ReplProcess,
-                           path.resolve(projectPath),
-                           atom.config.get('proto-repl.leinPath').replace("/lein",""),
-                           atom.config.get('proto-repl.leinArgs').split(" ")
+    # If we're not in a project or there isn't a leiningen project file use
+    # the default project
+    if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
+      projectPath = defaultProjectPath
 
-      # The process sends stdout
-      @process.on 'proto-repl-process:data', (data) =>
-        @appendText(data)
+    @replTextEditor.onDidOpen =>
+      @appendText("Starting REPL in #{projectPath}\n")
 
-      # The nREPL port was captured from output
-      @process.on 'proto-repl-process:nrepl-port', (port) =>
-        # Setup the nREPL connection
-        @conn = nrepl.connect({port: port, verbose: false})
-        @conn.once 'connect', =>
-          # Create a persistent session
-          @conn.clone (err, messages)=>
-            @session = messages[0]["new-session"]
-          # Log any output from the nRepl connection messages
-          @conn.messageStream.on "messageSequence", (id, messages)=>
-            for msg in messages
-              if msg.out or msg.err
-                @appendText(msg.out or msg.err)
+    # Start the repl process as a background task
+    @process = Task.once ReplProcess,
+                         path.resolve(projectPath),
+                         atom.config.get('proto-repl.leinPath').replace("/lein",""),
+                         atom.config.get('proto-repl.leinArgs').split(" ")
 
-      # The process exited.
-      @process.on 'proto-repl-process:exit', ()=>
-        @appendText("\nREPL Closed\n")
-        # The REPL Text editor may or may not be still open at this point. We track
-        # that separately.
-        @process = null
-        @conn = null
+    # The process sends stdout
+    @process.on 'proto-repl-process:data', (data) =>
+      @appendText(data)
+
+    # The nREPL port was captured from output
+    @process.on 'proto-repl-process:nrepl-port', (port) =>
+      # Setup the nREPL connection
+      @conn = nrepl.connect({port: port, verbose: false})
+      @conn.once 'connect', =>
+        # Create a persistent session
+        @conn.clone (err, messages)=>
+          @session = messages[0]["new-session"]
+        # Log any output from the nRepl connection messages
+        @conn.messageStream.on "messageSequence", (id, messages)=>
+          for msg in messages
+            if msg.out or msg.err
+              @appendText(msg.out or msg.err)
+
+    # The process exited.
+    @process.on 'proto-repl-process:exit', ()=>
+      @appendText("\nREPL Closed\n")
+      # The REPL Text editor may or may not be still open at this point. We track
+      # that separately.
+      @process = null
+      @conn = null
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
