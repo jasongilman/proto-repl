@@ -293,18 +293,37 @@ module.exports = ProtoRepl =
                   (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
       (when (isa? (type result) Exception)
         (println (.getMessage result)))
-      nil)"
+      result)"
 
-  refreshNamespaces: ->
+  # Refreshes any changed code in the project since the last refresh. Presumes
+  # clojure.tools.namespace is a dependency and setup with standard user/reset
+  # function. Will invoke the optional callback if refresh is successful.
+  refreshNamespaces: (callback=null)->
     @appendText("Refreshing code...\n")
-    @executeCode(@refreshNamespacesCommand)
+    @executeCode @refreshNamespacesCommand, resultHandler: (value)=>
+      # Value will contain an exception if it's not valid otherwise it will be nil
+      if value == "nil"
+        @appendText("Refresh complete")
+        callback() if callback
 
-  superRefreshNamespaces: ->
+  # Refreshes all of the code in the project whether it has changed or not.
+  # Presumes clojure.tools.namespace is a dependency and setup with standard
+  # user/reset function. Will invoke the optional callback if refresh is
+  # successful.
+  superRefreshNamespaces: (callback=null)->
     @appendText("Clearing all and then refreshing code...\n")
-    @executeCode("(do
+    @executeCode "(do
                     (when (find-ns 'clojure.tools.namespace.repl)
                       (eval '(clojure.tools.namespace.repl/clear)))
-                    #{@refreshNamespacesCommand})")
+                    #{@refreshNamespacesCommand})",
+      resultHandler: (value)=>
+        # Value will contain an exception if it's not valid otherwise it will be nil
+        # nil will also be returned if there is no clojure.tools.namespace available.
+        # The callback will still be invoked in that case. That's important so that
+        # run all tests will still work without it.
+        if value == "nil"
+          @appendText("Refresh complete")
+          callback() if callback
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()
@@ -324,8 +343,9 @@ module.exports = ProtoRepl =
 
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @refreshNamespaces()
-      @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
+      @refreshNamespaces =>
+        # Tests are only run if the refresh is successful.
+        @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
 
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()

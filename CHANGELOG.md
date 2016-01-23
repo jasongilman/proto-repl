@@ -160,3 +160,4 @@
 ### Bug Fixes
 
 * Fixed issue 31. Reader conditionals can be evaluated either by sending them from a block of code or entered at the REPL.
+* Fixed issue 32. Added callback for refreshing code. Running all tests will be triggered after a successful refresh.
