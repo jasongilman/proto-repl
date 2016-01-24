@@ -46,6 +46,10 @@ module.exports = ProtoRepl =
       description: "Configures whether the REPL automatically pretty prints values."
       type: "boolean"
       default: false
+    refreshOnReplStart:
+      description: "Configures whether the REPL should automatically refresh code when it starts."
+      type: "boolean"
+      default: false
 
 
   subscriptions: null
@@ -154,6 +158,9 @@ module.exports = ProtoRepl =
       @repl.ink = @ink
       @repl.onDidClose =>
         @repl = null
+      @repl.onDidStart =>
+        if atom.config.get("proto-repl.refreshOnReplStart")
+          @refreshNamespaces()
       @repl.startProcessIfNotRunning(projectPath)
     else
       @repl.startProcessIfNotRunning(projectPath)

@@ -55,7 +55,6 @@ class Repl
       if atom.config.get("proto-repl.displayHelpText")
         @appendText(replHelpText)
 
-
     # The window was closed
     @replTextEditor.onDidClose =>
       try
@@ -71,6 +70,10 @@ class Repl
       catch error
         console.log("Warning error while closing: " + error)
 
+  # Calls the callback after the REPL has been started
+  onDidStart: (callback)->
+    @emitter.on 'proto-repl-repl:start', callback
+
   # Returns true if the process is running
   running: ->
     @process != null && @conn != null
@@ -80,7 +83,7 @@ class Repl
     if @process
       @appendText("REPL already running")
       return
-      
+
     # Use the projectPath passed in or default to the root directory of the project.
     unless projectPath?
       projectPath = atom.project.getPaths()[0]
@@ -111,6 +114,8 @@ class Repl
         # Create a persistent session
         @conn.clone (err, messages)=>
           @session = messages[0]["new-session"]
+          @emitter.emit 'proto-repl-repl:start'
+
         # Log any output from the nRepl connection messages
         @conn.messageStream.on "messageSequence", (id, messages)=>
           for msg in messages

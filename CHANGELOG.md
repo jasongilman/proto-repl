@@ -173,3 +173,9 @@
 ### Bug Fixes
 
 * Fixed #34. Was not correctly setting the namespace when evaluating blocks and selections.
+
+## 0.12.0
+
+### New/Modified Features
+
+* Fixed #36. Added option to refresh on REPL startup.
