@@ -3,6 +3,7 @@ Repl = require './repl'
 url = require 'url'
 path = require 'path'
 EditorUtils = require './editor-utils'
+_ = require 'underscore'
 
 # This is built from the ClojureScript edn-reader project.
 # Rebuild it with lein cljsbuild once.
@@ -87,6 +88,14 @@ module.exports = ProtoRepl =
       'proto-repl:list-ns-vars-with-docs': => @listNsVarsWithDocs()
       'proto-repl:open-file-containing-var': => @openFileContainingVar()
       'proto-repl:interrupt': => @interrupt()
+      'proto-repl:decorationTest': => @decorationTest()
+
+  decorationTest: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      range = editor.getSelectedBufferRange()
+      marker = editor.markBufferRange(range, invalidate: 'never')
+      result = editor.decorateMarker(marker, type: 'line-number', class: "test-pass-icon")
+      console.log("added decoration", range, marker, result )
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
@@ -344,7 +353,69 @@ module.exports = ProtoRepl =
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs("(clojure.test/run-tests)")
+      code = "(let [event-state (atom [])
+       results (binding [clojure.test/report #(swap! event-state conj %)]
+                 (clojure.test/run-tests))
+       events-by-type (group-by :type @event-state)
+       display-prep (fn [r]
+                      (-> r
+                          (update-in [:expected] pr-str)
+                          (update-in [:actual] pr-str)))
+       errors (for [error (:error events-by-type)]
+                (-> error
+                    (update-in [:expected] pr-str)
+                    (update-in [:actual] #(with-out-str (clojure.stacktrace/print-stack-trace %)))))]
+   {:failures (concat (map display-prep (:fail events-by-type)) errors)
+    :results results})"
+
+
+     # TODO put this stuff in a view.
+     # Keep track of current marker, decorations, tooltip, ink result etc.
+     # Dispose of them when:
+     # - editor window is closed
+     # - marker is invalidated (is there a callback?)
+     # - Tests run again for that file.
+
+
+
+      @executeCodeInNs code, resultHandler: (result)=>
+        parsed = @parseEdn(result)
+        console.log parsed
+        r = parsed.results
+        @appendText("Completed running tests. Test: #{r.test} Pass: #{r.pass} Fail: #{r.fail} Error: #{r.error}")
+
+
+        # TODO Add hover details
+        # TODO allow default reporting to still run and display in the repl
+        # TODO the decordations move around when you modify the line like commenting it out.
+
+        editorView = atom.views.getView(editor)
+
+        # TODO allow clearing output
+        for failure in parsed.failures
+            lineNum = failure.line-1
+            # range = new Range(new Point(lineNum), new Point(lineNum))
+            # marker = editor.markBufferRange(range, invalidate: 'touch')
+            marker = editor.markBufferPosition(new Point(lineNum), invalidate: 'touch')
+            result = editor.decorateMarker(marker, type: 'line-number', class: "test-#{failure.type}-icon")
+
+            errorStr = "Expected:\n#{failure.expected}\n\nActual:\n#{failure.actual}"
+            # Tooltip
+            lineNumDiv = editorView.shadowRoot.querySelector("div[data-buffer-row=\"#{lineNum}\"]")
+            errorHtml = "<p>Expected:</p>
+                        <p>#{_.escape(failure.expected)}</p>
+                        <p>Actual:</p>
+                        <p>#{_.escape(failure.actual)}</p>"
+            disposable = atom.tooltips.add(lineNumDiv, {title: errorHtml, html: true})
+
+            # Atom Ink
+            errorTree = [failure.type, [errorStr]]
+            view = @ink.tree.fromJson(errorTree)[0]
+            range = editor.bufferRangeForBufferRow(lineNum)
+            @ink.results.showForRange editor, range,
+              content: view
+              plainresult: errorStr
+
 
   runSelectedTest: ->
     if editor = atom.workspace.getActiveTextEditor()

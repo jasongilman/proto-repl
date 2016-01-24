@@ -3,10 +3,26 @@
 // See https://github.com/atom/atom-dark-ui/blob/master/styles/ui-variables.less
 // for a full listing of what's available.
 @import "ui-variables";
+@import "octicon-mixins";
 
-// Hightlights blocks that are executed.
-// Based on https://github.com/richrace/highlight-selected
 :host, atom-text-editor, atom-text-editor::shadow {
+
+  .test-pass-icon {
+    .octicon(check);
+  }
+  .test-fail-icon {
+    .octicon(x);
+    color: #000;
+    background-color: #ff0;
+  }
+  .test-error-icon {
+    .octicon(issue-opened);
+    color: #000;
+    background-color: #f00;
+  }
+
+  // Hightlights blocks that are executed.
+  // Based on https://github.com/richrace/highlight-selected
   atom-text-editor .highlight.block-execution .region {
     position: absolute;
     pointer-events: none;
