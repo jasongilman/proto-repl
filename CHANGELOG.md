@@ -167,3 +167,9 @@
 ### New/Modified Features
 
 * Fixed #19 -  A REPL can be started from a specific project.clj file instead of the root one by opening the project.clj and pressing keyboard shortcut ctl-, shift-L (ctrl and comma together, release, then shift and L).
+
+## 0.11.1
+
+### Bug Fixes
+
+* Fixed #34. Was not correctly setting the namespace when evaluating blocks and selections.

@@ -212,7 +212,7 @@ module.exports = ProtoRepl =
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
-    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] #{text})"
+    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (quote #{text})))"
 
   executeCodeInNs: (code, options={})->
     if editor = atom.workspace.getActiveTextEditor()
