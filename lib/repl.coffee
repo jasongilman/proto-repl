@@ -159,10 +159,9 @@ class Repl
         tree = valueToTreeFn(result.value)
       else
         tree = [result.error]
-      view = @ink.tree.fromJson(tree)[0]
-      @ink.results.showForRange editor, range,
+      view = @ink.tree.treeView(tree[0], tree.slice(1), {})
+      new @ink.Result editor, [range.start.row, range.end.row],
         content: view
-        plainresult: result.value or result.error
 
   # Wraps the given code in an eval and a read-string. This safely handles
   # unbalanced parentheses, other kinds of invalid code, and handling reader
@@ -189,10 +188,9 @@ class Repl
       else
         tree = [result.error]
 
-      view = @ink.tree.fromJson(tree)[0]
-      @ink.results.showForRange io.editor, io.range,
+      view = @ink.tree.treeView(tree[0], tree.slice(1), {})
+      new @ink.Result io.editor, [io.range.start.row, io.range.end.row],
         content: view
-        plainresult: result.value or result.error
 
   appendingResultHandler: (result, options)->
     if result.error

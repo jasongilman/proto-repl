@@ -179,4 +179,10 @@
 ### New/Modified Features
 
 * Fixed #36. Added option to refresh on REPL startup.
-* Adding Autoloading of the current file as part of more experimental tests of inline results. 
+* Adding Autoloading of the current file as part of more experimental tests of inline results.
+
+## 0.12.1
+
+### Bug Fixes
+
+* Updated for atom ink version 0.3.1
