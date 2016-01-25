@@ -91,6 +91,48 @@ module.exports = ProtoRepl =
       'proto-repl:list-ns-vars-with-docs': => @listNsVarsWithDocs()
       'proto-repl:open-file-containing-var': => @openFileContainingVar()
       'proto-repl:interrupt': => @interrupt()
+      'proto-repl:autoload-file': => @autoloadCurrent()
+      'proto-repl:stop-autoload-file': => @stopAutoloadCurrent()
+
+  executeRanges: (editor, ranges)->
+    if range = ranges.shift()
+      code = editor.getTextInBufferRange(range)
+      # Selected code is executed in a do block so only a single value is returned.
+      @executeCodeInNs code,
+        inlineOptions:
+          editor: editor
+          range: range
+        resultHandler: (value, options)=>
+          @repl.inlineResultHandler(value, options)
+          # Recurse back in again to execute the next range
+          @executeRanges(editor, ranges)
+
+    # TODO
+    # - 
+    # - capture standard out and display with other values
+    # - come up with a way to show that it's enabled.
+    #   - side bar in blue
+    #   - Print auto loading blah file
+
+
+  # TODO
+  autoloadCurrent: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editor.protoReplAutoloadDisposable
+        @appendText("Already autoloading")
+      else
+        # Add a handler for when the editor stops changing
+        editor.protoReplAutoloadDisposable = editor.onDidStopChanging =>
+          @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
+        # Run it once the first time
+        @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
+
+  # TODO
+  stopAutoloadCurrent: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editor.protoReplAutoloadDisposable
+        editor.protoReplAutoloadDisposable.dispose()
+        editor.protoReplAutoloadDisposable = null
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'

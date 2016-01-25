@@ -165,6 +165,34 @@ class Repl
     escaped = code.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
     "(eval (read-string {:read-cond :allow} \"#{escaped}\"))"
 
+  inlineResultHandler: (value, options)->
+    # Alpha support of inline results using Atom Ink.
+    if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
+      io = options.inlineOptions
+      toplevelValue = value
+      if toplevelValue.length > 50
+        toplevelValue = toplevelValue.substr(0, 50) + "..."
+      prettyPrinted = protoRepl.prettyEdn(value).trim()
+      if prettyPrinted == toplevelValue
+        tree = [toplevelValue]
+      else
+        tree = [toplevelValue, [prettyPrinted]]
+
+      view = @ink.tree.fromJson(tree)[0]
+      @ink.results.showForRange io.editor, io.range,
+        content: view
+        plainresult: value
+
+  appendingResultHandler: (value, options)->
+    if atom.config.get("proto-repl.autoPrettyPrint")
+      @appendText("=>\n" + protoRepl.prettyEdn(value))
+    else
+      @appendText("=> " + value)
+
+  normalResultHandler: (value, options)->
+    @appendingResultHandler(value, options)
+    @inlineResultHandler(value, options)
+
   # Executes the given code string.
   # Valid options:
   # * resultHandler - a callback function to invoke with the value that was read.
@@ -178,32 +206,13 @@ class Repl
     # Wrap code in read eval to handle invalid code and reader conditionals
     code = @wrapCodeInReadEval(code)
 
+    # If a handler is supplied use that otherwise use the default.
     resultHandler = options?.resultHandler
-    normalHandler = (value)=>
+    handler = (value)=>
       if resultHandler
-        resultHandler(value)
+        resultHandler(value, options)
       else
-        if atom.config.get("proto-repl.autoPrettyPrint")
-          @appendText("=>\n" + protoRepl.prettyEdn(value))
-        else
-          @appendText("=> " + value)
-
-        # Alpha support of inline results using Atom Ink.
-        if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
-          io = options.inlineOptions
-          toplevelValue = value
-          if toplevelValue.length > 50
-            toplevelValue = toplevelValue.substr(0, 50) + "..."
-          prettyPrinted = protoRepl.prettyEdn(value).trim()
-          if prettyPrinted == toplevelValue
-            tree = [toplevelValue]
-          else
-            tree = [toplevelValue, [prettyPrinted]]
-
-          view = @ink.tree.fromJson(tree)[0]
-          @ink.results.showForRange io.editor, io.range,
-            content: view
-            plainresult: value
+        @normalResultHandler(value, options)
 
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
@@ -218,9 +227,9 @@ class Repl
         if extensionCallback
           extensionCallback(data)
         else
-          normalHandler(value)
+          handler(value)
       else
-        normalHandler(value)
+        handler(value)
 
   # Executes the text that was entered in the entry area
   executeEnteredText: ->
