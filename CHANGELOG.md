@@ -179,3 +179,4 @@
 ### New/Modified Features
 
 * Fixed #36. Added option to refresh on REPL startup.
+* Adding Autoloading of the current file as part of more experimental tests of inline results. 

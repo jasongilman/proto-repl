@@ -119,8 +119,8 @@ class Repl
         # Log any output from the nRepl connection messages
         @conn.messageStream.on "messageSequence", (id, messages)=>
           for msg in messages
-            if msg.out or msg.err
-              @appendText(msg.out or msg.err)
+            if msg.out
+              @appendText(msg.out)
 
     # The process exited.
     @process.on 'proto-repl-process:exit', ()=>
@@ -138,12 +138,15 @@ class Repl
   appendText: (text)->
     @replTextEditor?.appendText(text)
 
+  # Sends the given code to the REPL and calls the given callback with the results
   sendToRepl: (text, resultHandler)->
     return null unless @running()
     @conn.eval text, "user", @session, (err, messages)=>
       for msg in messages
         if msg.value
-          resultHandler(msg.value)
+          resultHandler(value: msg.value)
+        else if msg.err
+          resultHandler(error: msg.err)
 
   # Makes an inline displaying result handler
   # * editor - the text editor to show the inline display in
@@ -151,12 +154,15 @@ class Repl
   # * valueToTreeFn - a function that can convert the result value into the tree
   # of content for inline display.
   makeInlineHandler: (editor, range, valueToTreeFn)->
-    (value) =>
-      tree = valueToTreeFn(value)
+    (result) =>
+      if result.value
+        tree = valueToTreeFn(result.value)
+      else
+        tree = [result.error]
       view = @ink.tree.fromJson(tree)[0]
       @ink.results.showForRange editor, range,
         content: view
-        plainresult: value
+        plainresult: result.value or result.error
 
   # Wraps the given code in an eval and a read-string. This safely handles
   # unbalanced parentheses, other kinds of invalid code, and handling reader
@@ -165,33 +171,40 @@ class Repl
     escaped = code.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
     "(eval (read-string {:read-cond :allow} \"#{escaped}\"))"
 
-  inlineResultHandler: (value, options)->
+  inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
+
+      ## TODO use makeInlineHandler for this
       io = options.inlineOptions
-      toplevelValue = value
-      if toplevelValue.length > 50
-        toplevelValue = toplevelValue.substr(0, 50) + "..."
-      prettyPrinted = protoRepl.prettyEdn(value).trim()
-      if prettyPrinted == toplevelValue
-        tree = [toplevelValue]
+      if result.value
+        toplevelValue = result.value
+        if toplevelValue.length > 50
+          toplevelValue = toplevelValue.substr(0, 50) + "..."
+        prettyPrinted = protoRepl.prettyEdn(result.value).trim()
+        if prettyPrinted == toplevelValue
+          tree = [toplevelValue]
+        else
+          tree = [toplevelValue, [prettyPrinted]]
       else
-        tree = [toplevelValue, [prettyPrinted]]
+        tree = [result.error]
 
       view = @ink.tree.fromJson(tree)[0]
       @ink.results.showForRange io.editor, io.range,
         content: view
-        plainresult: value
+        plainresult: result.value or result.error
 
-  appendingResultHandler: (value, options)->
-    if atom.config.get("proto-repl.autoPrettyPrint")
-      @appendText("=>\n" + protoRepl.prettyEdn(value))
+  appendingResultHandler: (result, options)->
+    if result.error
+      @appendText("=> " + result.error)
+    else if atom.config.get("proto-repl.autoPrettyPrint")
+        @appendText("=>\n" + protoRepl.prettyEdn(result.value))
     else
-      @appendText("=> " + value)
+      @appendText("=> " + result.value)
 
-  normalResultHandler: (value, options)->
-    @appendingResultHandler(value, options)
-    @inlineResultHandler(value, options)
+  normalResultHandler: (result, options)->
+    @appendingResultHandler(result, options)
+    @inlineResultHandler(result, options)
 
   # Executes the given code string.
   # Valid options:
@@ -208,28 +221,25 @@ class Repl
 
     # If a handler is supplied use that otherwise use the default.
     resultHandler = options?.resultHandler
-    handler = (value)=>
+    handler = (result)=>
       if resultHandler
-        resultHandler(value, options)
+        resultHandler(result, options)
       else
-        @normalResultHandler(value, options)
+        @normalResultHandler(result, options)
 
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-    @sendToRepl code, (value)=>
+    @sendToRepl code, (result)=>
       # check if it's an extension response
-      if value.match(/\[\s*:proto-repl-code-execution-extension/)
-        parsed = window.protoRepl.parseEdn(value)
+      if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
+        parsed = window.protoRepl.parseEdn(result.value)
         extensionName = parsed[1]
         data = parsed[2]
         extensionCallback = @codeExecutionExtensions[extensionName]
         if extensionCallback
           extensionCallback(data)
-        else
-          handler(value)
-      else
-        handler(value)
+      handler(result)
 
   # Executes the text that was entered in the entry area
   executeEnteredText: ->

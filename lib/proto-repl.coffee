@@ -51,7 +51,6 @@ module.exports = ProtoRepl =
       type: "boolean"
       default: false
 
-
   subscriptions: null
   repl: null
   toolbar: null
@@ -97,25 +96,24 @@ module.exports = ProtoRepl =
   executeRanges: (editor, ranges)->
     if range = ranges.shift()
       code = editor.getTextInBufferRange(range)
+
+      ## Highlight range that's executing
+      marker = editor.markBufferRange(range)
+      decoration = editor.decorateMarker(marker,
+          {type: 'highlight', class: "block-execution"})
+
       # Selected code is executed in a do block so only a single value is returned.
       @executeCodeInNs code,
         inlineOptions:
           editor: editor
           range: range
-        resultHandler: (value, options)=>
-          @repl.inlineResultHandler(value, options)
+        resultHandler: (result, options)=>
+          marker.destroy()
+          @repl.inlineResultHandler(result, options)
           # Recurse back in again to execute the next range
           @executeRanges(editor, ranges)
 
-    # TODO
-    # - 
-    # - capture standard out and display with other values
-    # - come up with a way to show that it's enabled.
-    #   - side bar in blue
-    #   - Print auto loading blah file
-
-
-  # TODO
+  # Turns on autoloading of the current file.
   autoloadCurrent: ->
     if editor = atom.workspace.getActiveTextEditor()
       if editor.protoReplAutoloadDisposable
@@ -127,7 +125,7 @@ module.exports = ProtoRepl =
         # Run it once the first time
         @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
 
-  # TODO
+  # Turns off autoloading of the current file.
   stopAutoloadCurrent: ->
     if editor = atom.workspace.getActiveTextEditor()
       if editor.protoReplAutoloadDisposable
@@ -208,7 +206,6 @@ module.exports = ProtoRepl =
       @repl.startProcessIfNotRunning(projectPath)
 
   # Starts the REPL in the directory of the file in the current editor.
-  # TODO try with a file that has no path
   toggleCurrentEditorDir: ->
     if editor = atom.workspace.getActiveTextEditor()
       if editorPath = editor.getPath()
@@ -355,16 +352,25 @@ module.exports = ProtoRepl =
         (println (.getMessage result)))
       result)"
 
+  refreshResultHandler: (callback, result)->
+    # Value will contain an exception if it's not valid otherwise it will be nil
+    # nil will also be returned if there is no clojure.tools.namespace available.
+    # The callback will still be invoked in that case. That's important so that
+    # run all tests will still work without it.
+    if result.value == "nil"
+      @appendText("Refresh complete")
+      callback() if callback
+    else if result.error
+      @appendText("Refresh failed: " + result.error)
+
   # Refreshes any changed code in the project since the last refresh. Presumes
   # clojure.tools.namespace is a dependency and setup with standard user/reset
   # function. Will invoke the optional callback if refresh is successful.
   refreshNamespaces: (callback=null)->
     @appendText("Refreshing code...\n")
-    @executeCode @refreshNamespacesCommand, resultHandler: (value)=>
-      # Value will contain an exception if it's not valid otherwise it will be nil
-      if value == "nil"
-        @appendText("Refresh complete")
-        callback() if callback
+    @executeCode @refreshNamespacesCommand, resultHandler: (result)=>
+      @refreshResultHandler(callback, result)
+
 
   # Refreshes all of the code in the project whether it has changed or not.
   # Presumes clojure.tools.namespace is a dependency and setup with standard
@@ -376,14 +382,7 @@ module.exports = ProtoRepl =
                     (when (find-ns 'clojure.tools.namespace.repl)
                       (eval '(clojure.tools.namespace.repl/clear)))
                     #{@refreshNamespacesCommand})",
-      resultHandler: (value)=>
-        # Value will contain an exception if it's not valid otherwise it will be nil
-        # nil will also be returned if there is no clojure.tools.namespace available.
-        # The callback will still be invoked in that case. That's important so that
-        # run all tests will still work without it.
-        if value == "nil"
-          @appendText("Refresh complete")
-          callback() if callback
+      resultHandler: (result)=> @refreshResultHandler(callback, result)
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()
