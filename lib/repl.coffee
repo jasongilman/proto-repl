@@ -5,6 +5,7 @@ ReplProcess = require.resolve './repl-process'
 ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
 nrepl = require('nrepl-client')
+ClojureVersion = require './clojure-version'
 
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
@@ -114,6 +115,14 @@ class Repl
         # Create a persistent session
         @conn.clone (err, messages)=>
           @session = messages[0]["new-session"]
+
+          # Determine the Clojure Version
+          @conn.eval "*clojure-version*", "user", @session, (err, messages)=>
+            value = (msg.value for msg in messages)[0]
+            @clojureVersion = new ClojureVersion(protoRepl.parseEdn(value))
+            unless @clojureVersion.isSupportedVersion()
+              @appendText("WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.")
+
           @emitter.emit 'proto-repl-repl:start'
 
         # Log any output from the nRepl connection messages
@@ -168,7 +177,10 @@ class Repl
   # conditionals. http://clojure.org/guides/reader_conditionals
   wrapCodeInReadEval: (code)->
     escaped = code.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
-    "(eval (read-string {:read-cond :allow} \"#{escaped}\"))"
+    if @clojureVersion?.isReaderConditionalSupported()
+      "(eval (read-string {:read-cond :allow} \"#{escaped}\"))"
+    else
+      "(eval (read-string \"#{escaped}\"))"
 
   inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.

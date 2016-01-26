@@ -186,3 +186,9 @@
 ### Bug Fixes
 
 * Updated for atom ink version 0.3.1
+
+## 0.12.2
+
+### Bug Fixes
+
+* Fixed #41 Made Proto REPL detect if it was on pre-1.7 version of Clojure to use a different read-string call.
