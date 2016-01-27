@@ -1,4 +1,5 @@
 {CompositeDisposable, Range, Point} = require 'atom'
+NReplConnectionView = require './views/nrepl-connection-view'
 Repl = require './repl'
 url = require 'url'
 path = require 'path'
@@ -70,6 +71,7 @@ module.exports = ProtoRepl =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:toggle': => @toggle()
       'proto-repl:toggle-current-project-clj': => @toggleCurrentEditorDir()
+      'proto-repl:toggle-nrepl-connection': => @toggleNReplConnection()
       'proto-repl:clear-repl': => @clearRepl()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
@@ -195,21 +197,38 @@ module.exports = ProtoRepl =
   toggle: (projectPath=null)->
     if @repl == null
       @repl = new Repl(@codeExecutionExtensions)
-      @repl.ink = @ink
-      @repl.onDidClose =>
-        @repl = null
-      @repl.onDidStart =>
-        if atom.config.get("proto-repl.refreshOnReplStart")
-          @refreshNamespaces()
+      @prepareRepl(@repl)
       @repl.startProcessIfNotRunning(projectPath)
     else
       @repl.startProcessIfNotRunning(projectPath)
+
+  prepareRepl: (repl)->
+    repl.ink = @ink
+    repl.onDidClose =>
+      @repl = null
+    repl.onDidStart =>
+      if atom.config.get("proto-repl.refreshOnReplStart")
+        @refreshNamespaces()
 
   # Starts the REPL in the directory of the file in the current editor.
   toggleCurrentEditorDir: ->
     if editor = atom.workspace.getActiveTextEditor()
       if editorPath = editor.getPath()
         @toggle(path.dirname(editorPath))
+
+  # Opens nRepl connection dialog
+  toggleNReplConnection: ->
+    confirmCallback = ({port, host})=>
+      unless @repl
+        @repl = new Repl(@codeExecutionExtensions)
+        @prepareRepl(@repl)
+        @repl.onDidStart =>
+          @appendText(";; Repl successfuly started")
+      @repl?.startRemoteReplConnection({port, host})
+
+    @connectionView ?= new NReplConnectionView(confirmCallback)
+    @connectionView.show()
+
 
   clearRepl: ->
     @repl?.clear()
