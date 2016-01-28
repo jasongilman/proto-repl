@@ -93,45 +93,6 @@ module.exports = ProtoRepl =
       'proto-repl:autoload-file': => @autoloadCurrent()
       'proto-repl:stop-autoload-file': => @stopAutoloadCurrent()
 
-  executeRanges: (editor, ranges)->
-    if range = ranges.shift()
-      code = editor.getTextInBufferRange(range)
-
-      ## Highlight range that's executing
-      marker = editor.markBufferRange(range)
-      decoration = editor.decorateMarker(marker,
-          {type: 'highlight', class: "block-execution"})
-
-      # Selected code is executed in a do block so only a single value is returned.
-      @executeCodeInNs code,
-        inlineOptions:
-          editor: editor
-          range: range
-        resultHandler: (result, options)=>
-          marker.destroy()
-          @repl.inlineResultHandler(result, options)
-          # Recurse back in again to execute the next range
-          @executeRanges(editor, ranges)
-
-  # Turns on autoloading of the current file.
-  autoloadCurrent: ->
-    if editor = atom.workspace.getActiveTextEditor()
-      if editor.protoReplAutoloadDisposable
-        @appendText("Already autoloading")
-      else
-        # Add a handler for when the editor stops changing
-        editor.protoReplAutoloadDisposable = editor.onDidStopChanging =>
-          @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
-        # Run it once the first time
-        @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
-
-  # Turns off autoloading of the current file.
-  stopAutoloadCurrent: ->
-    if editor = atom.workspace.getActiveTextEditor()
-      if editor.protoReplAutoloadDisposable
-        editor.protoReplAutoloadDisposable.dispose()
-        editor.protoReplAutoloadDisposable = null
-
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
     @toolbar.addButton
@@ -322,6 +283,41 @@ module.exports = ProtoRepl =
       # Some responses from the REPL may be unparseable as in the case of var refs
       # like #'user/reset. We'll just return the original string in that case.
       return ednString
+
+  executeRanges: (editor, ranges)->
+    if range = ranges.shift()
+      code = editor.getTextInBufferRange(range)
+
+      # Selected code is executed in a do block so only a single value is returned.
+      @executeCodeInNs code,
+        inlineOptions:
+          editor: editor
+          range: range
+        resultHandler: (result, options)=>
+          @repl.inlineResultHandler(result, options)
+          # Recurse back in again to execute the next range
+          @executeRanges(editor, ranges)
+
+  # Turns on autoloading of the current file.
+  autoloadCurrent: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editor.protoReplAutoloadDisposable
+        @appendText("Already autoloading")
+      else
+        # Add a handler for when the editor stops changing
+        editor.protoReplAutoloadDisposable = editor.onDidStopChanging =>
+          @ink?.Result.removeAll(editor)
+          @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
+        # Run it once the first time
+        @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
+
+  # Turns off autoloading of the current file.
+  stopAutoloadCurrent: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editor.protoReplAutoloadDisposable
+        editor.protoReplAutoloadDisposable.dispose()
+        editor.protoReplAutoloadDisposable = null
+
 
   #############################################################################
   # Code helpers

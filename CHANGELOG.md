@@ -192,3 +192,14 @@
 ### Bug Fixes
 
 * Fixed #41 Made Proto REPL detect if it was on pre-1.7 version of Clojure to use a different read-string call.
+
+
+## 0.13.0
+
+### New/Modified Features
+
+* Tweaking autoloading so that it doesn't display a marker and it correctly clears Atom ink inline results
+
+### Bug Fixes
+
+*
