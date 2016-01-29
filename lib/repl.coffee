@@ -110,26 +110,7 @@ class Repl
     # The nREPL port was captured from output
     @process.on 'proto-repl-process:nrepl-port', (port) =>
       # Setup the nREPL connection
-      @conn = nrepl.connect({port: port, verbose: false})
-      @conn.once 'connect', =>
-        # Create a persistent session
-        @conn.clone (err, messages)=>
-          @session = messages[0]["new-session"]
-
-          # Determine the Clojure Version
-          @conn.eval "*clojure-version*", "user", @session, (err, messages)=>
-            value = (msg.value for msg in messages)[0]
-            @clojureVersion = new ClojureVersion(protoRepl.parseEdn(value))
-            unless @clojureVersion.isSupportedVersion()
-              @appendText("WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.")
-
-          @emitter.emit 'proto-repl-repl:start'
-
-        # Log any output from the nRepl connection messages
-        @conn.messageStream.on "messageSequence", (id, messages)=>
-          for msg in messages
-            if msg.out
-              @appendText(msg.out)
+      @connectToRepl port: port
 
     # The process exited.
     @process.on 'proto-repl-process:exit', ()=>
@@ -138,6 +119,59 @@ class Repl
       # that separately.
       @process = null
       @conn = null
+
+  # Starts nRepl connection
+  # * `options` An {Object} with following keys
+  #   * `host` The {String} host name to connect (optional). Defaults to "localhost"
+  #   * `port` The {Number} port number to connect
+  startRemoteReplConnection: ({host, port})->
+    if @running()
+      @appendText("REPL already running")
+      return
+
+    @replTextEditor.onDidOpen =>
+      @appendText("Starting remote REPL connection on #{host}:#{port}")
+
+    @connectToRepl {host, port}
+    @process = true
+
+    # Handle and show errors
+    @conn.on 'error', (err)=>
+      atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
+      setTimeout =>
+        @appendText "ERROR: Connection failed"
+        , 1000
+      @conn = null
+      @process = null
+
+    # When repl connection closed
+    @conn.on 'finish', =>
+      @appendText "\nREPL Closed\n"
+      @process = null
+      @conn = null
+
+  connectToRepl: ({host, port})=>
+    host ?= "localhost"
+    @conn = nrepl.connect({port: port, host: host, verbose: false})
+    @conn.once 'connect', =>
+      # Create a persistent session
+      @conn.clone (err, messages)=>
+        @session = messages[0]["new-session"]
+
+        # Determine the Clojure Version
+        @conn.eval "*clojure-version*", "user", @session, (err, messages)=>
+          value = (msg.value for msg in messages)[0]
+          @clojureVersion = new ClojureVersion(protoRepl.parseEdn(value))
+          unless @clojureVersion.isSupportedVersion()
+            @appendText("WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.")
+
+        @emitter.emit 'proto-repl-repl:start'
+
+      # Log any output from the nRepl connection messages
+      @conn.messageStream.on "messageSequence", (id, messages)=>
+        for msg in messages
+          if msg.out
+            @appendText(msg.out)
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
