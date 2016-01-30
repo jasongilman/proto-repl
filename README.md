@@ -15,6 +15,8 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 
 ## Usage
 
+### Start a Local REPL
+
 Proto REPL currently only works with projects using [Leiningen](http://leiningen.org).
 
 1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project) for help creating a new project.)
@@ -22,6 +24,10 @@ Proto REPL currently only works with projects using [Leiningen](http://leiningen
   * The REPL can also be started by using the [keyboard shortcuts documented below](#keybindings-and-events).
 
 See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo) for a demonstration of the features of Proto REPL and more of a description on how it works.
+
+### Connecting to a Remote REPL
+
+Proto REPL can connect to a remote Clojure process using [nREPL](https://github.com/clojure/tools.nrepl). Connect to the remote REPL by triggering the Command Palette (cmd-alt-p) and selecting "Proto REPL: Remote Nrepl Connection". Enter the host and port of the remote nREPL server and it will connect.
 
 ### Usage Outside of Leiningen Projects
 
@@ -138,7 +144,8 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | Keybinding       | Event                                 | Action                                                                                                                                   |
 |------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `ctrl-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
-| `ctrl-, shift-L` | `proto-repl:toggle`                   | Starts the REPL using the current project.clj                                                                                            |
+| `ctrl-, shift-L` | `proto-repl:toggle`                   | Starts the REPL using the current open project.clj                                                                                       |
+|                  | `proto-repl:remote-nrepl-connection`  | Connects to a remote nREPL session.                                                                                                      |
 | `ctrl-, e`       | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
 | `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
 | `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |

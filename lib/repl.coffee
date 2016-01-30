@@ -1,19 +1,14 @@
 {Task, Emitter} = require 'atom'
-path = require 'path'
-fs = require('fs')
-ReplProcess = require.resolve './repl-process'
+
 ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
 nrepl = require('nrepl-client')
 ClojureVersion = require './clojure-version'
+LocalReplProcess = require './local-repl-process'
+RemoteReplProcess = require './remote-repl-process'
 
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
-# The path to a default project to use if proto repl is started outside of a leiningen project
-defaultProjectPath = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
-
-# The code to send to the repl to exit.
-EXIT_CMD="(System/exit 0)"
 
 module.exports =
 
@@ -23,7 +18,7 @@ module.exports =
 class Repl
   emitter: null
 
-  # The running java process
+  # A local or remote process
   process: null
 
   # The nrepl connection
@@ -59,13 +54,7 @@ class Repl
     # The window was closed
     @replTextEditor.onDidClose =>
       try
-        # I couldn't refer to sendToRepl directly here. I'm not sure why.
-        # Tell the process to shutdown
-        @conn?.eval(EXIT_CMD)
-        @conn = null
-        # Kill the process to make sure.
-        @process?.send event: 'kill'
-        @process = null
+        @process?.stop(@session)
         @replTextEditor = null
         @emitter.emit 'proto-repl-repl:close'
       catch error
@@ -77,48 +66,18 @@ class Repl
 
   # Returns true if the process is running
   running: ->
-    @process != null && @conn != null
+    @process?.running() && @conn != null
 
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath=null)->
-    if @process
+    if @running()
       @appendText("REPL already running")
-      return
+    else
+      @process = new LocalReplProcess(
+        (text)=>@appendText(text),
+        (details)=>@connectToRepl(details))
+      @process.start(projectPath)
 
-    # Use the projectPath passed in or default to the root directory of the project.
-    unless projectPath?
-      projectPath = atom.project.getPaths()[0]
-
-    # If we're not in a project or there isn't a leiningen project file use
-    # the default project
-    if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
-      projectPath = defaultProjectPath
-
-    @replTextEditor.onDidOpen =>
-      @appendText("Starting REPL in #{projectPath}\n")
-
-    # Start the repl process as a background task
-    @process = Task.once ReplProcess,
-                         path.resolve(projectPath),
-                         atom.config.get('proto-repl.leinPath').replace("/lein",""),
-                         atom.config.get('proto-repl.leinArgs').split(" ")
-
-    # The process sends stdout
-    @process.on 'proto-repl-process:data', (data) =>
-      @appendText(data)
-
-    # The nREPL port was captured from output
-    @process.on 'proto-repl-process:nrepl-port', (port) =>
-      # Setup the nREPL connection
-      @connectToRepl port: port
-
-    # The process exited.
-    @process.on 'proto-repl-process:exit', ()=>
-      @appendText("\nREPL Closed\n")
-      # The REPL Text editor may or may not be still open at this point. We track
-      # that separately.
-      @process = null
-      @conn = null
 
   # Starts nRepl connection
   # * `options` An {Object} with following keys
@@ -129,26 +88,12 @@ class Repl
       @appendText("REPL already running")
       return
 
-    @replTextEditor.onDidOpen =>
-      @appendText("Starting remote REPL connection on #{host}:#{port}")
+    @process = new RemoteReplProcess(
+      (text)=>@appendText(text),
+      (details)=>@connectToRepl(details)
+    )
+    @process.start(host, port)
 
-    @connectToRepl {host, port}
-    @process = true
-
-    # Handle and show errors
-    @conn.on 'error', (err)=>
-      atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
-      setTimeout =>
-        @appendText "ERROR: Connection failed"
-        , 1000
-      @conn = null
-      @process = null
-
-    # When repl connection closed
-    @conn.on 'finish', =>
-      @appendText "\nREPL Closed\n"
-      @process = null
-      @conn = null
 
   connectToRepl: ({host, port})=>
     host ?= "localhost"
@@ -178,8 +123,8 @@ class Repl
     @emitter.on 'proto-repl-repl:close', callback
 
   # Appends text to the display area of the text editor.
-  appendText: (text)->
-    @replTextEditor?.appendText(text)
+  appendText: (text, waitUntilOpen=false)->
+    @replTextEditor?.appendText(text, waitUntilOpen)
 
   # Sends the given code to the REPL and calls the given callback with the results
   sendToRepl: (text, resultHandler)->
@@ -300,7 +245,8 @@ class Repl
   exit: ->
     return null unless @running()
     @appendText("Stopping REPL")
-    @sendToRepl(EXIT_CMD)
+    @process.stop(@session)
+    @process = null
     @conn = null
 
   interrupt: ->

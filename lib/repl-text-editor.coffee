@@ -173,8 +173,11 @@ class ReplTextEditor
       @textEditor?.scrollToBottom()
 
   # Appends text to the display area of the text editor
-  appendText: (text)->
-    if @textEditor && text.length > 0
+  appendText: (text, waitUntilOpen=false)->
+    if waitUntilOpen && !@textEditor
+      @onDidOpen =>
+        @appendText(text)
+    else if @textEditor && text.length > 0
 
       # Append newline to text if it doesn't end with one.
       if text[text.length-1] != "\n"

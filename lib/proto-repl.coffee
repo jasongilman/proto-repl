@@ -71,7 +71,7 @@ module.exports = ProtoRepl =
     @subscriptions.add atom.commands.add 'atom-workspace',
       'proto-repl:toggle': => @toggle()
       'proto-repl:toggle-current-project-clj': => @toggleCurrentEditorDir()
-      'proto-repl:toggle-nrepl-connection': => @toggleNReplConnection()
+      'proto-repl:remote-nrepl-connection': => @remoteNReplConnection()
       'proto-repl:clear-repl': => @clearRepl()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
@@ -178,14 +178,14 @@ module.exports = ProtoRepl =
         @toggle(path.dirname(editorPath))
 
   # Opens nRepl connection dialog
-  toggleNReplConnection: ->
+  remoteNReplConnection: ->
     confirmCallback = ({port, host})=>
       unless @repl
         @repl = new Repl(@codeExecutionExtensions)
         @prepareRepl(@repl)
         @repl.onDidStart =>
           @appendText(";; Repl successfuly started")
-      @repl?.startRemoteReplConnection({port, host})
+      @repl.startRemoteReplConnection({port, host})
 
     @connectionView ?= new NReplConnectionView(confirmCallback)
     @connectionView.show()
