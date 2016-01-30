@@ -13,7 +13,7 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 * Easily run tests in a namespace or the whole project.
 * View documentation and code from linked Clojure libraries.
 * [Atom Tool Bar](https://atom.io/packages/tool-bar) integration that allows controlling the REPL.
-* Support for Clojure 1.6 and greater.
+* Extensible with the ability to [add your own commands](#extending-proto-repl) or [create visualizations](https://github.com/jasongilman/proto-repl-charts).
 
 ## Usage
 
@@ -92,6 +92,8 @@ Make sure that the path to the `lein` command is correct in the proto-repl setti
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 * [Leiningen](http://leiningen.org)
+
+Supports Clojure 1.6 or greater.
 
 ### Tool Bar Integration
 

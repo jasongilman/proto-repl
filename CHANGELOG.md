@@ -198,4 +198,5 @@
 ### New/Modified Features
 
 * Fixed #17 - Added ability to connect to a remote nREPL. Thanks to [@geksilla](https://github.com/jasongilman/proto-repl/pull/45)
-* Tweaking autoloading so that it doesn't display a marker and it correctly clears Atom ink inline results
+* Tweaking auto evaluation mode so that it doesn't display a marker and it correctly clears Atom ink inline results
+* Taking inline mode out of beta.
