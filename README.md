@@ -82,6 +82,8 @@ Proto REPL supports the automatic evaluation of top level forms as you type. The
 
 ![automatic evaluation mode screenshot](https://github.com/jasongilman/proto-repl/raw/master/images/autoeval.gif)
 
+The visualization shown was created with [Proto REPL Charts](https://atom.io/packages/proto-repl-charts).
+
 ## Installation
 
 `apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
