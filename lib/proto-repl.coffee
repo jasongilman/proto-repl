@@ -32,9 +32,9 @@ module.exports = ProtoRepl =
       type: 'string'
       default: "repl :headless"
     showInlineResults:
-      description: "ALPHA: Shows inline results of code execution. Must install Atom Ink package to use this."
+      description: "Shows inline results of code execution. Install Atom Ink package to use this."
       type: 'boolean'
-      default: false
+      default: true
     displayExecutedCodeInRepl:
       description: "Sets whether code sent to the REPL is displayed."
       type: 'boolean'
@@ -92,8 +92,8 @@ module.exports = ProtoRepl =
       'proto-repl:list-ns-vars-with-docs': => @listNsVarsWithDocs()
       'proto-repl:open-file-containing-var': => @openFileContainingVar()
       'proto-repl:interrupt': => @interrupt()
-      'proto-repl:autoload-file': => @autoloadCurrent()
-      'proto-repl:stop-autoload-file': => @stopAutoloadCurrent()
+      'proto-repl:autoeval-file': => @autoEvalCurrent()
+      'proto-repl:stop-autoeval-file': => @stopAutoEvalCurrent()
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
@@ -317,25 +317,33 @@ module.exports = ProtoRepl =
           # Recurse back in again to execute the next range
           @executeRanges(editor, ranges)
 
-  # Turns on autoloading of the current file.
-  autoloadCurrent: ->
+  # Turns on auto evaluation of the current file.
+  autoEvalCurrent: ->
+    if !atom.config.get('proto-repl.showInlineResults')
+      @appendText("Auto Evaling is not supported unless inline results is enabled")
+      return null
+
+    if !@ink
+      @appendText("Install Atom Ink package to use auto evaling.")
+      return null
+
     if editor = atom.workspace.getActiveTextEditor()
-      if editor.protoReplAutoloadDisposable
-        @appendText("Already autoloading")
+      if editor.protoReplAutoEvalDisposable
+        @appendText("Already auto evaling")
       else
         # Add a handler for when the editor stops changing
-        editor.protoReplAutoloadDisposable = editor.onDidStopChanging =>
+        editor.protoReplAutoEvalDisposable = editor.onDidStopChanging =>
           @ink?.Result.removeAll(editor)
           @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
         # Run it once the first time
         @executeRanges(editor, EditorUtils.getTopLevelRanges(editor))
 
-  # Turns off autoloading of the current file.
-  stopAutoloadCurrent: ->
+  # Turns off autoevaling of the current file.
+  stopAutoEvalCurrent: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if editor.protoReplAutoloadDisposable
-        editor.protoReplAutoloadDisposable.dispose()
-        editor.protoReplAutoloadDisposable = null
+      if editor.protoReplAutoEvalDisposable
+        editor.protoReplAutoEvalDisposable.dispose()
+        editor.protoReplAutoEvalDisposable = null
 
 
   #############################################################################

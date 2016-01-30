@@ -74,7 +74,7 @@ class Repl
       @appendText("REPL already running")
     else
       @process = new LocalReplProcess(
-        (text)=>@appendText(text),
+        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen),
         (details)=>@connectToRepl(details))
       @process.start(projectPath)
 
@@ -89,7 +89,7 @@ class Repl
       return
 
     @process = new RemoteReplProcess(
-      (text)=>@appendText(text),
+      (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen),
       (details)=>@connectToRepl(details)
     )
     @process.start(host, port)
@@ -147,8 +147,16 @@ class Repl
         tree = valueToTreeFn(result.value)
       else
         tree = [result.error]
+
+      start = range.start.row
+      end = range.end.row
+
+      # Remove the existing view if there is one
+      @ink.Result.removeLines(editor, start, end)
+
+      # Add new inline view
       view = @ink.tree.treeView(tree[0], tree.slice(1), {})
-      new @ink.Result editor, [range.start.row, range.end.row],
+      new @ink.Result editor, [start, end],
         content: view
 
   # Wraps the given code in an eval and a read-string. This safely handles
@@ -164,24 +172,18 @@ class Repl
   inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
-
-      ## TODO use makeInlineHandler for this
       io = options.inlineOptions
-      if result.value
-        toplevelValue = result.value
+      handler = @makeInlineHandler io.editor, io.range, (value)->
+        toplevelValue = value
         if toplevelValue.length > 50
           toplevelValue = toplevelValue.substr(0, 50) + "..."
-        prettyPrinted = protoRepl.prettyEdn(result.value).trim()
+        prettyPrinted = protoRepl.prettyEdn(value).trim()
         if prettyPrinted == toplevelValue
           tree = [toplevelValue]
         else
           tree = [toplevelValue, [prettyPrinted]]
-      else
-        tree = [result.error]
 
-      view = @ink.tree.treeView(tree[0], tree.slice(1), {})
-      new @ink.Result io.editor, [io.range.start.row, io.range.end.row],
-        content: view
+      handler(result)
 
   appendingResultHandler: (result, options)->
     if result.error

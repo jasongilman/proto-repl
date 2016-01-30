@@ -7,7 +7,9 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 ## Features
 
 * An interactive REPL driven development environment.
-* Evaluate blocks of code or selected code with a keystroke.
+* Evaluate [blocks of code](#sending-a-block) or [selected code](#sending-a-selection) with a keystroke.
+* View results in the REPL or [inline next to the code](#inline-results).
+* [Automatic Evaluation Mode](#automatic-evaluation-mode) that executes code in a file as you type.
 * Easily run tests in a namespace or the whole project.
 * View documentation and code from linked Clojure libraries.
 * [Atom Tool Bar](https://atom.io/packages/tool-bar) integration that allows controlling the REPL.
@@ -65,6 +67,20 @@ The block detection also can find the start and end of a Github Flavored Markdow
 #### Sending a Selection
 
 An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `ctrl-, s` (Press ctrl and comma together, release, then press s). This allows sending multiple blocks of code at once.
+
+### Inline Results Display
+
+Inline display of executed blocks or selections is supported if you have the [Atom Ink](https://github.com/JunoLab/atom-ink) package installed. You can disable inline results through the configuration.
+
+![inline results screenshot](https://github.com/jasongilman/proto-repl/raw/master/images/inline_results.gif)
+
+### Automatic Evaluation Mode
+
+(Automatic Evaluation is in beta and subject to change. [Please report any issues or suggestions for improvement](https://github.com/jasongilman/proto-repl/issues).)
+
+Proto REPL supports the automatic evaluation of top level forms as you type. The results are displayed inline next to each top level form. This requires [Atom Ink](https://github.com/JunoLab/atom-ink) to be installed. Automatic Evaluation Mode can be started for a file by toggling the Atom Command Palette (cmd-alt-p) and selecting "Proto Repl: Autoeval File". It can be stopped by toggling the Atom Command Palette (cmd-alt-p) and selecting "Proto Repl: Stop Autoeval File"
+
+![automatic evaluation mode screenshot](https://github.com/jasongilman/proto-repl/raw/master/images/autoeval.gif)
 
 ## Installation
 
