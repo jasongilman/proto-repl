@@ -88,7 +88,7 @@ The visualization shown was created with [Proto REPL Charts](https://atom.io/pac
 
 `apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
 
-Make sure that the path to the `lein` command is correct in the proto-repl settings. Use `which lein` in a terminal to get the path.
+Make sure that the path to the `lein` command is correct in the Proto REPL settings. Proto REPL settings can be accessed in Atom by opening "Preferences" from the main menu, then selecting the "Packages" tab. Proto REPL will be one of the packages listed. Click the "Settings" button there and look for the "Lein Path" setting. Use `which lein` in a terminal to get the path.
 
 ### Dependencies
 
@@ -156,6 +156,22 @@ atom.commands.add 'atom-text-editor', 'custom:print-var-documentation', ->
 ```
 
 More examples can be seen in the [ProtoRepl class](https://github.com/jasongilman/proto-repl/blob/master/lib/proto-repl.coffee).
+
+### Code Execution Extensions
+
+Proto REPL can be integrated with other packages via Code Execution Extensions. They allow other Atom packages to extend Proto REPL by taking output from the REPL and redirecting it for other uses like visualization.
+
+Code execution extensions are triggered when the result of code execution is a vector where the first element is the keyword `:proto-repl-code-execution-extension`. The second element in the vector should be the name of the extension to trigger. The name will be used to locate the callback function. The third element in the vector is some data that will be passed to the callback function.
+
+#### Example
+
+[Proto REPL Charts](https://github.com/jasongilman/proto-repl-charts) uses this mechanism to register itself with Proto REPL. When Proto REPL Charts starts it runs the following bit of code.
+
+```CoffeeScript
+protoRepl.registerCodeExecutionExtension("proto-repl-charts", (data)=> @display(data))
+```
+
+A proto-repl-charts Clojure library contains functions for "displaying" tables. All they do is return vectors with the special keyword noted above and the information to display. The `display` function above performs the actual display of the data.
 
 ## Keybindings and Events
 
