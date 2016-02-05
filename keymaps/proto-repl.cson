@@ -10,7 +10,7 @@
 
 ## Common key bindings for every OS.
 
-'.workspace .editor:not(.mini)':
+'atom-workspace atom-text-editor:not([mini])':
   'ctrl-, l': 'proto-repl:toggle'
   'ctrl-, shift-l': 'proto-repl:toggle-current-project-clj'
   'ctrl-, e': 'proto-repl:exit-repl'
@@ -36,7 +36,7 @@
 
 
 ## Mac Specific Keybindings
-'.platform-darwin .workspace .editor:not(.mini)':
+'.platform-darwin atom-workspace atom-text-editor:not([mini])':
   'cmd-alt-l': 'proto-repl:toggle'
   'cmd-alt-shift-l': 'proto-repl:toggle-current-project-clj'
   'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
