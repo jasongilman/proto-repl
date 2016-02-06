@@ -206,6 +206,7 @@
 ### New/Modified Features
 
 * Added updated implementation of displaying inline values from the REPL. The values are converted into a displayable tree where each child part can be expanded.
+* Fixed #37 Selecting and opening a namespace alias now works.
 
 ### Bug Fixes
 

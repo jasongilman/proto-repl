@@ -516,7 +516,7 @@ module.exports = ProtoRepl =
                     (require 'clojure.java.shell)
                     (require 'clojure.java.io)
                     (let [var-sym '#{selected}
-                          the-var (or (some->> (find-ns var-sym)
+                          the-var (or (some->> (or (get (ns-aliases *ns*) var-sym) (find-ns var-sym))
                                                clojure.repl/dir-fn
                                                first
                                                name
