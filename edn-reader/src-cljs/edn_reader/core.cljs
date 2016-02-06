@@ -23,6 +23,24 @@
   (let [data (r/read-string s)]
     (with-out-str (fipp/pprint data))))
 
+(defn to-ink*
+  "Recursive form of conversion to Atom ink tree."
+  [v]
+  (cond
+    (map? v)
+    (for [[k val] v]
+      (into [(str (pr-str k) " " (pr-str val))]
+            (to-ink* val)))
+    (sequential? v)
+    (map to-ink* v)
+    :else [v]))
+
+(defn ^:export to-ink-tree
+  "Parses an EDN style tree and converts it into the Atom ink style tree for display."
+  [v]
+  (let [v (r/read-string v)]
+    (clj->js (into [(pr-str v)] (to-ink* v)))))
+
 (defn -main [& args])
 
 (set! *main-cli-fn* -main)
