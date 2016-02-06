@@ -17,7 +17,7 @@
   "dependencies": {
     "atom-space-pen-views": "2.1.1",
     "underscore": "^1.8.3",
-    "nrepl-client": "git://github.com/rksm/node-nrepl-client#da17768d0c2a63478233ab63d5e1ec121e0db834"
+    "jg-nrepl-client": "0.2.3"
   },
   "package-dependencies": {
     "tool-bar": "^0.1.0"

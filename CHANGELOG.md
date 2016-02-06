@@ -210,3 +210,4 @@
 ### Bug Fixes
 
 * Fixed an issue where if there was lots of standard output the returned value wouldn't be printed in the correct position within the output. This caused tests that produced lots of output to hide their results somewhere in the middle of the output.
+* Fixed #50 with temporary change to a forked version of node-nrepl-client (jg-nrepl-client) that is published on npm.

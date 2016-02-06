@@ -2,7 +2,7 @@
 
 ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
-nrepl = require('nrepl-client')
+nrepl = require('jg-nrepl-client')
 ClojureVersion = require './clojure-version'
 LocalReplProcess = require './local-repl-process'
 RemoteReplProcess = require './remote-repl-process'
