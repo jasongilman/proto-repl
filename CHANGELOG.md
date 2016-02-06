@@ -200,3 +200,9 @@
 * Fixed #17 - Added ability to connect to a remote nREPL. Thanks to [@geksilla](https://github.com/jasongilman/proto-repl/pull/45)
 * Tweaking auto evaluation mode so that it doesn't display a marker and it correctly clears Atom ink inline results
 * Taking inline mode out of beta.
+
+## 0.14.0
+
+### New/Modified Features
+
+* Added updated implementation of displaying inline values from the REPL. The values are converted into a displayable tree where each child part can be expanded.
