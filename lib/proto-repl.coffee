@@ -461,6 +461,7 @@ module.exports = ProtoRepl =
           @executeCodeInNs "(do
                               (require 'clojure.repl)
                               (with-out-str (clojure.repl/doc #{selected})))",
+                          displayInRepl: false
                           resultHandler: inlineHandler
         else
           @executeCodeInNs "(do
