@@ -316,6 +316,7 @@ module.exports = ProtoRepl =
       # like #'user/reset. We'll just return the original string in that case.
       return [ednString]
 
+  # Helper function for autoevaling results.
   executeRanges: (editor, ranges)->
     if range = ranges.shift()
       code = editor.getTextInBufferRange(range)
@@ -325,6 +326,7 @@ module.exports = ProtoRepl =
         inlineOptions:
           editor: editor
           range: range
+        displayInRepl: false # autoEval only displays inline
         resultHandler: (result, options)=>
           @repl.inlineResultHandler(result, options)
           # Recurse back in again to execute the next range
@@ -365,7 +367,7 @@ module.exports = ProtoRepl =
   getSelectedText: (editor)->
     text = editor.getSelectedText()
     if text == ""
-      @executeCode("(println \"This command requires you to select some text.\")")
+      @appendText("This command requires you to select some text.")
       null
     else
       text
@@ -404,8 +406,10 @@ module.exports = ProtoRepl =
   # function. Will invoke the optional callback if refresh is successful.
   refreshNamespaces: (callback=null)->
     @appendText("Refreshing code...\n")
-    @executeCode @refreshNamespacesCommand, resultHandler: (result)=>
-      @refreshResultHandler(callback, result)
+    @executeCode @refreshNamespacesCommand,
+      displayInRepl: false
+      resultHandler: (result)=>
+        @refreshResultHandler(callback, result)
 
 
   # Refreshes all of the code in the project whether it has changed or not.
@@ -418,6 +422,7 @@ module.exports = ProtoRepl =
                     (when (find-ns 'clojure.tools.namespace.repl)
                       (eval '(clojure.tools.namespace.repl/clear)))
                     #{@refreshNamespacesCommand})",
+      displayInRepl: false
       resultHandler: (result)=> @refreshResultHandler(callback, result)
 
   loadCurrentFile: ->
@@ -540,10 +545,12 @@ module.exports = ProtoRepl =
                             (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
                           [decompressed-file-path line])
                         [file-path line])))"
-        @executeCodeInNs text, resultHandler: (result)=>
-          if result.value
-            @appendText("Opening #{result.value}")
-            [file, line] = @parseEdn(result.value)
-            atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
-          else
-            @appendText("Error trying to open: #{result.error}")
+        @executeCodeInNs text,
+          displayInRepl: false
+          resultHandler: (result)=>
+            if result.value
+              @appendText("Opening #{result.value}")
+              [file, line] = @parseEdn(result.value)
+              atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
+            else
+              @appendText("Error trying to open: #{result.error}")

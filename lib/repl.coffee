@@ -24,8 +24,18 @@ class Repl
   # The nrepl connection
   conn: null
 
+  # The standard nREPL session
+  session: null
+
+  # A separate nREPL session for sending commands in which we do not want the result
+  # value sent to the REPL.
+  cmdSession: null
+
   # The text editor where results are displayed or commands can be enterered
   replTextEditor: null
+
+  # Keeps track of the REPL history.
+  replHistory: null
 
   # A map of code execution extension names to callback functions.
   codeExecutionExtensions: null
@@ -101,13 +111,15 @@ class Repl
       for msg in messages
         if msg.out
           @appendText(msg.out)
-        else if msg.err
-          @appendText("=> " + msg.err)
-        else if msg.value
-          if atom.config.get("proto-repl.autoPrettyPrint")
-            @appendText("=>\n" + protoRepl.prettyEdn(msg.value))
-          else
-            @appendText("=> " + msg.value)
+        else if msg.session == @session
+          # Only print values from the regular session.
+          if msg.err
+            @appendText("=> " + msg.err)
+          else if msg.value
+            if atom.config.get("proto-repl.autoPrettyPrint")
+              @appendText("=>\n" + protoRepl.prettyEdn(msg.value))
+            else
+              @appendText("=> " + msg.value)
 
   connectToRepl: ({host, port})=>
     host ?= "localhost"
@@ -126,7 +138,12 @@ class Repl
 
           @startResponseLogging()
 
-        @emitter.emit 'proto-repl-repl:start'
+        # Create a session for requests that we don't want the values printed to
+        # the repl.
+        @conn.clone (err, messages)=>
+          @cmdSession = messages[0]["new-session"]
+          @emitter.emit 'proto-repl-repl:start'
+
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
@@ -137,9 +154,9 @@ class Repl
     @replTextEditor?.appendText(text, waitUntilOpen)
 
   # Sends the given code to the REPL and calls the given callback with the results
-  sendToRepl: (text, resultHandler)->
+  sendToRepl: (text, session, resultHandler)->
     return null unless @running()
-    @conn.eval text, "user", @session, (err, messages)=>
+    @conn.eval text, "user", session, (err, messages)=>
       for msg in messages
         if msg.value
           resultHandler(value: msg.value)
@@ -215,6 +232,8 @@ class Repl
   # * displayCode - Code to display in the REPL. This can be used when the code
   # executed is wrapped in eval or other code that shouldn't be displayed to the
   # user.
+  # * displayInRepl - Boolean to indicate if the result value or error should be
+  # displayed in the REPL. Defaults to true.
   executeCode: (code, options={})->
     return null unless @running()
 
@@ -232,7 +251,12 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-    @sendToRepl code, (result)=>
+    if options.displayInRepl == false
+      session = @cmdSession
+    else
+      session = @session
+
+    @sendToRepl code, session, (result)=>
       # check if it's an extension response
       if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
         parsed = window.protoRepl.parseEdn(result.value)
