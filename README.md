@@ -70,7 +70,7 @@ An arbitrary set of selected Clojure code can be sent to the REPL by selecting t
 
 ### Inline Results Display
 
-Inline display of executed blocks or selections is supported if you have the [Atom Ink](https://github.com/JunoLab/atom-ink) package installed. You can disable inline results through the configuration.
+Inline display of executed blocks or selections is supported if you have the [Atom Ink](https://github.com/JunoLab/atom-ink) package installed. You can disable inline results through the configuration. The values displayed inline are shown in a tree like view that lets you explore large nested data structures without having to view all of the data.
 
 ![inline results screenshot](https://github.com/jasongilman/proto-repl/raw/master/images/inline_results.gif)
 
