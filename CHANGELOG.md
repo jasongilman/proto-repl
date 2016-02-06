@@ -206,3 +206,7 @@
 ### New/Modified Features
 
 * Added updated implementation of displaying inline values from the REPL. The values are converted into a displayable tree where each child part can be expanded.
+
+### Bug Fixes
+
+* Fixed an issue where if there was lots of standard output the returned value wouldn't be printed in the correct position within the output. This caused tests that produced lots of output to hide their results somewhere in the middle of the output.

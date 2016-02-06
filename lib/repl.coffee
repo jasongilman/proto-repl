@@ -95,6 +95,20 @@ class Repl
     @process.start(host, port)
 
 
+  startResponseLogging: ->
+    # Log any output from the nRepl connection messages
+    @conn.messageStream.on "messageSequence", (id, messages)=>
+      for msg in messages
+        if msg.out
+          @appendText(msg.out)
+        else if msg.err
+          @appendText("=> " + msg.err)
+        else if msg.value
+          if atom.config.get("proto-repl.autoPrettyPrint")
+            @appendText("=>\n" + protoRepl.prettyEdn(msg.value))
+          else
+            @appendText("=> " + msg.value)
+
   connectToRepl: ({host, port})=>
     host ?= "localhost"
     @conn = nrepl.connect({port: port, host: host, verbose: false})
@@ -110,13 +124,9 @@ class Repl
           unless @clojureVersion.isSupportedVersion()
             @appendText("WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.")
 
-        @emitter.emit 'proto-repl-repl:start'
+          @startResponseLogging()
 
-      # Log any output from the nRepl connection messages
-      @conn.messageStream.on "messageSequence", (id, messages)=>
-        for msg in messages
-          if msg.out
-            @appendText(msg.out)
+        @emitter.emit 'proto-repl-repl:start'
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
@@ -195,16 +205,7 @@ class Repl
 
       handler(result)
 
-  appendingResultHandler: (result, options)->
-    if result.error
-      @appendText("=> " + result.error)
-    else if atom.config.get("proto-repl.autoPrettyPrint")
-        @appendText("=>\n" + protoRepl.prettyEdn(result.value))
-    else
-      @appendText("=> " + result.value)
-
   normalResultHandler: (result, options)->
-    @appendingResultHandler(result, options)
     @inlineResultHandler(result, options)
 
   # Executes the given code string.
