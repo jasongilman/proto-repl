@@ -23,23 +23,37 @@
   (let [data (r/read-string s)]
     (with-out-str (fipp/pprint data))))
 
-(defn to-ink*
-  "Recursive form of conversion to Atom ink tree."
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; For converting into a displayable tree.
+
+(defn to-display-tree*
   [v]
   (cond
+    ;; Handles a map.
     (map? v)
-    (for [[k val] v]
-      (into [(str (pr-str k) " " (pr-str val))]
-            (to-ink* val)))
-    (sequential? v)
-    (map to-ink* v)
-    :else [v]))
+    (into [(pr-str v)]
+       ;; Loop over each map entry
+       (map (fn [entry]
+              [(pr-str entry)
+               (to-display-tree* (second entry))])
+            v))
 
-(defn ^:export to-ink-tree
-  "Parses an EDN style tree and converts it into the Atom ink style tree for display."
+    ;; Handles a sequence
+    (or (sequential? v) (set? v))
+    (into [(pr-str v)] (map to-display-tree* v))
+
+    ;; Leaf
+    :else [(pr-str v)]))
+
+
+(defn ^:export to-display-tree
+  "Converts the edn string into a displayable tree. A tree is a vector whose first
+   element is a string of the root of the tree. The rest of the elements are branches
+   off the root. Each branch is another tree. A leaf is represented by a vector
+   of one element."
   [v]
-  (let [v (r/read-string v)]
-    (clj->js (into [(pr-str v)] (to-ink* v)))))
+  (-> v r/read-string to-display-tree* clj->js))
+
 
 (defn -main [& args])
 

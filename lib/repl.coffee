@@ -154,8 +154,25 @@ class Repl
       # Remove the existing view if there is one
       @ink.Result.removeLines(editor, start, end)
 
+      # Defines a recursive function that can convert the tree of values to
+      # display into an Atom Ink tree view. Sub-branches are expandable.
+      recurseTree = ([head, children...])=>
+        if children && children.length > 0
+          childViews = children.map  (x)=>
+            if x instanceof Array
+              recurseTree(x)
+            else
+              view = document.createElement 'div'
+              view.appendChild(new Text(x))
+              view
+          @ink.tree.treeView(head, childViews, {})
+        else
+          view = document.createElement 'div'
+          view.appendChild(new Text(head))
+          view
+      view = recurseTree(tree)
+
       # Add new inline view
-      view = @ink.tree.treeView(tree[0], tree.slice(1), {})
       new @ink.Result editor, [start, end],
         content: view
 
@@ -174,14 +191,7 @@ class Repl
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
       io = options.inlineOptions
       handler = @makeInlineHandler io.editor, io.range, (value)->
-        toplevelValue = value
-        if toplevelValue.length > 50
-          toplevelValue = toplevelValue.substr(0, 50) + "..."
-        prettyPrinted = protoRepl.prettyEdn(value).trim()
-        if prettyPrinted == toplevelValue
-          tree = [toplevelValue]
-        else
-          tree = [toplevelValue, [prettyPrinted]]
+        protoRepl.ednToDisplayTree(value)
 
       handler(result)
 
