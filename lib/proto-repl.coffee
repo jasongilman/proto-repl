@@ -538,11 +538,12 @@ module.exports = ProtoRepl =
                             (println \"decompressing\" jar-path \"to\" decompressed-path)
                             (.mkdirs decompressed-path-dir)
                             (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
-                          (println \"Opening file\" decompressed-file-path \"to line\" line)
-                          (clojure.java.shell/sh \"/usr/local/bin/atom\" (str decompressed-file-path \":\" line))
-                          nil)
-                        (do
-                          (println \"Opening file\" file-path)
-                          (clojure.java.shell/sh \"/usr/local/bin/atom\" (str file-path \":\" line))
-                          nil))))"
-        @executeCodeInNs(text)
+                          [decompressed-file-path line])
+                        [file-path line])))"
+        @executeCodeInNs text, resultHandler: (result)=>
+          if result.value
+            @appendText("Opening #{result.value}")
+            [file, line] = @parseEdn(result.value)
+            atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
+          else
+            @appendText("Error trying to open: #{result.error}")
