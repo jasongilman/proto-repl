@@ -54,6 +54,18 @@
   [v]
   (-> v r/read-string to-display-tree* clj->js))
 
+; TODO writing your own edn parser would handle both the "..." and "#" for depth
+; and also var references like '#user/foo or other things it can't parse
+
+
+; TODO document this
+(defn ^:export saved-values-to-display-trees
+  [uniq-forms-to-values-str]
+  (let [uniq-forms-to-values (r/read-string uniq-forms-to-values-str)]
+    (clj->js (into [] (for [[uniq-form vals] uniq-forms-to-values]
+                        [uniq-form (to-display-tree* vals)])))))
+
+
 
 (defn -main [& args])
 

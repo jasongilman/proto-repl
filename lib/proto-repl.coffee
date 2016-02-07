@@ -316,6 +316,13 @@ module.exports = ProtoRepl =
       # like #'user/reset. We'll just return the original string in that case.
       return [ednString]
 
+  ednSavedValuesToDisplayTrees: (ednString)->
+    try
+      edn_reader.core.saved_values_to_display_trees(ednString)
+    catch error
+      console.log error
+      return []
+
   # Helper function for autoevaling results.
   executeRanges: (editor, ranges)->
     if range = ranges.shift()
@@ -360,6 +367,52 @@ module.exports = ProtoRepl =
         editor.protoReplAutoEvalDisposable.dispose()
         editor.protoReplAutoEvalDisposable = null
 
+
+  #############################################################################
+  # inline display of saved values
+
+  # TODO move to utils or something
+  literalRegex: (s)->
+    # From http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
+    new RegExp(s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+
+  findEditorRangeContainingForm: (form)->
+    editors = atom.workspace.getTextEditors()
+    regex = @literalRegex(form)
+
+    for editor in editors
+      foundRange = null
+      editor.scan regex, (matched)=>
+        foundRange = matched.range
+        matched.stop()
+      return [editor, foundRange] if foundRange
+
+  pollForUpdatedSavedValues: ->
+    console.log("Polling for saved value updates")
+    # How do we check for updated values?
+    code = "(deref user/saved-values)"
+    @executeCode code,
+      displayInRepl: false
+      resultHandler: (result, options)=>
+        if result.error
+          @appendText("Error polling for saved values #{result.error}")
+          return
+        # TODO this will fail if there's something like` a var binding or other weird thing in the saved values.
+        # TODO move the code from the function to here
+        console.log("Parsing", result.value)
+        uniqsToTrees = @ednSavedValuesToDisplayTrees(result.value)
+        for [uniq, tree] in uniqsToTrees
+          [editor, range] = @findEditorRangeContainingForm(uniq)
+          @repl.displayInline(editor, range, tree)
+
+
+  startSavedInlineDisplayPolling: ->
+    @pollingId = setInterval(=>
+                      @pollForUpdatedSavedValues()
+                    , 5000)
+
+  stopSavedInlineDisplayPolling: ->
+    clearInterval(@pollingId)
 
   #############################################################################
   # Code helpers

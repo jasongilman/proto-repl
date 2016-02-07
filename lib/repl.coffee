@@ -156,12 +156,43 @@ class Repl
   # Sends the given code to the REPL and calls the given callback with the results
   sendToRepl: (text, session, resultHandler)->
     return null unless @running()
+    # TODO temporary
+    console.log text
     @conn.eval text, "user", session, (err, messages)=>
       for msg in messages
         if msg.value
           resultHandler(value: msg.value)
         else if msg.err
           resultHandler(error: msg.err)
+
+  displayInline: (editor, range, tree)->
+    start = range.start.row
+    end = range.end.row
+
+    # Remove the existing view if there is one
+    @ink.Result.removeLines(editor, start, end)
+
+    # Defines a recursive function that can convert the tree of values to
+    # display into an Atom Ink tree view. Sub-branches are expandable.
+    recurseTree = ([head, children...])=>
+      if children && children.length > 0
+        childViews = children.map  (x)=>
+          if x instanceof Array
+            recurseTree(x)
+          else
+            view = document.createElement 'div'
+            view.appendChild(new Text(x))
+            view
+        @ink.tree.treeView(head, childViews, {})
+      else
+        view = document.createElement 'div'
+        view.appendChild(new Text(head))
+        view
+    view = recurseTree(tree)
+
+    # Add new inline view
+    new @ink.Result editor, [start, end],
+      content: view
 
   # Makes an inline displaying result handler
   # * editor - the text editor to show the inline display in
@@ -174,34 +205,8 @@ class Repl
         tree = valueToTreeFn(result.value)
       else
         tree = [result.error]
+      @displayInline(editor, range, tree)
 
-      start = range.start.row
-      end = range.end.row
-
-      # Remove the existing view if there is one
-      @ink.Result.removeLines(editor, start, end)
-
-      # Defines a recursive function that can convert the tree of values to
-      # display into an Atom Ink tree view. Sub-branches are expandable.
-      recurseTree = ([head, children...])=>
-        if children && children.length > 0
-          childViews = children.map  (x)=>
-            if x instanceof Array
-              recurseTree(x)
-            else
-              view = document.createElement 'div'
-              view.appendChild(new Text(x))
-              view
-          @ink.tree.treeView(head, childViews, {})
-        else
-          view = document.createElement 'div'
-          view.appendChild(new Text(head))
-          view
-      view = recurseTree(tree)
-
-      # Add new inline view
-      new @ink.Result editor, [start, end],
-        content: view
 
   # Wraps the given code in an eval and a read-string. This safely handles
   # unbalanced parentheses, other kinds of invalid code, and handling reader
