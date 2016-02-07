@@ -170,7 +170,7 @@ class ReplTextEditor
 
   autoscroll: ->
     if atom.config.get('proto-repl.autoScroll')
-      @textEditor?.scrollToBottom()
+      @textEditor?.scrollToBufferPosition([@textEditor?.getLastBufferRow(), 0])
 
   # Appends text to the display area of the text editor
   appendText: (text, waitUntilOpen=false)->
