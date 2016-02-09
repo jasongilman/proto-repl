@@ -213,3 +213,9 @@
 * Fixed an issue where if there was lots of standard output the returned value wouldn't be printed in the correct position within the output. This caused tests that produced lots of output to hide their results somewhere in the middle of the output.
 * Fixed #50 with temporary change to a forked version of node-nrepl-client (jg-nrepl-client) that is published on npm.
 * Fixed #43 opening files using internal Atom APIs instead of shelling out.
+
+## 0.14.1
+
+### Bug Fixes
+
+* Fixed #57 - a problem where the REPL displayed everything twice when cider-nrepl middleware was included.
