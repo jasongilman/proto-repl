@@ -20,7 +20,8 @@
     "jg-nrepl-client": "0.2.3"
   },
   "package-dependencies": {
-    "tool-bar": "^0.1.0"
+    "tool-bar": "^0.1.0",
+    "ink": "^0.3.2"
   },
   "consumedServices": {
     "tool-bar": {
