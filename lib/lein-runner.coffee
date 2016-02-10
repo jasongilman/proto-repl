@@ -4,15 +4,24 @@ fs = require 'fs'
 _ = require 'underscore'
 
 filteredEnv = _.omit process.env, 'ATOM_HOME', 'ATOM_SHELL_INTERNAL_RUN_AS_NODE', 'GOOGLE_API_KEY', 'NODE_ENV', 'NODE_PATH', 'userAgent', 'taskPath'
-envPath = filteredEnv["PATH"] || ""
+
 
 module.exports = (currentWorkingDir, leinPath, args) ->
   callback = @async()
   try
-    filteredEnv["PATH"] = envPath + path.delimiter + leinPath
-    leinExec = "lein"
     if process.platform == "win32"
-      leinExec = "lein.bat"
+      # Windows
+      if leinPath.endsWith("lein.bat")
+        leinExec = leinPath
+      else
+        leinExec = path.join(leinPath, "lein.bat")
+      envPath = filteredEnv["Path"] || ""
+      filteredEnv["Path"] = envPath + path.delimiter + leinPath
+    else
+      # Mac/Linux
+      leinExec = "lein"
+      envPath = filteredEnv["PATH"] || ""
+      filteredEnv["PATH"] = envPath + path.delimiter + leinPath
 
     replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
 

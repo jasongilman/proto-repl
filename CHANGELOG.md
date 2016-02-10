@@ -220,3 +220,4 @@
 
 * Fixed #57 - a problem where the REPL displayed everything twice when cider-nrepl middleware was included.
 * Adding atom ink to the list of package dependencies.
+* Fixed #13 (again) Fixed startup issues on Windows. 
