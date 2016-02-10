@@ -10,11 +10,21 @@ module.exports = (currentWorkingDir, leinPath, args) ->
   callback = @async()
   try
     filteredEnv["PATH"] = envPath + path.delimiter + leinPath
+    
+    defaultLeinExec = "lein"
     leinExec = "lein"
     if process.platform == "win32"
       leinExec = "lein.bat"
 
-    replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
+    fullLein = leinExec
+    if leinPath.trim() != ""
+      if not (leinPath.endsWith(defaultLeinExec) or leinPath.endsWith(leinExec))
+        if leinPath.endsWith("/") or leinPath.endsWith("\\")
+          fullLein = leinPath + leinExec
+        else
+          fullLein = leinPath + "/" + leinExec
+          
+    replProcess = childProcess.spawn fullLein, args, cwd: currentWorkingDir, env: filteredEnv
 
     replProcess.on 'error', (error)->
       processData("Error starting repl: " + error +
