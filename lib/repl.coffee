@@ -124,6 +124,8 @@ class Repl
   connectToRepl: ({host, port})=>
     host ?= "localhost"
     @conn = nrepl.connect({port: port, host: host, verbose: false})
+    responseLoggingStarted = false
+
     @conn.once 'connect', =>
       # Create a persistent session
       @conn.clone (err, messages)=>
@@ -136,7 +138,11 @@ class Repl
           unless @clojureVersion.isSupportedVersion()
             @appendText("WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.")
 
-          @startResponseLogging()
+          # Handle multiple callbacks for this which can happen during REPL startup
+          # with cider-nrepl middleware for some reason.
+          unless responseLoggingStarted
+            @startResponseLogging()
+            responseLoggingStarted = true
 
         # Create a session for requests that we don't want the values printed to
         # the repl.

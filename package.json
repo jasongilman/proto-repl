@@ -1,7 +1,7 @@
 {
   "name": "proto-repl",
   "main": "./lib/proto-repl",
-  "version": "0.14.0",
+  "version": "0.14.1",
   "description": "Provides a Clojure Development Environment with an interactive REPL. You can easily send code to the REPL, run tests in your project, view documentation, and much more.",
   "keywords": [
     "clojure",
@@ -20,7 +20,8 @@
     "jg-nrepl-client": "0.2.3"
   },
   "package-dependencies": {
-    "tool-bar": "^0.1.0"
+    "tool-bar": "^0.1.0",
+    "ink": "^0.3.2"
   },
   "consumedServices": {
     "tool-bar": {
