@@ -371,22 +371,7 @@ module.exports = ProtoRepl =
   #############################################################################
   # inline display of saved values
 
-  # TODO move to utils or something
-  literalRegex: (s)->
-    # From http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
-    new RegExp(s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
-
-  findEditorRangeContainingForm: (form)->
-    editors = atom.workspace.getTextEditors()
-    regex = @literalRegex(form)
-
-    for editor in editors
-      foundRange = null
-      editor.scan regex, (matched)=>
-        foundRange = matched.range
-        matched.stop()
-      return [editor, foundRange] if foundRange
-
+  # TODO
   pollForUpdatedSavedValues: ->
     console.log("Polling for saved value updates")
     # How do we check for updated values?
@@ -398,19 +383,23 @@ module.exports = ProtoRepl =
           @appendText("Error polling for saved values #{result.error}")
           return
         # TODO this will fail if there's something like` a var binding or other weird thing in the saved values.
+        # TODO file an issue for that
+
         # TODO move the code from the function to here
         console.log("Parsing", result.value)
         uniqsToTrees = @ednSavedValuesToDisplayTrees(result.value)
         for [uniq, tree] in uniqsToTrees
-          [editor, range] = @findEditorRangeContainingForm(uniq)
+          [editor, range] = @EditorUtils.findEditorRangeContainingString(uniq)
           @repl.displayInline(editor, range, tree)
 
 
+  # TODO
   startSavedInlineDisplayPolling: ->
     @pollingId = setInterval(=>
                       @pollForUpdatedSavedValues()
                     , 5000)
 
+  # TODO
   stopSavedInlineDisplayPolling: ->
     clearInterval(@pollingId)
 

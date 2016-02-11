@@ -177,3 +177,19 @@ module.exports = EditorUtils =
     pos = editor.getCursorBufferPosition()
     topLevelRanges = @getTopLevelRanges(editor)
     topLevelRanges.find (range) -> range.containsPoint(pos)
+
+  # Searches all open text editors for the given string. Returns a tuple of the
+  # editor found and the range within the editor for the first location that
+  # matches
+  findEditorRangeContainingString: (str)->
+    editors = atom.workspace.getTextEditors()
+    # Create a literal regex to search for the given str
+    # From http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript
+    regex = new RegExp(str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'))
+
+    for editor in editors
+      foundRange = null
+      editor.scan regex, (matched)=>
+        foundRange = matched.range
+        matched.stop()
+      return [editor, foundRange] if foundRange

@@ -1,6 +1,7 @@
 (ns edn-reader.core
   "Defines a functions for working with EDN."
   (:require [cljs.reader :as r]
+            [clojure.string :as str]
             [cljs.nodejs :as nodejs]
             [fipp.edn :as fipp]))
 
@@ -54,16 +55,35 @@
   [v]
   (-> v r/read-string to-display-tree* clj->js))
 
-; TODO writing your own edn parser would handle both the "..." and "#" for depth
-; and also var references like '#user/foo or other things it can't parse
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TODO
+
+(defn value-map->display-tree-values
+  [value-map]
+  (for [[var-name value] value-map
+        :let [val-display-tree (to-display-tree* value)]]
+    (update-in val-display-tree [0] #(str var-name ": " %))))
+
+(defn saved-value-maps->display-tree
+  "TODO"
+  [value-maps]
+  (let [[first-map & others] value-maps]
+    (concat [(str "Last Saved Values (" (str/join ", " (keys first-map)) ")")]
+            (value-map->display-tree-values first-map)
+            [(cons "Previous Values"
+                   (map-indexed
+                    (fn [i value-map]
+                      (into [(str (inc i))] (value-map->display-tree-values value-map)))
+                    others))])))
 
 
 ; TODO document this
 (defn ^:export saved-values-to-display-trees
-  [uniq-forms-to-values-str]
-  (let [uniq-forms-to-values (r/read-string uniq-forms-to-values-str)]
-    (clj->js (into [] (for [[uniq-form vals] uniq-forms-to-values]
-                        [uniq-form (to-display-tree* vals)])))))
+  "TODO"
+  [uniq-ids-to-values-str]
+  (let [uniq-ids-to-values (r/read-string uniq-ids-to-values-str)]
+    (clj->js (into [] (for [[uniq-form vals] uniq-ids-to-values]
+                        [uniq-form (saved-value-maps->display-tree vals)])))))
 
 
 
