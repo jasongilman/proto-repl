@@ -1,0 +1,43 @@
+(ns proto
+  "The main namespace for access Proto REPL helper functions")
+
+(def max-number-saved-values
+  "The maximum number of saved values that will be saved per id"
+  20)
+
+(def ^:private saved-values-atom
+  "A map of save call unique ids to a map of var names and values"
+  (atom {}))
+
+(defn saved-values
+  "Fetches the latest map of saved values. The oldest value map is the first element
+  in the list."
+  []
+  (deref saved-values-atom))
+
+(defn clear-saved-values!
+  "Clears all the saved values."
+  []
+  (reset! saved-values-atom {}))
+
+;; TODO each set of saved values should be given a version number. This will allow
+;; the GUI to more efficiently fetch and display only the changes.
+(defn save*
+  "Swaps in the map of var values"
+  [uniq-id var-values-map]
+  (swap! saved-values-atom update uniq-id
+         (fn [cur-values]
+           (let [new-values (conj (or cur-values []) var-values-map)]
+             (if (> (count new-values) max-number-saved-values)
+               (subvec new-values 1)
+               new-values)))))
+
+;; TODO allow specifying a var name
+(defmacro save
+  "Saves all the values of local bindings."
+  [uniq-id]
+  (let [locals (keys &env)
+        form-id (pr-str &form)
+        locals-map (into {} (for [local locals]
+                             [(name local) local]))]
+    `(save* ~form-id ~locals-map)))

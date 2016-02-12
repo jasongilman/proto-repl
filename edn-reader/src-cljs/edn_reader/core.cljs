@@ -67,7 +67,7 @@
 (defn saved-value-maps->display-tree
   "TODO"
   [value-maps]
-  (let [[first-map & others] value-maps]
+  (let [[first-map & others] (reverse value-maps)]
     (concat [(str "Last Saved Values (" (str/join ", " (keys first-map)) ")")]
             (value-map->display-tree-values first-map)
             [(cons "Previous Values"
@@ -82,8 +82,8 @@
   "TODO"
   [uniq-ids-to-values-str]
   (let [uniq-ids-to-values (r/read-string uniq-ids-to-values-str)]
-    (clj->js (into [] (for [[uniq-form vals] uniq-ids-to-values]
-                        [uniq-form (saved-value-maps->display-tree vals)])))))
+    (clj->js (into [] (for [[uniq-id vals] uniq-ids-to-values]
+                        [(str uniq-id) (saved-value-maps->display-tree vals)])))))
 
 
 

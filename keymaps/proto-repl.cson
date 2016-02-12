@@ -55,3 +55,9 @@
   'cmd-alt-n': 'proto-repl:list-ns-vars'
   'cmd-alt-shift-n': 'proto-repl:list-ns-vars-with-docs'
   'cmd-alt-o': 'proto-repl:open-file-containing-var'
+
+  # Save and recall beta keybindings
+  # TODO set these up
+  # 'cmd-alt-shift-i': 'proto-repl:insert-save-value-call'
+  # 'cmd-alt-': 'proto-repl:display-saved-values'
+  # 'cmd-alt-': 'proto-repl:clear-saved-values'

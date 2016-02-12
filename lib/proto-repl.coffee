@@ -96,6 +96,11 @@ module.exports = ProtoRepl =
       'proto-repl:autoeval-file': => @autoEvalCurrent()
       'proto-repl:stop-autoeval-file': => @stopAutoEvalCurrent()
 
+      # Beta save and display values feature
+      'proto-repl:insert-save-value-call': =>@insertSaveValueCall()
+      'proto-repl:display-saved-values': =>@fetchAndDisplaySavedValues()
+      'proto-repl:clear-saved-values': =>@clearSavedValues()
+
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
     @toolbar.addButton
@@ -273,8 +278,6 @@ module.exports = ProtoRepl =
         text = editor.getTextInBufferRange(range).trim()
         options.displayCode = text
 
-        # TODO we could do something with the result handler to unmark this area
-        # when it completes.
         # Highlight the area that's being executed temporarily
         marker = editor.markBufferRange(range)
         decoration = editor.decorateMarker(marker,
@@ -370,36 +373,56 @@ module.exports = ProtoRepl =
 
   #############################################################################
   # inline display of saved values
+  # This is a beta feature.
+  # TODO move this into it's own feature file
 
-  # TODO
-  pollForUpdatedSavedValues: ->
-    console.log("Polling for saved value updates")
-    # How do we check for updated values?
-    code = "(deref user/saved-values)"
-    @executeCode code,
+
+  # Inserts a call to save some data with a uniquely generated id
+  insertSaveValueCall: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      @nextUniqueSaveId ||= 1
+      editor.insertText("(proto/save #{@nextUniqueSaveId})")
+      @nextUniqueSaveId += 1
+
+  # Clears any displayed saved values and any values saved in the proto namespace.
+  clearSavedValues: ->
+    @executeCode "(proto/clear-saved-values!)", displayInRepl: false
+    ## TODO just get one of the text editors or any view
+    if editor = atom.workspace.getActiveTextEditor()
+      atom.commands.dispatch(atom.views.getView(editor), 'inline-results:clear-all')
+
+  # Fetches the latest saved values and displays them inline nest to the code.
+  fetchAndDisplaySavedValues: ->
+    # Fetch the latest saved values
+    @executeCode "(proto/saved-values)",
       displayInRepl: false
       resultHandler: (result, options)=>
         if result.error
           @appendText("Error polling for saved values #{result.error}")
           return
-        # TODO this will fail if there's something like` a var binding or other weird thing in the saved values.
-        # TODO file an issue for that
 
-        # TODO move the code from the function to here
-        console.log("Parsing", result.value)
+        # Convert the saved values into a map of uniq forms to the display trees
         uniqsToTrees = @ednSavedValuesToDisplayTrees(result.value)
+
         for [uniq, tree] in uniqsToTrees
+          # find the unique form in an editor
           [editor, range] = @EditorUtils.findEditorRangeContainingString(uniq)
+
+          # Display the saved values inline next to the call to save them.
           @repl.displayInline(editor, range, tree)
 
+  # Polling is currently not used. There's an issue in that if you have a view
+  # open it will overwrite the current inline display and collapse it. I need to
+  # implement some kind of versioning so that it won't do that if there hasn't been
+  # any change in value.
 
-  # TODO
+  # Starts polling for updated saved values
   startSavedInlineDisplayPolling: ->
     @pollingId = setInterval(=>
-                      @pollForUpdatedSavedValues()
+                      @fetchAndDisplaySavedValues()
                     , 5000)
 
-  # TODO
+  # Stops polling for updated saved values
   stopSavedInlineDisplayPolling: ->
     clearInterval(@pollingId)
 
