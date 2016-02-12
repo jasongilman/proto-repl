@@ -25,7 +25,24 @@ class LocalReplProcess
   constructor: (@appendText, @createConn)->
     null
 
+  getRootProject: (current_path=null, limit=0) ->
+    # Try to find the root of the current project by searching for project.clj
+    parent_directory = path.resolve(current_path, "..")
+    
+    if current_path != parent_directory and limit < 100
+      build_tool_files = ["project.clj"]
+
+      matches = fs.readdirSync(current_path).filter (f) ->
+        f in build_tool_files
+
+      if current_path and matches.length == 0
+        @getRootProject(parent_directory, limit + 1)
+      else
+        current_path unless matches.length == 0
+
   start: (projectPath=null)->
+    projectPath = @getRootProject(projectPath)
+    
     if @running()
       return
 
