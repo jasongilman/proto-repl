@@ -6,15 +6,9 @@
 
 * Clojure side
   * Allow specifying particular vars to save instead of everything.
-  * Document proto repl library
   * Push proto repl library to clojars
-* Proto REPL Side
-  * Write command to insert save call with keybinding and unique id
-  * Write command to display saved values
-  * Write command to clear saved values
-    * clears code
-    * Clears inline display
 * Towards end
+  * Test everything
   * Document the Feature
 
 ### Next
@@ -28,7 +22,8 @@
   * Send version when fetching.
   * Determine best polling interval (every second)
 * Towards end
-  * Document the Feature
+  * Testing
+  * Update feature documentation
   * Move gifs to the github cloud cdn instead of in repo
 
 ## Future Ideas

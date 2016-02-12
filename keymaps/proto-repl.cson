@@ -34,6 +34,11 @@
   'ctrl-shift-c': 'proto-repl:interrupt'
   'shift-enter': 'proto-repl:execute-text-entered-in-repl'
 
+  # Save and recall beta keybindings
+  'ctrl-< i': 'proto-repl:insert-save-value-call'
+  'ctrl-< d': 'proto-repl:display-saved-values'
+  'ctrl-< c': 'proto-repl:clear-saved-values'
+
 
 ## Mac Specific Keybindings
 '.platform-darwin atom-workspace atom-text-editor:not([mini])':
@@ -57,7 +62,6 @@
   'cmd-alt-o': 'proto-repl:open-file-containing-var'
 
   # Save and recall beta keybindings
-  # TODO set these up
-  # 'cmd-alt-shift-i': 'proto-repl:insert-save-value-call'
-  # 'cmd-alt-': 'proto-repl:display-saved-values'
-  # 'cmd-alt-': 'proto-repl:clear-saved-values'
+  'alt-shift-i': 'proto-repl:insert-save-value-call'
+  'alt-shift-d': 'proto-repl:display-saved-values'
+  'alt-shift-c': 'proto-repl:clear-saved-values'
