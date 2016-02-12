@@ -162,8 +162,6 @@ class Repl
   # Sends the given code to the REPL and calls the given callback with the results
   sendToRepl: (text, session, resultHandler)->
     return null unless @running()
-    # TODO temporary
-    console.log text
     @conn.eval text, "user", session, (err, messages)=>
       for msg in messages
         if msg.value

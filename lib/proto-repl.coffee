@@ -4,6 +4,7 @@ Repl = require './repl'
 url = require 'url'
 path = require 'path'
 EditorUtils = require './editor-utils'
+SaveRecallFeature = require './features/save-recall-feature'
 
 # This is built from the ClojureScript edn-reader project.
 # Rebuild it with lein cljsbuild once.
@@ -57,6 +58,8 @@ module.exports = ProtoRepl =
   toolbar: null
   ink: null
 
+  saveRecallFeature: null
+
   # A map of code execution extension names to callback functions.
   # See registerCodeExecutionExtension documentation for information on code execution extensions.
   # The same mutable map is shared with the REPL.
@@ -67,6 +70,8 @@ module.exports = ProtoRepl =
     window.protoRepl.EditorUtils = EditorUtils
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
+
+    @saveRecallFeature = new SaveRecallFeature(this)
 
     # Register commands
     @subscriptions.add atom.commands.add 'atom-workspace',
@@ -95,11 +100,6 @@ module.exports = ProtoRepl =
       'proto-repl:interrupt': => @interrupt()
       'proto-repl:autoeval-file': => @autoEvalCurrent()
       'proto-repl:stop-autoeval-file': => @stopAutoEvalCurrent()
-
-      # Beta save and display values feature
-      'proto-repl:insert-save-value-call': =>@insertSaveValueCall()
-      'proto-repl:display-saved-values': =>@fetchAndDisplaySavedValues()
-      'proto-repl:clear-saved-values': =>@clearSavedValues()
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
@@ -148,6 +148,8 @@ module.exports = ProtoRepl =
 
   deactivate: ->
     @subscriptions.dispose()
+    @saveRecallFeature.deactivate()
+    @saveRecallFeature = null
     @toolbar?.removeItems()
     if @repl
       @quitRepl()
@@ -371,60 +373,6 @@ module.exports = ProtoRepl =
         editor.protoReplAutoEvalDisposable = null
 
 
-  #############################################################################
-  # inline display of saved values
-  # This is a beta feature.
-  # TODO move this into it's own feature file
-
-
-  # Inserts a call to save some data with a uniquely generated id
-  insertSaveValueCall: ->
-    if editor = atom.workspace.getActiveTextEditor()
-      @nextUniqueSaveId ||= 1
-      editor.insertText("(proto/save #{@nextUniqueSaveId})")
-      @nextUniqueSaveId += 1
-
-  # Clears any displayed saved values and any values saved in the proto namespace.
-  clearSavedValues: ->
-    @executeCode "(proto/clear-saved-values!)", displayInRepl: false
-    ## TODO just get one of the text editors or any view
-    if editor = atom.workspace.getActiveTextEditor()
-      atom.commands.dispatch(atom.views.getView(editor), 'inline-results:clear-all')
-
-  # Fetches the latest saved values and displays them inline nest to the code.
-  fetchAndDisplaySavedValues: ->
-    # Fetch the latest saved values
-    @executeCode "(proto/saved-values)",
-      displayInRepl: false
-      resultHandler: (result, options)=>
-        if result.error
-          @appendText("Error polling for saved values #{result.error}")
-          return
-
-        # Convert the saved values into a map of uniq forms to the display trees
-        uniqsToTrees = @ednSavedValuesToDisplayTrees(result.value)
-
-        for [uniq, tree] in uniqsToTrees
-          # find the unique form in an editor
-          [editor, range] = @EditorUtils.findEditorRangeContainingString(uniq)
-
-          # Display the saved values inline next to the call to save them.
-          @repl.displayInline(editor, range, tree)
-
-  # Polling is currently not used. There's an issue in that if you have a view
-  # open it will overwrite the current inline display and collapse it. I need to
-  # implement some kind of versioning so that it won't do that if there hasn't been
-  # any change in value.
-
-  # Starts polling for updated saved values
-  startSavedInlineDisplayPolling: ->
-    @pollingId = setInterval(=>
-                      @fetchAndDisplaySavedValues()
-                    , 5000)
-
-  # Stops polling for updated saved values
-  stopSavedInlineDisplayPolling: ->
-    clearInterval(@pollingId)
 
   #############################################################################
   # Code helpers
