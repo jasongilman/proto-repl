@@ -25,29 +25,33 @@ class LocalReplProcess
   constructor: (@appendText, @createConn)->
     null
 
-  getRootProject: (current_path=null, limit=0) ->
+  # Searches upwords to find the root project if proto repl was opened in a
+  # subdirectory of the project.
+  getRootProject: (currentPath, limit=0) ->
     # Try to find the root of the current project by searching for project.clj
-    parent_directory = path.resolve(current_path, "..")
-    
-    if current_path != parent_directory and limit < 100
-      build_tool_files = ["project.clj"]
+    parentDirectory = path.resolve(currentPath, "..")
 
-      matches = fs.readdirSync(current_path).filter (f) ->
-        f in build_tool_files
+    if currentPath != parentDirectory and limit < 100
+      matches = fs.readdirSync(currentPath).filter (f) ->
+        f == "project.clj"
 
-      if current_path and matches.length == 0
-        @getRootProject(parent_directory, limit + 1)
+      if currentPath and matches.length == 0
+        @getRootProject(parentDirectory, limit + 1)
       else
-        current_path unless matches.length == 0
+        currentPath unless matches.length == 0
 
-  start: (projectPath=null)->
-    projectPath = @getRootProject(projectPath)
-    
+  start: (projectPath)->
     if @running()
       return
 
+    # Default project path to the current directory. This can still set the
+    # projectPath to null if no file is opened in atom.
     unless projectPath?
       projectPath = atom.project.getPaths()[0]
+
+    # Search for a project.clj file.
+    # The if must be used in case of no directory open in Atom.
+    projectPath = @getRootProject(projectPath) if projectPath
 
     # If we're not in a project or there isn't a leiningen project file use
     # the default project

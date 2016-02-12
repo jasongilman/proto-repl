@@ -79,7 +79,7 @@ class Repl
     @process?.running() && @conn != null
 
   # Starts the process unless it's already running.
-  startProcessIfNotRunning: (projectPath=null)->
+  startProcessIfNotRunning: (projectPath)->
     if @running()
       @appendText("REPL already running")
     else

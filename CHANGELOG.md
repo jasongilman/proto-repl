@@ -220,4 +220,11 @@
 
 * Fixed #57 - a problem where the REPL displayed everything twice when cider-nrepl middleware was included.
 * Adding atom ink to the list of package dependencies.
-* Fixed #13 (again) Fixed startup issues on Windows. 
+* Fixed #13 (again) Fixed startup issues on Windows.
+
+
+## 0.15.0
+
+### Enhancements
+
+* Fixed #51 - Proto REPL will now recursively search upwards for a project.clj file if it is opened in a subdirectory of a project.
