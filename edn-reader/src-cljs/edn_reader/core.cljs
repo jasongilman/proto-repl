@@ -76,6 +76,11 @@
                       (into [(str (inc i))] (value-map->display-tree-values value-map)))
                     others))])))
 
+;; TODO change the display tree to
+;; pr-str first map
+;;  pr-str first map
+;;  pr-str nth map map
+
 
 ; TODO document this
 (defn ^:export saved-values-to-display-trees

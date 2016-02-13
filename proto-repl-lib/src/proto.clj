@@ -32,11 +32,16 @@
                (subvec new-values 1)
                new-values)))))
 
+(defn- gensym-var?
+  "Returns true if the symbol represents a gensym var."
+  [sym]
+  (some? (re-matches #".+__\d+" (name sym))))
+
 ;; TODO allow specifying a var name
 (defmacro save
   "Saves all the values of local bindings."
   [uniq-id]
-  (let [locals (keys &env)
+  (let [locals (remove gensym-var? (keys &env))
         form-id (pr-str &form)
         locals-map (into {} (for [local locals]
                              [(name local) local]))]
