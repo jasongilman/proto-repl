@@ -170,11 +170,12 @@ class Repl
           resultHandler(error: msg.err)
 
   displayInline: (editor, range, tree)->
+    # TODO trying out putting the display for the very last line.
     start = range.start.row
     end = range.end.row
 
     # Remove the existing view if there is one
-    @ink.Result.removeLines(editor, start, end)
+    @ink.Result.removeLines(editor, end, end)
 
     # Defines a recursive function that can convert the tree of values to
     # display into an Atom Ink tree view. Sub-branches are expandable.
@@ -193,10 +194,17 @@ class Repl
         view.appendChild(new Text(head))
         view
     view = recurseTree(tree)
+    # TODO check if it's really necessary to put classes on both of these
+    # view.classList.add("proto-repl")
 
     # Add new inline view
-    new @ink.Result editor, [start, end],
+    r = new @ink.Result editor, [end, end],
       content: view
+
+    #TODO Document what the classes are for
+    r.view.classList.add 'proto-repl'
+
+    console.log r, view
 
   # Makes an inline displaying result handler
   # * editor - the text editor to show the inline display in

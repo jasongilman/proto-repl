@@ -1,5 +1,26 @@
 {CompositeDisposable} = require 'atom'
 
+exampleTree =
+  # Extra 2 spaces at the beginning of the first row to line things up
+  ["                                      m |         a | b |",
+   ["                                   {} |   :apples | 2 |",
+      "m: {}",
+      "a: :apples",
+      "b: 2"],
+   ["                          {:apples 2} |  :oranges | 3 |",
+     "m: {:apples 2}",
+     "a: :oranges",
+     "b: 3"],
+   ["              {:apples 2, :oranges 3} | :cherries | 4 |",
+     "m: {:apples 2, :oranges 3}",
+     "a: :cherries",
+     "b: 4"],
+   [" {:apples 2, :oranges 3, :cherries 4} |   :apples | 7 |",
+     "m: {:apples 2, :oranges 3, :cherries 4}",
+     "a: :apples",
+     "b: 7"]]
+
+
 module.exports =
 
 class SaveRecallFeature
@@ -32,18 +53,20 @@ class SaveRecallFeature
     if editor = atom.workspace.getActiveTextEditor()
       atom.commands.dispatch(atom.views.getView(editor), 'inline-results:clear-all')
 
+
   # Fetches the latest saved values and displays them inline nest to the code.
   fetchAndDisplaySavedValues: ->
     # Fetch the latest saved values
-   @protoRepl.executeCode "(proto/saved-values)",
-      displayInRepl: false
-      resultHandler: (result, options)=>
-        if result.error
-          @protoRepl.appendText("Error polling for saved values #{result.error}")
-          return
+  #  @protoRepl.executeCode "(proto/saved-values)",
+  #     displayInRepl: false
+  #     resultHandler: (result, options)=>
+  #       if result.error
+  #         @protoRepl.appendText("Error polling for saved values #{result.error}")
+  #         return
 
         # Convert the saved values into a map of uniq forms to the display trees
-        uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
+        # uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
+        uniqsToTrees = [["EXAMPLE", exampleTree]]
 
         for [uniq, tree] in uniqsToTrees
           # find the unique form in an editor
