@@ -57,16 +57,16 @@ class SaveRecallFeature
   # Fetches the latest saved values and displays them inline nest to the code.
   fetchAndDisplaySavedValues: ->
     # Fetch the latest saved values
-  #  @protoRepl.executeCode "(proto/saved-values)",
-  #     displayInRepl: false
-  #     resultHandler: (result, options)=>
-  #       if result.error
-  #         @protoRepl.appendText("Error polling for saved values #{result.error}")
-  #         return
+   @protoRepl.executeCode "(proto/saved-values)",
+      displayInRepl: false
+      resultHandler: (result, options)=>
+        if result.error
+          @protoRepl.appendText("Error polling for saved values #{result.error}")
+          return
 
         # Convert the saved values into a map of uniq forms to the display trees
-        # uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
-        uniqsToTrees = [["EXAMPLE", exampleTree]]
+        uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
+        # uniqsToTrees = [["EXAMPLE", exampleTree]]
 
         for [uniq, tree] in uniqsToTrees
           # find the unique form in an editor

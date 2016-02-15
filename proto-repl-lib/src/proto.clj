@@ -35,7 +35,9 @@
 (defn- gensym-var?
   "Returns true if the symbol represents a gensym var."
   [sym]
-  (some? (re-matches #".+__\d+" (name sym))))
+  (let [sym-name (name sym)]
+    (some? (or (re-matches #".+__\d+" sym-name)
+               (re-matches #".+__\d+__auto__" (name sym))))))
 
 ;; TODO allow specifying a var name
 (defmacro save

@@ -1,5 +1,19 @@
 # Save and Recall Feature
 
+Completed today
+
+* Figured out how to style with mono-space to make it look like a table
+* Came up with example table
+* Figured out how to expand the stuff
+* Figured out for future how to highlight the code in the inline view like Clojure
+* Came up with algorithm to layout the table within a size.
+* Started implementing it
+
+Questions
+
+* Sometimes I care about the latest value and sometimes I care about the order they were calculated in. The new design puts them in order of execution. It's probably ok. Latest is at the bottom.
+
+
 ## Left to do
 
 ### First Version
@@ -21,6 +35,7 @@
     * Need to track the result and then update the view inside it or remember the state of collapsed/not collapsed
   * Send version when fetching.
   * Determine best polling interval (every second)
+  * Use Highlights (https://github.com/atom/highlights) to provide syntax highlighting in inline views.
 * Towards end
   * Testing
   * Update feature documentation
