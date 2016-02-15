@@ -45,7 +45,7 @@
   [uniq-ids-to-values-str]
   (let [uniq-ids-to-values (r/read-string uniq-ids-to-values-str)]
     (clj->js (into [] (for [[uniq-id vals] uniq-ids-to-values]
-                        [(str uniq-id) (d/saved-value-maps->display-tree vals)])))))
+                        [(str uniq-id) (d/saved-value-maps->display-tree-table vals)])))))
 
 (defn -main [& args])
 

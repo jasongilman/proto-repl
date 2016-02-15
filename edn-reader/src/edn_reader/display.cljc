@@ -180,14 +180,6 @@
                      (fit-value-to-width (col-widths k) (get printable-map k)))]
     (str (str/join " | " value-strs) " |")))
 
-(defn rows->str
-  "TODO"
-  [printable-maps col-widths]
-  (let [key-order (map first (sort-by second col-widths))]
-     (for [pm printable-maps]
-       (row->str key-order pm col-widths))))
-
-
 (defn value-maps->table-rows
   "TODO"
   [value-maps]
@@ -197,8 +189,9 @@
         printable-maps (cons key-printable-map printable-maps)
         ;; TODO bail out if min table width is > max table width
         max-widths (printable-map-max-widths keys printable-maps)
-        col-widths (calculate-columns-widths max-widths)]
-    (rows->str printable-maps col-widths)))
+        col-widths (calculate-columns-widths max-widths)
+        key-order (map first (sort-by second col-widths))]
+    (map #(row->str key-order % col-widths) printable-maps)))
 
 (comment
  (println "----")
@@ -207,23 +200,27 @@
                {:a [1 2 3 4 5 6 7] :b [1 2 3 4 5 6 7 8]}])]
    (println row)))
 
-; (defn saved-value-maps->display-tree-table
-;   "TODO"
-;   [value-maps]
-;   (let [[first-map & others] (reverse value-maps)]
-;     (concat [(str "Last Saved Values (" (str/join ", " (keys first-map)) ")")]
-;             (value-map->display-tree-values first-map)
-;             [(cons "Previous Values"
-;                    (map-indexed
-;                     (fn [i value-map]
-;                       (into [(str (inc i))] (value-map->display-tree-values value-map)))
-;                     others))])))
-
 (defn- value-map->display-tree-values
   [value-map]
   (for [[var-name value] value-map
         :let [val-display-tree (to-display-tree* value)]]
     (update-in val-display-tree [0] #(str var-name ": " %))))
+
+(defn saved-value-maps->display-tree-table
+  "TODO"
+  [value-maps]
+  (let [[header & rows] (value-maps->table-rows value-maps)]
+    ; Indent header by two spaces
+    (cons (str "  " header)
+          (map (fn [row vm]
+                 (cons row (value-map->display-tree-values vm)))
+               rows
+               value-maps))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Original implementation
+
+
 
 (defn saved-value-maps->display-tree
   "TODO"
