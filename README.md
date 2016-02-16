@@ -92,27 +92,44 @@ When you are inside a function or a let block in Clojure there are symbols that 
 
 ```Clojure
 (reduce (fn [m [a b]]
-          (update m a #(+ b (or % 0))))
-        {}
-        [[:apples 2] [:oranges 3] [:cherries 4] [:apples 7]])
+         (update m a #(+ b (or % 0))))
+       {}
+       [[:apples 2] [:oranges 3] [:apples 4] [:cherries 7]])
 =>
-{:apples 9, :oranges 3, :cherries 4}
+{:apples 6, :oranges 3, :cherries 7}
 ```
 
 While this code is simple it can be difficult to understand what's happening inside functions and loops. A lot of developers reach for logging or printing to debug this kind of code. When you do that across multiple functions and namespaces those values are mixed together and separate from the code. Proto REPL's new feature for saving and viewing local bindings let's you see the values in context and from multiple requests.
 
-TODO continue documenting this
+The following code was the same as before but now it has `(proto/save 1)`. The `proto/save` function saves all the local bindings so that they can be viewed in the editor. The `1` in `(proto/save 1)` is just a unique id to tie the saved values back to the editor for display.
 
 ```Clojure
 (reduce (fn [m [a b]]
-          (proto/save 1)
-          (update m a #(+ b (or % 0))))
-        {}
-        [[:apples 2] [:oranges 3] [:cherries 4] [:apples 7]])
+         (proto/save 1)
+         (update m a #(+ b (or % 0))))
+       {}
+       [[:apples 2] [:oranges 3] [:apples 4] [:cherries 7]])
 =>
-{:apples 9, :oranges 3, :cherries 4}
+{:apples 6, :oranges 3, :cherries 7}
 ```
 
+After running the code invoking the command `proto-repl:display-saved-value` will display the values in a table.
+
+![saved values table](https://github.com/jasongilman/proto-repl/raw/master/images/saved_values_table.png)
+
+Tables are limited in the amount of detail that can be shown. Proto REPL will truncate long Clojure data structures to fit into a column. Each row of the table can be expanded to explore the details of large data structures.
+
+![saved values table expanded](https://github.com/jasongilman/proto-repl/raw/master/images/saved_values_table_expanded.png)
+
+#### Using the save value feature
+
+1. Add dependency to proto-repl-lib in your project's dependencies. `[proto-repl-lib "0.1.0"]`
+2. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number.
+3. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh.
+4. Show the values by pressing the keybinding `ctrl-shift-, d`
+5. Saved values can be cleared with the keybinding `ctrl-shift-, c`
+
+There's a limit of 20 saved values currently in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're not meant to be used in local development only.
 
 
 ## Installation
@@ -183,3 +200,6 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the selected namespace.                                                                                                |
 | `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the selected namespace with documentation.                                                                             |
 | `shift-ctrl-c`   | `proto-repl:interrupt`                | Attempts to interrupt the currently running command in the REPL.                                                                         |
+| `ctrl-shift-, i` | `proto-repl:insert-save-value-call`   | Inserts a call to `proto/save` with a unique id                                                                                          |
+| `ctrl-shift-, d` | `proto-repl:display-saved-values`     | Displays values saved using the `proto/save` function.                                                                                   |
+| `ctrl-shift-, c` | `proto-repl:clear-saved-values`       | Clears previously saved values using the `proto/save` function.                                                                          |
