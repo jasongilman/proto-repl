@@ -5,5 +5,8 @@
   :dependencies [[org.clojure/clojure "1.8.0"]]
 
   :profiles
-  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]]
+  {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+                        [pjstadig/humane-test-output "0.7.1"]]
+         :injections [(require 'pjstadig.humane-test-output)
+                      (pjstadig.humane-test-output/activate!)]
          :source-paths ["dev" "src" "test"]}})

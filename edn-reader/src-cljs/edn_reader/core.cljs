@@ -36,12 +36,9 @@
   [v]
   (-> v r/read-string d/to-display-tree* clj->js))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TODO
-
-; TODO document this
 (defn ^:export saved-values-to-display-trees
-  "TODO"
+  "Converts values saved using proto-repl-lib proto-repl/save into a displayable
+   table for displaying inline."
   [uniq-ids-to-values-str]
   (let [uniq-ids-to-values (r/read-string uniq-ids-to-values-str)]
     (clj->js (into [] (for [[uniq-id vals] uniq-ids-to-values]

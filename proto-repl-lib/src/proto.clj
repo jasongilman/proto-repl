@@ -46,5 +46,5 @@
   (let [locals (remove gensym-var? (keys &env))
         form-id (pr-str &form)
         locals-map (into {} (for [local locals]
-                             [(name local) local]))]
+                             [`'~local local]))]
     `(save* ~form-id ~locals-map)))

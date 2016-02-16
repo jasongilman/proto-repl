@@ -170,8 +170,6 @@ class Repl
           resultHandler(error: msg.err)
 
   displayInline: (editor, range, tree)->
-    # TODO trying out putting the display for the very last line.
-    start = range.start.row
     end = range.end.row
 
     # Remove the existing view if there is one
@@ -194,17 +192,14 @@ class Repl
         view.appendChild(new Text(head))
         view
     view = recurseTree(tree)
-    # TODO check if it's really necessary to put classes on both of these
-    # view.classList.add("proto-repl")
 
     # Add new inline view
     r = new @ink.Result editor, [end, end],
       content: view
 
-    #TODO Document what the classes are for
+    # Adding the class here lets us apply proto repl specific styles to the display.
     r.view.classList.add 'proto-repl'
 
-    console.log r, view
 
   # Makes an inline displaying result handler
   # * editor - the text editor to show the inline display in

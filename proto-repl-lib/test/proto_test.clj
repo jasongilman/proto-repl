@@ -16,48 +16,48 @@
         b 2]
     (testing "first save"
       (proto/save 1)
-      (is (= {1 [{"a" 1 "b" 2}]}
+      (is (= '{"(proto/save 1)" [{a 1 b 2}]}
              (proto/saved-values))))
 
     (testing "subsequent save with no changes"
       (proto/save 1)
-      (is (= {1 [{"a" 1 "b" 2}
-                 {"a" 1 "b" 2}]}
+      (is (= '{"(proto/save 1)" [{a 1 b 2}
+                                 {a 1 b 2}]}
              (proto/saved-values))))
 
     (testing "Save with a different value"
       (let [a 3]
         (proto/save 1)
-        (is (= {1 [{"a" 1 "b" 2}
-                   {"a" 1 "b" 2}
-                   {"a" 3 "b" 2}]}
+        (is (= '{"(proto/save 1)" [{a 1 b 2}
+                                   {a 1 b 2}
+                                   {a 3 b 2}]}
                (proto/saved-values)))))
 
     (testing "Save with a different id"
       (let [a 4]
         (proto/save 2)
-        (is (= {1 [{"a" 1 "b" 2}
-                   {"a" 1 "b" 2}
-                   {"a" 3 "b" 2}]
-                2 [{"a" 4 "b" 2}]}
+        (is (= '{"(proto/save 1)" [{a 1 b 2}
+                                   {a 1 b 2}
+                                   {a 3 b 2}]
+                 "(proto/save 2)" [{a 4 b 2}]}
                (proto/saved-values))))))
   (testing "Save outside of scope of previous binding"
     (proto/save 1)
-    (is (= {1 [{"a" 1 "b" 2}
-               {"a" 1 "b" 2}
-               {"a" 3 "b" 2}
-               {}]
-            2 [{"a" 4 "b" 2}]}
+    (is (= '{"(proto/save 1)" [{a 1 b 2}
+                               {a 1 b 2}
+                               {a 3 b 2}
+                               {}]
+             "(proto/save 2)" [{a 4 b 2}]}
            (proto/saved-values)))))
 
 
 (deftest max-saved-values-test
   (dotimes [n (inc (inc proto/max-number-saved-values))]
     (proto/save :id))
-  (let [saved-maps (get (proto/saved-values) :id)]
+  (let [saved-maps (get (proto/saved-values) "(proto/save :id)")]
     ;; Only save max-number-saved-values values
     (is (= proto/max-number-saved-values
            (count saved-maps)))
     ;; The first one we saved should be 2. 1 and 0 were dropped.
     (is (= 2
-           (-> saved-maps first (get "n"))))))
+           (-> saved-maps first (get 'n))))))

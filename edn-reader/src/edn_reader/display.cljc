@@ -162,20 +162,21 @@
 
 (defn- value-maps->table-rows
   "Takes a set of maps containing variable names and values and returns a set
-   of string rows that will fit within the max-table-width."
+   of string rows that will fit within the max-table-width. If the table has
+   too many columns to fit into the table it returns nil."
   [value-maps]
-  (let [printable-maps (map value-map->printable-map value-maps)
-        keys (common-keys printable-maps)
-        key-printable-map (zipmap keys (map pr-str keys))
-        printable-maps (cons key-printable-map printable-maps)
-        ;; TODO bail out if min table width is > max table width
-        max-widths (max-value-widths keys printable-maps)
-        col-widths (calculate-columns-widths max-widths)
-        key-order (map first (sort-by second col-widths))]
-    (map #(row->str key-order % col-widths) printable-maps)))
+  (let [keys (common-keys value-maps)
+        min-table-width (* (count keys) (+ min-column-width 3))]
+    (when (<= min-table-width max-table-width)
+     (let [printable-maps (map value-map->printable-map value-maps)
+           key-printable-map (zipmap keys (map pr-str keys))
+           printable-maps (cons key-printable-map printable-maps)
+           max-widths (max-value-widths keys printable-maps)
+           col-widths (calculate-columns-widths max-widths)
+           key-order (map first (sort-by second col-widths))]
+       (map #(row->str key-order % col-widths) printable-maps)))))
 
 (comment
- (println "----")
  (doseq [row (value-maps->table-rows
               [{:a [1 2 3 4 5 6 7] :b [1 2 3 4 5 6 7 8] :c 2 :d 5444}
                {:a [1 2 3 4 5 6 7] :b [1 2 3 4 5 6 7 8]}])]
@@ -189,15 +190,29 @@
         :let [val-display-tree (to-display-tree* value)]]
     (update-in val-display-tree [0] #(str var-name ": " %))))
 
+(defn saved-value-maps->display-tree
+  "A simpler display for value maps when they won't fit into a table"
+  [value-maps]
+  (let [[first-map & others] value-maps]
+    (concat ["Saved values"]
+            (value-map->display-tree-values first-map)
+            [(cons "Previous Values"
+                   (map-indexed
+                    (fn [i value-map]
+                      (into [(str (inc i))] (value-map->display-tree-values value-map)))
+                    others))])))
+
 (defn saved-value-maps->display-tree-table
   "Takes a list of maps of variable names to values and converts it into a table
    of each map showing the values. Each row can be expanded to show more details
    of the values in the event any of them had to be truncated."
   [value-maps]
-  (let [[header & rows] (value-maps->table-rows value-maps)]
+  (if-let [[header & rows] (value-maps->table-rows value-maps)]
     ;; Indent header by two spaces
     (cons (str "  " header)
           (map (fn [row vm]
                  (cons row (value-map->display-tree-values vm)))
                rows
-               value-maps))))
+               value-maps))
+    ;; There were too many columns to display in a table
+    (saved-value-maps->display-tree value-maps)))
