@@ -1,4 +1,6 @@
 (ns edn-reader.display
+    "Contains functions for converting EDN data structures into trees for display
+     in Atom Ink"
     (:require [clojure.string :as str]
               [clojure.set :as set]))
 
@@ -24,8 +26,8 @@
 
 
 (def max-table-width
-  "TODO determine an actual value and use that."
-  100)
+  "Sets the maximum width of a table in characters when "
+  60)
 
 (def ellipsis
   "A single character ellipsis for truncating long values.
@@ -39,13 +41,10 @@
 
 
 (defn value-map->printable-map
-  "TODO"
+  "Takes a map of var names to their values and returns the map with values
+   in a string format."
   [vm]
   (into {} (for [[k v] vm] [k (pr-str v)])))
-
-(comment
- (value-map->printable-map
-  {:a {:foo :bar} :b 1}))
 
 (defn common-keys
   "Find the common set of keys in all of the maps"
@@ -55,8 +54,9 @@
           #{}
           maps))
 
-(defn printable-map-max-widths
-  "TODO"
+(defn max-value-widths
+  "Returns a map of the max lengths of all the given keys in the maps. Assumes
+   values in maps are strings."
   [keys value-maps]
   (reduce (fn [max-width-map vm]
             (into {} (for [[k max-width] max-width-map
@@ -67,12 +67,10 @@
           value-maps))
 
 (comment
- (printable-map-max-widths
+ (max-value-widths
   [:a :b]
   [{:a "123" :b "1"}
    {:a "12" :b "1234"}]))
-
-;; TODO property based test test this along with the other functions
 
 (defn exception
   "Creates an exception with the given message"
@@ -91,11 +89,10 @@
       ;; + space after pipe except on the last column
       (dec num-cols))))
 
-;; TODO refactor this long function. We should be able to factor out either the
-
 (defn calculate-columns-widths
-  "TODO
-   assumes that number of columns can be shrunken"
+  "Takes a map of widths for each column and returns a new map of widths such
+   that the values will fit within the max-table-width. Assumes that the number
+   of columns is possible to fit within the table."
   [max-widths]
   (let [num-cols (count max-widths)
         ;; Calculate the width of the table if nothing was shrunk
@@ -144,29 +141,10 @@
  (calculate-columns-widths
   {:a 70 :b 70 :c 70}))
 
-;; TODO requirements
-;; - Set max table width as a constant
-;; - Convert each vm row values to strings
-;; - calculate max width for each key
-;; Determine the min table width
-;;   - space for each col  " |" = 2
-;;   - additional space between cols " " (after |) = 1
-;;   - sum of mins of all cols + num_cols * 2 + (num_cols - 1)
-;;   - if min table width is greater than available bail to alternative display
-;; Column order
-;;   - if columns are specified in form use that otherwise smallest to largest
-;; Determine actual table width to use
-;;  - calculate how much to shorten = max_table_width - min_table_width
-;;  - divide shrinking among columns proportional how long they are
-;;  - start with longest and remove a percentage
-;;    - percentage should be based on number of columns that _can_ be shrunk.
-;;      If max column width = min column width on any column then it can't be
-;;      shrunken.
-;;  - Calculate how much is remaining and remove a percentage from the next
-;;     smallest
-
 (defn fit-value-to-width
-  "TODO"
+  "Takes a width and a string value and returns the string so that it exactly
+   fits the width given. The value is truncated if it is too long with an
+   ellipsis or has spaces prepended."
   [width value]
   (let [length (count value)]
     (if (> length width)
@@ -174,21 +152,24 @@
       (str (str/join (repeat (- width length) " ")) value))))
 
 (defn row->str
-  "TODO"
-  [key-order printable-map col-widths]
+  "Takes a list of keys ordered for the row, a map of values for the row, and
+   the available space for each column and returns a string row with columns
+   separated by a pipe character."
+  [key-order value-map col-widths]
   (let [value-strs (for [k key-order]
-                     (fit-value-to-width (col-widths k) (get printable-map k)))]
+                     (fit-value-to-width (col-widths k) (get value-map k)))]
     (str (str/join " | " value-strs) " |")))
 
-(defn value-maps->table-rows
-  "TODO"
+(defn- value-maps->table-rows
+  "Takes a set of maps containing variable names and values and returns a set
+   of string rows that will fit within the max-table-width."
   [value-maps]
   (let [printable-maps (map value-map->printable-map value-maps)
         keys (common-keys printable-maps)
         key-printable-map (zipmap keys (map pr-str keys))
         printable-maps (cons key-printable-map printable-maps)
         ;; TODO bail out if min table width is > max table width
-        max-widths (printable-map-max-widths keys printable-maps)
+        max-widths (max-value-widths keys printable-maps)
         col-widths (calculate-columns-widths max-widths)
         key-order (map first (sort-by second col-widths))]
     (map #(row->str key-order % col-widths) printable-maps)))
@@ -201,35 +182,22 @@
    (println row)))
 
 (defn- value-map->display-tree-values
+  "Takes a map of variable names and values and converts it into a displayable
+   tree of values."
   [value-map]
   (for [[var-name value] value-map
         :let [val-display-tree (to-display-tree* value)]]
     (update-in val-display-tree [0] #(str var-name ": " %))))
 
 (defn saved-value-maps->display-tree-table
-  "TODO"
+  "Takes a list of maps of variable names to values and converts it into a table
+   of each map showing the values. Each row can be expanded to show more details
+   of the values in the event any of them had to be truncated."
   [value-maps]
   (let [[header & rows] (value-maps->table-rows value-maps)]
-    ; Indent header by two spaces
+    ;; Indent header by two spaces
     (cons (str "  " header)
           (map (fn [row vm]
                  (cons row (value-map->display-tree-values vm)))
                rows
                value-maps))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Original implementation
-
-
-
-(defn saved-value-maps->display-tree
-  "TODO"
-  [value-maps]
-  (let [[first-map & others] (reverse value-maps)]
-    (concat [(str "Last Saved Values (" (str/join ", " (keys first-map)) ")")]
-            (value-map->display-tree-values first-map)
-            [(cons "Previous Values"
-                   (map-indexed
-                    (fn [i value-map]
-                      (into [(str (inc i))] (value-map->display-tree-values value-map)))
-                    others))])))
