@@ -228,3 +228,4 @@
 ### Enhancements
 
 * Fixed #51 - Proto REPL will now recursively search upwards for a project.clj file if it is opened in a subdirectory of a project.
+* Added new feature for saving and displaying the values of local bindings. See https://github.com/jasongilman/proto-repl#saving-and-viewing-local-binding-values
