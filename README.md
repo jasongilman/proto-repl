@@ -101,7 +101,7 @@ When you are inside a function or a let block in Clojure there are symbols that 
 
 While this code is simple it can be difficult to understand what's happening inside functions and loops. A lot of developers reach for logging or printing to debug this kind of code. When you do that across multiple functions and namespaces those values are mixed together and separate from the code. Proto REPL's new feature for saving and viewing local bindings let's you see the values in context and from multiple requests.
 
-The following code was the same as before but now it has `(proto/save 1)`. The `proto/save` function saves all the local bindings so that they can be viewed in the editor. The `1` in `(proto/save 1)` is just a unique id to tie the saved values back to the editor for display.
+The following code was the same as before but now it has `(proto/save 1)`. The `proto/save` function saves all the local bindings so that they can be viewed in Proto REPL. The `1` in `(proto/save 1)` is just a unique id to tie the saved values back to Proto REPL for display.
 
 ```Clojure
 (reduce (fn [m [a b]]
@@ -113,7 +113,7 @@ The following code was the same as before but now it has `(proto/save 1)`. The `
 {:apples 6, :oranges 3, :cherries 7}
 ```
 
-After running the code invoking the command `proto-repl:display-saved-value` will display the values in a table.
+After running the code invoking the command `proto-repl:display-saved-value` will display the values in a table. Each row in the table represents a different iteration of the function.
 
 ![saved values table](https://github.com/jasongilman/proto-repl/raw/master/images/saved_values_table.png)
 
@@ -123,13 +123,13 @@ Tables are limited in the amount of detail that can be shown. Proto REPL will tr
 
 #### Using the save value feature
 
-1. Add dependency to proto-repl-lib in your project's dependencies. `[proto-repl-lib "0.1.0"]`
-2. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number.
-3. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh.
+1. Add a dependency to the Clojure proto-repl-lib in your project's dependencies. `[proto-repl-lib "0.1.0"]`
+2. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
+3. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh before executing the code.
 4. Show the values by pressing the keybinding `ctrl-shift-, d`
 5. Saved values can be cleared with the keybinding `ctrl-shift-, c`
 
-There's a limit of 20 saved values currently in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're not meant to be used in local development only.
+There's currently a limit of 20 saved values in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're not meant to be used in local development only.
 
 
 ## Installation
