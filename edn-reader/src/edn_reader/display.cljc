@@ -4,27 +4,6 @@
     (:require [clojure.string :as str]
               [clojure.set :as set]))
 
-(defn to-display-tree*
-  "Converts a value into a displayable tree. "
-  [v]
-  (cond
-    ;; Handles a map.
-    (map? v)
-    (into [(pr-str v)]
-       ;; Loop over each map entry
-       (map (fn [entry]
-              [(pr-str entry)
-               (to-display-tree* (second entry))])
-            v))
-
-    ;; Handles a sequence
-    (or (sequential? v) (set? v))
-    (into [(pr-str v)] (map to-display-tree* v))
-
-    ;; Leaf
-    :else [(pr-str v)]))
-
-
 (def max-table-width
   "Sets the maximum width of a table in characters when "
   60)
@@ -39,6 +18,47 @@
    data and 1 for an ellipsis. 'X…'"
   2)
 
+(defn fit-value-to-width
+  "Takes a width and a string value and returns the string so that it exactly
+   fits the width given. The value is truncated if it is too long with an
+   ellipsis or has spaces prepended."
+  ([width value]
+   (fit-value-to-width width value true))
+  ([width value expand?]
+   (let [length (count value)]
+     (cond
+       (> length width)
+       ;; Shrink the value
+       (str (subs value 0 (dec width)) ellipsis)
+
+       expand?
+       (str (str/join (repeat (- width length) " ")) value)
+
+       :else
+       value))))
+
+(defn to-display-tree*
+  "Converts a value into a displayable tree. "
+  [v]
+  (let [; Defines a function that will print the value but not let it exceed
+        ; the max table width. This is used for branch representations
+        trimmed-str #(fit-value-to-width max-table-width (pr-str %) false)]
+   (cond
+     ;; Handles a map.
+     (map? v)
+     (into [(trimmed-str v)]
+        ;; Loop over each map entry
+        (map (fn [entry]
+               [(trimmed-str entry)
+                (to-display-tree* (second entry))])
+             v))
+
+     ;; Handles a sequence
+     (or (sequential? v) (set? v))
+     (into [(trimmed-str v)] (map to-display-tree* v))
+
+     ;; Leaf
+     :else [(pr-str v)])))
 
 (defn value-map->printable-map
   "Takes a map of var names to their values and returns the map with values
@@ -141,16 +161,6 @@
   {:a 8, :b 8, :s 1091})
  (calculate-columns-widths
   {:a 70 :b 70 :c 70}))
-
-(defn fit-value-to-width
-  "Takes a width and a string value and returns the string so that it exactly
-   fits the width given. The value is truncated if it is too long with an
-   ellipsis or has spaces prepended."
-  [width value]
-  (let [length (count value)]
-    (if (> length width)
-      (str (subs value 0 (dec width)) ellipsis)
-      (str (str/join (repeat (- width length) " ")) value))))
 
 (defn row->str
   "Takes a list of keys ordered for the row, a map of values for the row, and
