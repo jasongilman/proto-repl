@@ -144,6 +144,8 @@ Make sure that the path to the `lein` command is correct in the Proto REPL setti
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 * [Leiningen](http://leiningen.org)
+* [Atom Ink](https://atom.io/packages/ink)
+  * This is an optional feature but many of Proto REPL's advanced features won't work without it.
 
 Supports Clojure 1.6 or greater.
 
@@ -165,6 +167,7 @@ Doing this allows you to select namespaces with var definitions in Clojure as a 
 
 These packages go well with Proto REPL.
 
+* [ink](https://atom.io/packages/ink)
 * [proto-repl-charts](https://atom.io/packages/proto-repl-charts)
 * [tool-bar](https://atom.io/packages/tool-bar)
 * [parinfer](https://atom.io/packages/parinfer)
