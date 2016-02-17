@@ -2,6 +2,7 @@
   (:require clojure.tools.namespace.repl
             clojure.test
             [clojure.repl :refer :all]
+            [proto]
             prc))
 
 (defn reset []

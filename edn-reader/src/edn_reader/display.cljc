@@ -102,42 +102,43 @@
     (if (<= amount-to-shrink 0)
       ;; No shrinking required
       max-widths
-      ;; Select out all the columns that can be shrunk
-      (let [shrinkable-cols (for [[k width] max-widths
-                                  :when (> width min-column-width)]
-                              [k width])]
-        ;; Iterate through the shrinkable columns starting with the largest
-        (loop [shrinkable-cols (reverse (sort-by second shrinkable-cols))
-               ;; Keep track of the current set of width values, amount left to shrink
-               widths max-widths
-               amount-to-shrink amount-to-shrink
-               num-recursions 0]
-          ;; Guard against infinite loops due to logic problems
-          (when (> num-recursions num-cols)
-            (throw (exception (str "Number of recursions [" num-recursions
-                                   "] exceeded while calculating column widths"))))
 
-          (let [shrinkable-col-size (apply + (map second shrinkable-cols))
-                [col-to-shrink size] (first shrinkable-cols)
-                ;; Calculate the percentage to shrink based on the total width
-                ;; of columns that can be shrunk
-                col-amt-to-shrink (-> (/ size (double shrinkable-col-size))
-                                      (* amount-to-shrink)
-                                      Math/ceil
-                                      long)
-                ;; Shrink the column
-                new-widths (assoc widths col-to-shrink (- size col-amt-to-shrink))]
-            (if-let [other-cols-to-shrink (seq (rest shrinkable-cols))]
-              ;; If there are more columns to shrink keep recursing.
-              (recur other-cols-to-shrink
-                     new-widths
-                     (- amount-to-shrink col-amt-to-shrink)
-                     (inc num-recursions))
-              ;; We've shrunken all the columns proportionally.
-              new-widths)))))))
+      (loop [;; Keep track of the current set of width values, amount left to shrink
+             widths max-widths
+             amount-to-shrink amount-to-shrink
+             num-recursions 0]
+        ;; Guard against infinite loops due to logic problems
+        (when (> num-recursions (* 4 num-cols))
+          (throw (exception (str "Number of recursions [" num-recursions
+                                 "] exceeded while calculating column widths"))))
+
+        (let [;; Select out all the columns that can be shrunk
+              shrinkable-cols (for [[k width] widths
+                                    :when (> width min-column-width)]
+                                [k width])
+              shrinkable-cols (reverse (sort-by second shrinkable-cols))
+              shrinkable-col-size (apply + (map second shrinkable-cols))
+              [col-to-shrink size] (first shrinkable-cols)
+              ;; Calculate the percentage to shrink based on the total width
+              ;; of columns that can be shrunk
+              col-amt-to-shrink (-> (/ size (double shrinkable-col-size))
+                                    (* amount-to-shrink)
+                                    Math/ceil
+                                    long)
+              ;; Shrink the column
+              new-widths (assoc widths col-to-shrink (- size col-amt-to-shrink))]
+          (if (> (col-widths->table-width new-widths) max-table-width)
+            ;; If there are more columns to shrink keep recursing.
+            (recur new-widths
+                   (- amount-to-shrink col-amt-to-shrink)
+                   (inc num-recursions))
+            ;; We've shrunken all the columns proportionally.
+            new-widths))))))
 
 
 (comment
+ (calculate-columns-widths
+  {:a 8, :b 8, :s 1091})
  (calculate-columns-widths
   {:a 70 :b 70 :c 70}))
 
@@ -216,3 +217,10 @@
                value-maps))
     ;; There were too many columns to display in a table
     (saved-value-maps->display-tree value-maps)))
+
+
+(comment
+ (saved-value-maps->display-tree-table
+  [{'a-normal 5
+    'b-normal 4
+    'super-long (range 300)}]))
