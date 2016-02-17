@@ -129,7 +129,7 @@ Tables are limited in the amount of detail that can be shown. Proto REPL will tr
 4. Show the values by pressing the keybinding `ctrl-shift-, d`
 5. Saved values can be cleared with the keybinding `ctrl-shift-, c`
 
-There's currently a limit of 20 saved values in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're not meant to be used in local development only.
+There's currently a limit of 20 saved values in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're meant to be used in local development only.
 
 
 ## Installation
