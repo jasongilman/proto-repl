@@ -1,4 +1,4 @@
-(defproject proto-repl "0.1.0"
+(defproject proto-repl "0.1.1"
   :description "A set of helper functions for projects used in Proto REPL"
   :license {:name "MIT"
             :url "https://opensource.org/licenses/MIT"}

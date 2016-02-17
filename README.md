@@ -121,9 +121,11 @@ Tables are limited in the amount of detail that can be shown. Proto REPL will tr
 
 ![saved values table expanded](https://github.com/jasongilman/proto-repl/raw/master/images/saved_values_table_expanded.png)
 
+You can also specify specific bindings to save. For example `(proto/save 1 m a)` will save just the values of local variables `m` and `b`.
+
 #### Using the save value feature
 
-1. Add a dependency to the Clojure proto-repl-lib in your project's dependencies. `[proto-repl-lib "0.1.0"]`
+1. Add a dependency to the Clojure proto-repl-lib in your project's dependencies. `[proto-repl-lib "0.1.1"]`
 2. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
 3. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh before executing the code.
 4. Show the values by pressing the keybinding `ctrl-shift-, d`

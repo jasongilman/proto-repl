@@ -39,11 +39,13 @@
     (some? (or (re-matches #".+__\d+" sym-name)
                (re-matches #".+__\d+__auto__" (name sym))))))
 
-;; TODO allow specifying a var name
 (defmacro save
-  "Saves all the values of local bindings."
-  [uniq-id]
-  (let [locals (remove gensym-var? (keys &env))
+  "Saves all the values of local bindings. Either saves all or saves the specified
+   set of bindings"
+  [uniq-id & locals]
+  (let [locals (or (seq locals)
+                   (remove gensym-var? (keys &env)))
+
         form-id (pr-str &form)
         locals-map (into {} (for [local locals]
                              [`'~local local]))]

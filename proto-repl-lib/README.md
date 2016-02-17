@@ -4,4 +4,4 @@ A set of helper functions for projects used in Proto REPL. See main Proto REPL R
 
 # Installation
 
-Add `[proto-repl "0.1.0"]` to the list of dependencies in your project.
+Add `[proto-repl "0.1.1"]` to the list of dependencies in your project.

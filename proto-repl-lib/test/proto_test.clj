@@ -50,6 +50,14 @@
              "(proto/save 2)" [{a 4 b 2}]}
            (proto/saved-values)))))
 
+(deftest save-specific-values
+  (let [a 1
+        b 2
+        c 3]
+    (proto/save 1 a b)
+    (is (= '{"(proto/save 1 a b)" [{a 1 b 2}]}
+           (proto/saved-values)))))
+
 
 (deftest max-saved-values-test
   (dotimes [n (inc (inc proto/max-number-saved-values))]

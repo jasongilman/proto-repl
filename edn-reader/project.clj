@@ -13,7 +13,7 @@
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                         [pjstadig/humane-test-output "0.7.1"]
-                        [proto-repl "0.1.0"]]
+                        [proto-repl "0.1.1"]]
          :injections [(require 'pjstadig.humane-test-output)
                       (pjstadig.humane-test-output/activate!)]
          :source-paths ["dev" "src" "tests"]}})
