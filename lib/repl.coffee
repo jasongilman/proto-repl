@@ -64,7 +64,8 @@ class Repl
     # The window was closed
     @replTextEditor.onDidClose =>
       try
-        @process?.stop(@session)
+        if @running()
+          @process?.stop(@session)
         @replTextEditor = null
         @emitter.emit 'proto-repl-repl:close'
       catch error
