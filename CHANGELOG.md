@@ -235,3 +235,9 @@
 ### Bug Fixes
 
 * Improvements to the display portion of save and display of local bindings.
+
+## 0.15.2
+
+### Bug Fixes
+
+* Fixed #62 so that if the REPL is closed before the process has fully finished starting a new REPL can be opened.

@@ -87,9 +87,12 @@ class LocalReplProcess
 
   # Stops the running process
   stop: (session)->
-    # Tell the process to shutdown
-    @conn?.eval(EXIT_CMD, "user", session)
-    @conn.close session, => return
+    try
+      # Tell the process to shutdown
+      @conn?.eval(EXIT_CMD, "user", session)
+      @conn?.close session, => return
+    catch error
+      console.log("Error trying to send exit command to REPL.", error)
     @conn = null
     # Kill the process to make sure.
     @process?.send event: 'kill'
