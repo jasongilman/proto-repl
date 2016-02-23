@@ -45,7 +45,8 @@ module.exports = EditorUtils =
   isIgnorableBrace: (editor, pos)->
     scopes = editor.scopeDescriptorForBufferPosition(pos).scopes
     scopes.indexOf("string.quoted.double.clojure") >= 0 ||
-      scopes.indexOf("comment.line.semicolon.clojure") >= 0
+      scopes.indexOf("comment.line.semicolon.clojure") >= 0 ||
+      scopes.indexOf("string.regexp.clojure") >= 0
 
   findBlockStartPosition:  (editor, fromPos) ->
     braceClosed =
