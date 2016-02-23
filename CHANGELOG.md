@@ -242,3 +242,4 @@
 
 * Fixed #62 so that if the REPL is closed before the process has fully finished starting a new REPL can be opened.
 * Fixed #63. Braces in regular expressions are now ignored when searching for s-expressions.
+* Fixed #65. Added refresh call before running a single test file or a single test. This can be disabled through the Proto REPL settings.

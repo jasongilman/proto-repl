@@ -52,6 +52,14 @@ module.exports = ProtoRepl =
       description: "Configures whether the REPL should automatically refresh code when it starts."
       type: "boolean"
       default: false
+    refreshBeforeRunningTestFile:
+      description: "Configures whether the REPL should automatically refresh code before running all the tests in a file."
+      type: "boolean"
+      default: true
+    refreshBeforeRunningSingleTest:
+      description: "Configures whether the REPL should automatically refresh code before running a single selected test."
+      type: "boolean"
+      default: true
 
   subscriptions: null
   repl: null
@@ -446,13 +454,22 @@ module.exports = ProtoRepl =
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @executeCodeInNs("(clojure.test/run-tests)")
+      code = "(clojure.test/run-tests)"
+      if atom.config.get("proto-repl.refreshBeforeRunningTestFile")
+        @refreshNamespaces =>
+          @executeCodeInNs(code)
+      else
+        @executeCodeInNs(code)
 
   runSelectedTest: ->
     if editor = atom.workspace.getActiveTextEditor()
       if selected = @getSelectedText(editor)
-        text = "(do (clojure.test/test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
-        @executeCodeInNs(text)
+        code = "(do (clojure.test/test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
+        if atom.config.get("proto-repl.refreshBeforeRunningSingleTest")
+          @refreshNamespaces =>
+            @executeCodeInNs(code)
+        else
+          @executeCodeInNs(code)
 
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
