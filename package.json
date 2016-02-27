@@ -23,6 +23,13 @@
     "tool-bar": "^0.1.0",
     "ink": "^0.3.2"
   },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "provide"
+      }
+    }
+  },
   "consumedServices": {
     "tool-bar": {
       "versions": {

@@ -3,7 +3,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [proto-repl-charts "0.1.0"]
-                 [proto-repl "0.1.1"]]
+                 [proto-repl "0.1.2"]]
 
   :profiles
   {:dev {:source-paths ["dev" "src"]}})

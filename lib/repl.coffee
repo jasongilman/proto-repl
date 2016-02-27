@@ -6,7 +6,7 @@ nrepl = require('jg-nrepl-client')
 ClojureVersion = require './clojure-version'
 LocalReplProcess = require './local-repl-process'
 RemoteReplProcess = require './remote-repl-process'
-
+EditorUtils = require './editor-utils'
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
 
@@ -219,11 +219,11 @@ class Repl
   # unbalanced parentheses, other kinds of invalid code, and handling reader
   # conditionals. http://clojure.org/guides/reader_conditionals
   wrapCodeInReadEval: (code)->
-    escaped = code.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
+    escapedStr = EditorUtils.escapeClojureCodeInString(code)
     if @clojureVersion?.isReaderConditionalSupported()
-      "(eval (read-string {:read-cond :allow} \"#{escaped}\"))"
+      "(eval (read-string {:read-cond :allow} #{escapedStr}))"
     else
-      "(eval (read-string \"#{escaped}\"))"
+      "(eval (read-string #{escapedStr}))"
 
   inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.

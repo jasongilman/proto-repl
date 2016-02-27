@@ -5,6 +5,7 @@ url = require 'url'
 path = require 'path'
 EditorUtils = require './editor-utils'
 SaveRecallFeature = require './features/save-recall-feature'
+CompletionProvider = require './completion-provider'
 
 # This is built from the ClojureScript edn-reader project.
 # Rebuild it with lein cljsbuild once.
@@ -108,6 +109,10 @@ module.exports = ProtoRepl =
       'proto-repl:interrupt': => @interrupt()
       'proto-repl:autoeval-file': => @autoEvalCurrent()
       'proto-repl:stop-autoeval-file': => @stopAutoEvalCurrent()
+
+  # Called by autocomplete-plus to return our Clojure provider
+  provide: ->
+    CompletionProvider
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'

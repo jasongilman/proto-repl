@@ -2,6 +2,11 @@
 
 module.exports = EditorUtils =
 
+  # Escapes the Clojure code and places it in quoatations
+  escapeClojureCodeInString: (code)->
+    escaped = code.replace(/\\/g,"\\\\").replace(/"/g, "\\\"")
+    "\"#{escaped}\""
+
   # Finds a Clojure Namespace declaration in the editor and returns the name
   # of the namespace.
   findNsDeclaration: (editor)->
