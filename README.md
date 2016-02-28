@@ -78,8 +78,16 @@ Tips
 * REPL must be started
 * After modifying the required namespace definition reevaluate it so that Complement will be able to pick up the alias changes.
 
+#### Completing Namespaces
+
 ![completing namespaces](https://github.com/jasongilman/proto-repl/raw/master/images/completion_namespaces.png)
+
+#### Completing Functions
+
 ![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_functions.png)
+
+#### Completing Java Methods
+
 ![completing Java](https://github.com/jasongilman/proto-repl/raw/master/images/completion_java.png)
 
 ### Inline Results Display
