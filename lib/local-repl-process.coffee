@@ -28,6 +28,11 @@ class LocalReplProcess
   # Searches upwords to find the root project if proto repl was opened in a
   # subdirectory of the project.
   getRootProject: (currentPath, limit=0) ->
+    # Avoid errors if the Atom config directory is open. We can't treat this like
+    # a normal directory.
+    if currentPath.startsWith("atom://")
+      return
+
     # Try to find the root of the current project by searching for project.clj
     parentDirectory = path.resolve(currentPath, "..")
 

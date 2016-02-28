@@ -249,3 +249,9 @@
 ### Enhancements
 
 * Fixed #28. Added autocompletion support using Complement.
+
+## 0.16.1
+
+### Bug Fixes
+
+* Fixed #68 - Avoids trying to find a project.clj if project folder is within "atom://.." directory.
