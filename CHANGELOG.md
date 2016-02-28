@@ -255,3 +255,9 @@
 ### Bug Fixes
 
 * Fixed #68 - Avoids trying to find a project.clj if project folder is within "atom://.." directory.
+
+## 0.16.2
+
+### Bug Fixes
+
+* Added more menu commands for opening the REPL from an open project.clj.
