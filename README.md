@@ -7,6 +7,7 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 ## Features
 
 * An interactive REPL driven development environment.
+* [Autocompleting](#autocompletion) Clojure namespaces, function names, vars, and local bindings
 * Evaluate [blocks of code](#sending-a-block) or [selected code](#sending-a-selection) with a keystroke.
 * View results in the REPL or [inline next to the code](#inline-results).
 * [Automatic Evaluation Mode](#automatic-evaluation-mode) that executes code in a file as you type.
@@ -68,6 +69,20 @@ The block detection also can find the start and end of a Github Flavored Markdow
 
 An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `ctrl-, s` (Press ctrl and comma together, release, then press s). This allows sending multiple blocks of code at once.
 
+### Autocompletion
+
+Proto REPL supports completing of namespaces, vars, functions, local bindings, and Java methods using the [Compliment](https://github.com/alexander-yakushev/compliment) library. Make sure your project includes [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl) as a dependency.
+
+Tips
+
+* REPL must be started
+* After modifying the required namespace definition reevaluate it so that Complement will be able to pick up the alias changes.
+
+![completing namespaces](https://github.com/jasongilman/proto-repl/raw/master/images/completion_namespaces.png)
+![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_functions.png)
+![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_locals.png)
+![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_java.png)
+
 ### Inline Results Display
 
 Inline display of executed blocks or selections is supported if you have the [Atom Ink](https://github.com/JunoLab/atom-ink) package installed. You can disable inline results through the configuration. The values displayed inline are shown in a tree like view that lets you explore large nested data structures without having to view all of the data.
@@ -125,11 +140,10 @@ You can also specify specific bindings to save. For example `(proto/save 1 m a)`
 
 #### Using the save value feature
 
-1. Add a dependency to the Clojure proto-repl-lib in your project's dependencies. `[proto-repl-lib "0.1.1"]`
-2. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
-3. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh before executing the code.
-4. Show the values by pressing the keybinding `ctrl-shift-, d`
-5. Saved values can be cleared with the keybinding `ctrl-shift-, c`
+1. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
+2. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh before executing the code.
+3. Show the values by pressing the keybinding `ctrl-shift-, d`
+4. Saved values can be cleared with the keybinding `ctrl-shift-, c`
 
 There's currently a limit of 20 saved values in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're meant to be used in local development only.
 
@@ -146,8 +160,13 @@ Make sure that the path to the `lein` command is correct in the Proto REPL setti
 * [Leiningen](http://leiningen.org)
 * [Atom Ink](https://atom.io/packages/ink)
   * This is an optional feature but many of Proto REPL's advanced features won't work without it.
+* Add a dependency to the Clojure proto-repl-lib in your project's dependencies. [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl)
+  * This is an optional Clojure library that adds support for some of the advanced Proto REPL features.
+  * Required for:
+    * Saving and displaying local binding values
+    * Autocompleting Clojure code
 
-Supports Clojure 1.6 or greater.
+Supports Clojure 1.6 and greater.
 
 ### Tool Bar Integration
 

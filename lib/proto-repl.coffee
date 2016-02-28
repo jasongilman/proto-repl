@@ -61,6 +61,10 @@ module.exports = ProtoRepl =
       description: "Configures whether the REPL should automatically refresh code before running a single selected test."
       type: "boolean"
       default: true
+    enableCompletions:
+      description: "Configures whether autocompletion of Clojure forms should be supported. Changing this requires a restart of Atom."
+      type: "boolean"
+      default: true
 
   subscriptions: null
   repl: null
@@ -112,7 +116,10 @@ module.exports = ProtoRepl =
 
   # Called by autocomplete-plus to return our Clojure provider
   provide: ->
-    CompletionProvider
+    if atom.config.get("proto-repl.enableCompletions")
+      CompletionProvider
+    else
+      [] # Return no completions if not enabled.
 
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'

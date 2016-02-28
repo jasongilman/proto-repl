@@ -1,7 +1,6 @@
 # Implements an Autocomplete Provider for Clojure that uses compliment
 # (https://github.com/alexander-yakushev/compliment)
-# TODO add dependency on compliment to the appropriate projects
-## proto-repl-lib
+
 {Range, Point} = require 'atom'
 EditorUtils = require './editor-utils'
 
@@ -64,13 +63,11 @@ module.exports =
 
   getSuggestions: ({editor, bufferPosition, scopeDescriptor}) ->
     prefix = getPrefix(editor, bufferPosition)
-    console.log("Getting suggestions for #{prefix}")
 
     if prefix != ""
       new Promise (resolve) ->
         # code = "(do (require 'compliment.core) (compliment.core/completions \"#{prefix}\"))"
         code = completionsCode(editor, bufferPosition, prefix)
-        console.log code
         protoRepl.executeCode code,
           displayInRepl: false
           resultHandler: (result)->
