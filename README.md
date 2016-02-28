@@ -80,8 +80,7 @@ Tips
 
 ![completing namespaces](https://github.com/jasongilman/proto-repl/raw/master/images/completion_namespaces.png)
 ![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_functions.png)
-![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_locals.png)
-![completing functions](https://github.com/jasongilman/proto-repl/raw/master/images/completion_java.png)
+![completing Java](https://github.com/jasongilman/proto-repl/raw/master/images/completion_java.png)
 
 ### Inline Results Display
 
