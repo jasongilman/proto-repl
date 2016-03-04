@@ -40,7 +40,7 @@ module.exports = ProtoRepl =
     bootArgs:
       description: 'The arguments to be passed to boot. For advanced users only.'
       type: 'string'
-      default: "repl"
+      default: "--no-colors repl"
     showInlineResults:
       description: "Shows inline results of code execution. Install Atom Ink package to use this."
       type: 'boolean'
