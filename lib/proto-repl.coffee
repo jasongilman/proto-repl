@@ -25,6 +25,10 @@ module.exports = ProtoRepl =
       description: 'The path to the lein executable.'
       type: 'string'
       default: 'lein'
+    bootPath:
+      description: 'The path to the boot executable.'
+      type: 'string'
+      default: 'boot'
     useClojureSyntax:
       type: 'boolean'
       description: 'Sets whether or not the REPL should use Clojure syntax for highlighting. Disable this if having performance issues with REPL display.'
@@ -33,6 +37,10 @@ module.exports = ProtoRepl =
       description: 'The arguments to be passed to leiningen. For advanced users only.'
       type: 'string'
       default: "repl :headless"
+    bootArgs:
+      description: 'The arguments to be passed to boot. For advanced users only.'
+      type: 'string'
+      default: "repl"
     showInlineResults:
       description: "Shows inline results of code execution. Install Atom Ink package to use this."
       type: 'boolean'

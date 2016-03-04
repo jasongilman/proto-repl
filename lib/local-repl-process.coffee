@@ -1,12 +1,13 @@
 {Task} = require 'atom'
 LeinRunner = require.resolve './lein-runner'
+BootRunner = require.resolve './boot-runner'
 path = require 'path'
 fs = require('fs')
 
 # The code to send to the repl to exit.
 EXIT_CMD="(System/exit 0)"
 
-# The path to a default project to use if proto repl is started outside of a leiningen project
+# The path to a default project to use if proto repl is started outside of a leiningen or boot project
 DEFAULT_PROJECT_PATH = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
 
 module.exports=
@@ -33,12 +34,15 @@ class LocalReplProcess
     if currentPath.startsWith("atom://")
       return
 
-    # Try to find the root of the current project by searching for project.clj
+    # Try to find the root of the current project by searching
+    # for one of the configuration files
+    # build.boot (Boot) or
+    # project.clj (Leiningen)
     parentDirectory = path.resolve(currentPath, "..")
 
     if currentPath != parentDirectory and limit < 100
       matches = fs.readdirSync(currentPath).filter (f) ->
-        f == "project.clj"
+        f == "project.clj" or f == "build.boot"
 
       if currentPath and matches.length == 0
         @getRootProject(parentDirectory, limit + 1)
@@ -54,22 +58,42 @@ class LocalReplProcess
     unless projectPath?
       projectPath = atom.project.getPaths()[0]
 
-    # Search for a project.clj file.
+    # Search for a project.clj or build.boot file.
     # The if must be used in case of no directory open in Atom.
     projectPath = @getRootProject(projectPath) if projectPath
 
-    # If we're not in a project or there isn't a leiningen project file use
-    # the default project
-    if !(projectPath?) || !fs.existsSync(projectPath + "/project.clj")
+    # If we're not in a project or there isn't a
+    # project file use the default leiningen project
+    if (projectPath?)
+      if (fs.existsSync(projectPath + "/build.boot"))
+        replType = "boot"
+      else if fs.existsSync(projectPath + "/project.clj")
+        replType = "lein"
+      else
+        replType = "lein"
+        projectPath = DEFAULT_PROJECT_PATH
+    else
+      replType = "lein"
       projectPath = DEFAULT_PROJECT_PATH
 
-    @appendText("Starting REPL in #{projectPath}\n", true)
+    @appendText("Starting REPL with #{replType} in #{projectPath}\n", true)
 
     # Start the repl process as a background task
-    @process = Task.once LeinRunner,
-                         path.resolve(projectPath),
-                         atom.config.get('proto-repl.leinPath').replace("/lein",""),
-                         atom.config.get('proto-repl.leinArgs').split(" ")
+    switch replType
+      when "boot"
+        @appendText("\n starting boot runner\n")
+        @process = Task.once BootRunner,
+                             path.resolve(projectPath),
+                             atom.config.get('proto-repl.bootPath').replace("/boot",""),
+                             atom.config.get('proto-repl.bootArgs').split(" ")
+      # when "lein" then
+      else
+        @appendText("\n starting lein runner\n")
+        @process = Task.once LeinRunner,
+                             path.resolve(projectPath),
+                             atom.config.get('proto-repl.leinPath').replace("/lein",""),
+                             atom.config.get('proto-repl.leinArgs').split(" ")
+
 
     # The process sends stdout
     @process.on 'proto-repl-process:data', (data) =>
@@ -82,8 +106,8 @@ class LocalReplProcess
     # The process exited.
     @process.on 'proto-repl-process:exit', ()=>
       @appendText("\nREPL Closed\n")
-      # The REPL Text editor may or may not be still open at this point. We track
-      # that separately.
+      # The REPL Text editor may or may not be still open at this point.
+      # We track that separately.
       @process = null
       @conn = null
 
