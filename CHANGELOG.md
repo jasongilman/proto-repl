@@ -261,3 +261,9 @@
 ### Bug Fixes
 
 * Added more menu commands for opening the REPL from an open project.clj.
+
+## 0.17.0
+
+### New Features
+
+* Added boot support.

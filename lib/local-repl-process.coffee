@@ -81,14 +81,14 @@ class LocalReplProcess
     # Start the repl process as a background task
     switch replType
       when "boot"
-        @appendText("\n starting boot runner\n")
+        @appendText("\nStarting boot runner\n")
         @process = Task.once BootRunner,
                              path.resolve(projectPath),
                              atom.config.get('proto-repl.bootPath').replace("/boot",""),
                              atom.config.get('proto-repl.bootArgs').split(" ")
       # when "lein" then
       else
-        @appendText("\n starting lein runner\n")
+        @appendText("\nStarting lein runner\n")
         @process = Task.once LeinRunner,
                              path.resolve(projectPath),
                              atom.config.get('proto-repl.leinPath').replace("/lein",""),

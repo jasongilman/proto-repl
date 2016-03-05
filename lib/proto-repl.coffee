@@ -226,7 +226,6 @@ module.exports = ProtoRepl =
     @connectionView ?= new NReplConnectionView(confirmCallback)
     @connectionView.show()
 
-
   clearRepl: ->
     @repl?.clear()
 
@@ -417,19 +416,21 @@ module.exports = ProtoRepl =
     @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
 
   refreshNamespacesCommand:
-    "(let [r 'user/reset
-          result (cond
-                  (find-var r)
-                  ((resolve r))
+    "(do
+       (require 'user)
+       (let [r 'user/reset
+             result (cond
+                     (find-var r)
+                     ((resolve r))
 
-                  (find-ns 'clojure.tools.namespace.repl)
-                  (eval `(clojure.tools.namespace.repl/refresh :after '~r))
+                     (find-ns 'clojure.tools.namespace.repl)
+                     (eval `(clojure.tools.namespace.repl/refresh :after '~r))
 
-                  :else
-                  (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
-      (when (isa? (type result) Exception)
-        (println (.getMessage result)))
-      result)"
+                     :else
+                     (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
+         (when (isa? (type result) Exception)
+           (println (.getMessage result)))
+         result))"
 
   refreshResultHandler: (callback, result)->
     # Value will contain an exception if it's not valid otherwise it will be nil

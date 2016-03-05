@@ -88,7 +88,6 @@ class Repl
         (details)=>@connectToRepl(details))
       @process.start(projectPath)
 
-
   # Starts nRepl connection
   # * `options` An {Object} with following keys
   #   * `host` The {String} host name to connect (optional). Defaults to "localhost"
