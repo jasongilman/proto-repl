@@ -270,7 +270,9 @@
 * Changed to not display results inline or in repl when an execution extension is triggered.
 * Updating default lein project to include latest version of proto repl charts.
 
-## 0.18.0
+## 1.0.0
+
+Accidentally published as major instead of minor but oh well! Now is as good a time as any to say it's at 1.0.0.
 
 ### New Features
 
