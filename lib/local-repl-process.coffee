@@ -62,12 +62,19 @@ class LocalReplProcess
     # The if must be used in case of no directory open in Atom.
     projectPath = @getRootProject(projectPath) if projectPath
 
+    bootFound = fs.existsSync(projectPath + "/build.boot")
+    leinFound = fs.existsSync(projectPath + "/project.clj")
     # If we're not in a project or there isn't a
     # project file use the default leiningen project
     if (projectPath?)
-      if (fs.existsSync(projectPath + "/build.boot"))
+      if bootFound && leinFound
+        if atom.config.get("proto-repl.preferLein")
+          replType = "lein"
+        else
+          replType = "boot"
+      else if bootFound
         replType = "boot"
-      else if fs.existsSync(projectPath + "/project.clj")
+      else if leinFound
         replType = "lein"
       else
         replType = "lein"
