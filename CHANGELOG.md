@@ -267,3 +267,4 @@
 ### New Features
 
 * Added boot support.
+* Changed to not display results inline or in repl when an execution extension is triggered.

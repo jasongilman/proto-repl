@@ -276,7 +276,10 @@ class Repl
         extensionCallback = @codeExecutionExtensions[extensionName]
         if extensionCallback
           extensionCallback(data)
-      handler(result)
+        else
+          handler(result)
+      else
+        handler(result)
 
   # Executes the text that was entered in the entry area
   executeEnteredText: ->
