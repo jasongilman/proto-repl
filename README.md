@@ -160,12 +160,12 @@ There's currently a limit of 20 saved values in proto-repl-lib. After debugging 
 
 `apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
 
-Make sure that the path to the `lein` command is correct in the Proto REPL settings. Proto REPL settings can be accessed in Atom by opening "Preferences" from the main menu, then selecting the "Packages" tab. Proto REPL will be one of the packages listed. Click the "Settings" button there and look for the "Lein Path" setting. Use `which lein` in a terminal to get the path.
+Make sure that the path to the `lein` or `boot` command is correct in the Proto REPL settings depending on whether you're using Leiningen or Boot as your build tool. Proto REPL settings can be accessed in Atom by opening "Preferences" from the main menu, then selecting the "Packages" tab. Proto REPL will be one of the packages listed. Click the "Settings" button there and look for the "Lein Path" or "Boot Path" setting. Use `which lein` in a terminal to get the path.
 
 ### Dependencies
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-* [Leiningen](http://leiningen.org)
+* [Leiningen](http://leiningen.org) or [Boot](https://github.com/boot-clj/boot)
 * [Atom Ink](https://atom.io/packages/ink)
   * This is an optional feature but many of Proto REPL's advanced features won't work without it.
 * Add a dependency to the Clojure proto-repl-lib in your project's dependencies. [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl)
