@@ -268,3 +268,4 @@
 
 * Added boot support.
 * Changed to not display results inline or in repl when an execution extension is triggered.
+* Updating default lein project to include latest version of proto repl charts.
