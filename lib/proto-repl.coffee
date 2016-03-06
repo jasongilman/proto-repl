@@ -115,7 +115,7 @@ module.exports = ProtoRepl =
       'proto-repl:exit-repl': => @quitRepl()
       'proto-repl:pretty-print': => @prettyPrint()
       'proto-repl:run-tests-in-namespace': => @runTestsInNamespace()
-      'proto-repl:run-selected-test': => @runSelectedTest()
+      'proto-repl:run-test-under-cursor': => @runTestUnderCursor()
       'proto-repl:run-all-tests': => @runAllTests()
       'proto-repl:print-var-documentation': => @printVarDocumentation()
       'proto-repl:print-var-code': => @printVarCode()
@@ -408,13 +408,13 @@ module.exports = ProtoRepl =
   #############################################################################
   # Code helpers
 
-  getSelectedText: (editor)->
-    text = editor.getSelectedText()
-    if text == ""
-      @appendText("This command requires you to select some text.")
+  getClojureVarUnderCursor: (editor)->
+    word = EditorUtils.getClojureVarUnderCursor(editor)
+    if word == ""
+      @appendText("This command requires you to position the cursor on a Clojure var.")
       null
     else
-      text
+      word
 
   prettyPrint: ->
     @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
@@ -457,7 +457,6 @@ module.exports = ProtoRepl =
       resultHandler: (result)=>
         @refreshResultHandler(callback, result)
 
-
   # Refreshes all of the code in the project whether it has changed or not.
   # Presumes clojure.tools.namespace is a dependency and setup with standard
   # user/reset function. Will invoke the optional callback if refresh is
@@ -486,10 +485,10 @@ module.exports = ProtoRepl =
       else
         @executeCodeInNs(code)
 
-  runSelectedTest: ->
+  runTestUnderCursor: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getSelectedText(editor)
-        code = "(do (clojure.test/test-vars [#'#{selected}]) (println \"tested #{selected}\"))"
+      if testName = @getClojureVarUnderCursor(editor)
+        code = "(do (clojure.test/test-vars [#'#{testName}]) (println \"tested #{testName}\"))"
         if atom.config.get("proto-repl.refreshBeforeRunningSingleTest")
           @refreshNamespaces =>
             @executeCodeInNs(code)
@@ -504,37 +503,36 @@ module.exports = ProtoRepl =
 
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getSelectedText(editor)
-        # TODO we could also make it try to find the keyword around the cursor
+      if varName = @getClojureVarUnderCursor(editor)
 
         if @ink && atom.config.get('proto-repl.showInlineResults')
           range = editor.getSelectedBufferRange()
           range.end.column = Infinity
           inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
             # Strip off the "----" at the beginning
-            [selected, [@parseEdn(value).substr(26)]])
+            [varName, [@parseEdn(value).substr(26)]])
           @executeCodeInNs "(do
                               (require 'clojure.repl)
-                              (with-out-str (clojure.repl/doc #{selected})))",
+                              (with-out-str (clojure.repl/doc #{varName})))",
                           displayInRepl: false
                           resultHandler: inlineHandler
         else
           @executeCodeInNs "(do
                               (require 'clojure.repl)
-                              (clojure.repl/doc #{selected}))"
+                              (clojure.repl/doc #{varName}))"
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getSelectedText(editor)
-        @executeCodeInNs("(do (require 'clojure.repl) (clojure.repl/source #{selected}))")
+      if varName = @getClojureVarUnderCursor(editor)
+        @executeCodeInNs("(do (require 'clojure.repl) (clojure.repl/source #{varName}))")
 
   # Lists all the vars in the selected namespace or namespace alias
   listNsVars: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getSelectedText(editor)
+      if nsName = @getClojureVarUnderCursor(editor)
         text = "(do
                   (require 'clojure.repl)
-                  (let [selected-symbol '#{selected}
+                  (let [selected-symbol '#{nsName}
                         selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
                     (println \"\\nVars in\" (str selected-ns \":\"))
                     (println \"------------------------------\")
@@ -546,10 +544,10 @@ module.exports = ProtoRepl =
   # Lists all the vars with their documentation in the selected namespace or namespace alias
   listNsVarsWithDocs: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getSelectedText(editor)
+      if nsName = @getClojureVarUnderCursor(editor)
         text = "(do
                   (require 'clojure.repl)
-                  (let [selected-symbol '#{selected}
+                  (let [selected-symbol '#{nsName}
                         selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
                     (println (str \"\\n\" selected-ns \":\"))
                     (println \"\" (:doc (meta (the-ns selected-ns))))
@@ -572,7 +570,7 @@ module.exports = ProtoRepl =
   # Assumes that the Atom command line alias "atom" can be used to invoke Atom.
   openFileContainingVar: ->
     if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getSelectedText(editor)
+      if selected = @getClojureVarUnderCursor(editor)
         text = "(do (require 'clojure.repl)
                     (require 'clojure.java.shell)
                     (require 'clojure.java.io)

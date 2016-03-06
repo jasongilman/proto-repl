@@ -199,3 +199,7 @@ module.exports = EditorUtils =
         foundRange = matched.range
         matched.stop()
       return [editor, foundRange] if foundRange
+
+  # Determines if a cursor is within a range of text of a var and returns the text
+  getClojureVarUnderCursor: (editor)->
+    editor.getWordUnderCursor wordRegex: /[a-zA-Z0-9\-.$!?\/><*]+/

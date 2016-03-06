@@ -9,7 +9,7 @@
         {'label': 'Load File', 'command': 'proto-repl:load-current-file'}
         {'label': 'Execute Selected Text', 'command': 'proto-repl:execute-selected-text'}
         {'label': 'Run Tests in This Namespace', 'command': 'proto-repl:run-tests-in-namespace'}
-        {'label': 'Run Selected Test', 'command': 'proto-repl:run-selected-test'}
+        {'label': 'Run Test Under Cursor', 'command': 'proto-repl:run-test-under-cursor'}
         {'label': 'Selected Var Documentation', 'command': 'proto-repl:print-var-documentation'}
         {'label': 'Selected Var Code', 'command': 'proto-repl:print-var-code'}
         {'label': 'List Vars in Selected Namespace', 'command': 'proto-repl:list-ns-vars'}

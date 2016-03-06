@@ -224,13 +224,13 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | `ctrl-shift-, r` | `proto-repl:super-refresh-namespaces` | Clears all loaded namespaces using `clojure.tools.namespace` the runs the `user/reset` function.                                         |
 | `ctrl-, p`       | `proto-repl:pretty-print`             | Pretty prints the last value returned at the REPL.                                                                                       |
 | `ctrl-, x`       | `proto-repl:run-tests-in-namespace`   | Runs all the tests in the current namespace.                                                                                             |
-| `ctrl-, t`       | `proto-repl:run-selected-test`        | Runs the test that's selected.                                                                                                           |
+| `ctrl-, t`       | `proto-repl:run-test-under-cursor`    | Runs the test that has a name under the cursor.                                                                                                       |
 | `ctrl-, a`       | `proto-repl:run-all-tests`            | Runs all the test in the current project.                                                                                                |
-| `ctrl-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation with the current selected var.                                                                                  |
-| `ctrl-, c`       | `proto-repl:print-var-code`           | Prints out the code of the current selected var.                                                                                         |
-| `ctrl-, o`       | `proto-repl:open-file-containing-var` | Opens the code of the current selected var or namespace. This works even with vars defined in libraries.                                 |
-| `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the selected namespace.                                                                                                |
-| `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the selected namespace with documentation.                                                                             |
+| `ctrl-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation of a var under the cursor.                                                                                  |
+| `ctrl-, c`       | `proto-repl:print-var-code`           | Prints out the code of the var under the cursor.                                                                                         |
+| `ctrl-, o`       | `proto-repl:open-file-containing-var` | Opens the code of the var or namespace under the cursor. This works even with vars defined in libraries.                                 |
+| `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the namespace under the cursor.                                                                                                |
+| `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the namespace under the cursor with documentation.                                                                             |
 | `shift-ctrl-c`   | `proto-repl:interrupt`                | Attempts to interrupt the currently running command in the REPL.                                                                         |
 | `ctrl-shift-, i` | `proto-repl:insert-save-value-call`   | Inserts a call to `proto/save` with a unique id                                                                                          |
 | `ctrl-shift-, d` | `proto-repl:display-saved-values`     | Displays values saved using the `proto/save` function.                                                                                   |
