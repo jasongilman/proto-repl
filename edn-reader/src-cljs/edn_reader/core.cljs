@@ -3,6 +3,7 @@
   (:require [cljs.reader :as r]
             [clojure.string :as str]
             [cljs.nodejs :as nodejs]
+            [clojure.walk :as w]
             [fipp.edn :as fipp]
             [edn-reader.display :as d]))
 
@@ -24,6 +25,11 @@
   [s]
   (let [data (r/read-string s)]
     (with-out-str (fipp/pprint data))))
+
+(defn ^:export js-to-edn
+  "Converts javascript data to EDN. keywordizes keys"
+  [js-data]
+  (pr-str (w/keywordize-keys (js->clj js-data))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; For converting into a displayable tree.

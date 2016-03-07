@@ -359,6 +359,11 @@ module.exports = ProtoRepl =
       console.log error
       return []
 
+  # Converts a Javascript object to EDN. This is useful when you need to take a
+  # JavaScript object and pass representation of it to Clojure running in the JVM.
+  jsToEdn: (jsData)->
+    edn_reader.core.js_to_edn(jsData)
+
   # Helper function for autoevaling results.
   executeRanges: (editor, ranges)->
     if range = ranges.shift()
@@ -453,7 +458,7 @@ module.exports = ProtoRepl =
   refreshNamespaces: (callback=null)->
     @appendText("Refreshing code...\n")
     @executeCode @refreshNamespacesCommand,
-      displayInRepl: false
+      displayInRepl: false,
       resultHandler: (result)=>
         @refreshResultHandler(callback, result)
 
@@ -467,7 +472,7 @@ module.exports = ProtoRepl =
                     (when (find-ns 'clojure.tools.namespace.repl)
                       (eval '(clojure.tools.namespace.repl/clear)))
                     #{@refreshNamespacesCommand})",
-      displayInRepl: false
+      displayInRepl: false,
       resultHandler: (result)=> @refreshResultHandler(callback, result)
 
   loadCurrentFile: ->

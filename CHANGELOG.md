@@ -278,3 +278,9 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Added preference option to choose leiningen or boot if both build files are present.
 * Fixed #38 - Changed all commands that rely on selecting the full name for something to work if you just place your cursor on that name.
+
+## 1.0.1
+
+### New Features
+
+* Added jsToEdn function for plugins to use.
