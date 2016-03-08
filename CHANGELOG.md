@@ -284,3 +284,10 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 ### New Features
 
 * Added jsToEdn function for plugins to use.
+
+## 1.0.2
+
+### Bug fixes
+
+* Changed some default settings to be better for new developers.
+* Fixed #75 - REPL will keep track of the current namespace now.

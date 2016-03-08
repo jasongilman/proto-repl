@@ -40,6 +40,9 @@ class Repl
   # A map of code execution extension names to callback functions.
   codeExecutionExtensions: null
 
+  # The current namespace
+  currentNs: "user"
+
   constructor: (@codeExecutionExtensions)->
     @emitter = new Emitter
     @replTextEditor = new ReplTextEditor()
@@ -111,14 +114,19 @@ class Repl
         if msg.out
           @appendText(msg.out)
         else if msg.session == @session
+
+          # Set the current ns
+          if msg.ns
+            @currentNs = msg.ns
+
           # Only print values from the regular session.
           if msg.err
-            @appendText("=> " + msg.err)
+            @appendText(@currentNs + "=> " + msg.err)
           else if msg.value
             if atom.config.get("proto-repl.autoPrettyPrint")
-              @appendText("=>\n" + protoRepl.prettyEdn(msg.value))
+              @appendText(@currentNs + "=>\n" + protoRepl.prettyEdn(msg.value))
             else
-              @appendText("=> " + msg.value)
+              @appendText(@currentNs + "=> " + msg.value)
 
   connectToRepl: ({host, port})=>
     host ?= "localhost"
@@ -161,7 +169,7 @@ class Repl
   # Sends the given code to the REPL and calls the given callback with the results
   sendToRepl: (text, session, resultHandler)->
     return null unless @running()
-    @conn.eval text, "user", session, (err, messages)=>
+    @conn.eval text, @currentNs, session, (err, messages)=>
       for msg in messages
         if msg.value
           resultHandler(value: msg.value)
