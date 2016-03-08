@@ -40,7 +40,7 @@ module.exports = ProtoRepl =
     bootArgs:
       description: 'The arguments to be passed to boot. For advanced users only.'
       type: 'string'
-      default: "--no-colors repl"
+      default: "--no-colors dev repl"
     preferLein:
       description: "Sets whether to prefer Leiningen if a boot and lein build file is found."
       type: 'boolean'
