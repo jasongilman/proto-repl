@@ -182,13 +182,7 @@ Proto REPL integrates with the [Atom Tool Bar package](https://atom.io/packages/
 
 ### Recommended Atom Settings
 
-Change the "Non Word Characters" setting in Atom to
-
-```
-(){}[]\"',;<>~#$%^&*|+=`…
-```
-
-Doing this allows you to select namespaces with var definitions in Clojure as a single word.
+See [this gist](https://gist.github.com/jasongilman/d1f70507bed021b48625#file-my_atom_clojure_setup-md) for instructions on the best way to setup Atom and other packages for Clojure development. 
 
 ### Recommended Additional Packages
 
