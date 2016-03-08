@@ -60,11 +60,11 @@ module.exports = ProtoRepl =
     autoPrettyPrint:
       description: "Configures whether the REPL automatically pretty prints values."
       type: "boolean"
-      default: false
+      default: true
     refreshOnReplStart:
       description: "Configures whether the REPL should automatically refresh code when it starts."
       type: "boolean"
-      default: false
+      default: true
     refreshBeforeRunningTestFile:
       description: "Configures whether the REPL should automatically refresh code before running all the tests in a file."
       type: "boolean"
