@@ -182,7 +182,7 @@ Proto REPL integrates with the [Atom Tool Bar package](https://atom.io/packages/
 
 ### Recommended Atom Settings
 
-See [this gist](https://gist.github.com/jasongilman/d1f70507bed021b48625#file-my_atom_clojure_setup-md) for instructions on the best way to setup Atom and other packages for Clojure development. 
+See [https://git.io/atom_clojure_setup](https://git.io/atom_clojure_setup) for instructions on the best way to setup Atom and other packages for Clojure development.
 
 ### Recommended Additional Packages
 
@@ -193,6 +193,10 @@ These packages go well with Proto REPL.
 * [tool-bar](https://atom.io/packages/tool-bar)
 * [parinfer](https://atom.io/packages/parinfer)
 * [lisp-paredit](https://atom.io/packages/lisp-paredit)
+
+## Questions and Discussion
+
+For questions and general Proto REPL discussion see the [#protorepl channel](https://clojurians.slack.com/messages/protorepl/) on [Slack](http://clojurians.net/)
 
 ## Extending Proto REPL
 
