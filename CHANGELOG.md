@@ -291,3 +291,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Changed some default settings to be better for new developers.
 * Fixed #75 - REPL will keep track of the current namespace now.
+
+## 1.0.3
+
+* Changed boot startup so that it will use the dev profile. 
