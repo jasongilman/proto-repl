@@ -1,12 +1,14 @@
 (defproject edn-reader "0.0.1-SNAPSHOT"
   :description "Packages the ClojureScript EDN reader function so it can be used from JavaScript"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.7.170"]
-                 [fipp "0.6.4"]]
+                 [org.clojure/clojurescript "1.7.228"]
+                 [fipp "0.6.4"]
+                 [replumb "0.1.5-3"]]
   :plugins [[lein-cljsbuild "1.1.2"]]
   :cljsbuild {:builds [{:source-paths ["src-cljs" "src"]
-                        :compiler {:output-to "../lib/edn-reader.js"
-                                   :optimizations :advanced
+                        :compiler {:output-to "../lib/edn_reader/main.js"
+                                   :output-dir "../lib/edn_reader"
+                                   :optimizations :none
                                    :target :nodejs
                                    :pretty-print true}}]}
 
