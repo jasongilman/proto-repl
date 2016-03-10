@@ -9,7 +9,11 @@ CompletionProvider = require './completion-provider'
 
 # This is built from the ClojureScript edn-reader project.
 # Rebuild it with lein cljsbuild once.
-require './edn-reader'
+# edn_reader = require './edn-reader'
+require './edn_reader/goog/bootstrap/nodejs.js'
+require './edn_reader/main.js'
+edn_reader = require './edn_reader/edn_reader/core.js'
+
 
 module.exports = ProtoRepl =
   config:
@@ -93,6 +97,7 @@ module.exports = ProtoRepl =
   activate: (state) ->
     window.protoRepl = this
     window.protoRepl.EditorUtils = EditorUtils
+    window.protoRepl.edn_reader = edn_reader
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
 
@@ -328,13 +333,13 @@ module.exports = ProtoRepl =
 
   # A helper function for parsing some EDN data into JavaScript objects.
   parseEdn: (ednString)->
-    edn_reader.core.parse(ednString)
+    edn_reader.parse(ednString)
 
   # Helper functions which takes an EDN string and pretty prints it. Returns the
   # string formatted data.
   prettyEdn: (ednString)->
     try
-      edn_reader.core.pretty_print(ednString)
+      edn_reader.pretty_print(ednString)
     catch error
       # Some responses from the REPL may be unparseable as in the case of var refs
       # like #'user/reset. We'll just return the original string in that case.
@@ -346,7 +351,7 @@ module.exports = ProtoRepl =
   # represented by a vector of one element.
   ednToDisplayTree: (ednString)->
     try
-      edn_reader.core.to_display_tree(ednString)
+      edn_reader.to_display_tree(ednString)
     catch error
       # Some responses from the REPL may be unparseable as in the case of var refs
       # like #'user/reset. We'll just return the original string in that case.
@@ -354,7 +359,7 @@ module.exports = ProtoRepl =
 
   ednSavedValuesToDisplayTrees: (ednString)->
     try
-      edn_reader.core.saved_values_to_display_trees(ednString)
+      edn_reader.saved_values_to_display_trees(ednString)
     catch error
       console.log error
       return []
@@ -362,7 +367,7 @@ module.exports = ProtoRepl =
   # Converts a Javascript object to EDN. This is useful when you need to take a
   # JavaScript object and pass representation of it to Clojure running in the JVM.
   jsToEdn: (jsData)->
-    edn_reader.core.js_to_edn(jsData)
+    edn_reader.js_to_edn(jsData)
 
   # Helper function for autoevaling results.
   executeRanges: (editor, ranges)->

@@ -3,6 +3,8 @@
   (:require [cljs.reader :as r]
             [clojure.string :as str]
             [cljs.nodejs :as nodejs]
+            [replumb.core :as replumb]
+            [replumb.nodejs.io :as node-io]
             [clojure.walk :as w]
             [fipp.edn :as fipp]
             [edn-reader.display :as d]))
@@ -13,6 +15,15 @@
 (r/register-default-tag-parser!
  (fn [tag data]
    data))
+
+(defn ^:export eval-str
+  "TODO"
+  [cmd callback]
+  (replumb/read-eval-call
+   (replumb/nodejs-options [] node-io/read-file!)
+   (fn [res]
+     (callback (replumb/result->string res true)))
+   cmd))
 
 (defn ^:export parse
   "Parses EDN into a JavaScript data."
@@ -53,3 +64,12 @@
 (defn -main [& args])
 
 (set! *main-cli-fn* -main)
+
+(set! (.-exports js/module)
+      #js
+      {:eval_str eval-str
+       :parse parse
+       :pretty_print pretty-print
+       :js_to_edn js-to-edn
+       :to_display_tree to-display-tree
+       :saved_values_to_display_trees saved-values-to-display-trees})
