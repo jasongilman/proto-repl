@@ -200,7 +200,7 @@ For questions and general Proto REPL discussion see the [#protorepl channel](htt
 
 ## Extending Proto REPL
 
-See [extending_proto_repl.md](#/extending_proto_repl.md)
+See [extending_proto_repl.md](https://github.com/jasongilman/proto-repl/blob/master/extending_proto_repl.md)
 
 ## Keybindings and Events
 
