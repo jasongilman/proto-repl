@@ -2,11 +2,8 @@
 
 ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
-nrepl = require('jg-nrepl-client')
-ClojureVersion = require './clojure-version'
-LocalReplProcess = require './local-repl-process'
-RemoteReplProcess = require './remote-repl-process'
-EditorUtils = require './editor-utils'
+LocalReplProcess = require './process/local-repl-process'
+RemoteReplProcess = require './process/remote-repl-process'
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
 
@@ -20,16 +17,6 @@ class Repl
 
   # A local or remote process
   process: null
-
-  # The nrepl connection
-  conn: null
-
-  # The standard nREPL session
-  session: null
-
-  # A separate nREPL session for sending commands in which we do not want the result
-  # value sent to the REPL.
-  cmdSession: null
 
   # The text editor where results are displayed or commands can be enterered
   replTextEditor: null
@@ -79,7 +66,7 @@ class Repl
 
   # Returns true if the process is running
   running: ->
-    @process?.running() && @conn != null
+    @process?.running()
 
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->
@@ -87,9 +74,10 @@ class Repl
       @appendText("REPL already running")
     else
       @process = new LocalReplProcess(
-        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen),
-        (details)=>@connectToRepl(details))
-      @process.start(projectPath)
+        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
+      @process.start projectPath,
+        messageHandler: (msg)=> @handleConnectionMessage(msg)
+        startCallback: => @emitter.emit 'proto-repl-repl:start'
 
   # Starts nRepl connection
   # * `options` An {Object} with following keys
@@ -101,62 +89,30 @@ class Repl
       return
 
     @process = new RemoteReplProcess(
-      (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen),
-      (details)=>@connectToRepl(details)
-    )
-    @process.start(host, port)
+      (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
+    @appendText("Starting remote REPL connection on #{host}:#{port}", true)
+    @process.start host: host,
+                   port: port,
+                   messageHandler: ((msg)=> @handleConnectionMessage(msg)),
+                   startCallback: => @emitter.emit 'proto-repl-repl:start'
 
+  handleConnectionMessage: (msg)->
+    if msg.out
+      @appendText(msg.out)
+    else if msg.session == @session
 
-  startResponseLogging: ->
-    # Log any output from the nRepl connection messages
-    @conn.messageStream.on "messageSequence", (id, messages)=>
-      for msg in messages
-        if msg.out
-          @appendText(msg.out)
-        else if msg.session == @session
+      # Set the current ns
+      if msg.ns
+        @currentNs = msg.ns
 
-          # Set the current ns
-          if msg.ns
-            @currentNs = msg.ns
-
-          # Only print values from the regular session.
-          if msg.err
-            @appendText(@currentNs + "=> " + msg.err)
-          else if msg.value
-            if atom.config.get("proto-repl.autoPrettyPrint")
-              @appendText(@currentNs + "=>\n" + protoRepl.prettyEdn(msg.value))
-            else
-              @appendText(@currentNs + "=> " + msg.value)
-
-  connectToRepl: ({host, port})=>
-    host ?= "localhost"
-    @conn = nrepl.connect({port: port, host: host, verbose: false})
-    responseLoggingStarted = false
-
-    @conn.once 'connect', =>
-      # Create a persistent session
-      @conn.clone (err, messages)=>
-        @session = messages[0]["new-session"]
-
-        # Determine the Clojure Version
-        @conn.eval "*clojure-version*", "user", @session, (err, messages)=>
-          value = (msg.value for msg in messages)[0]
-          @clojureVersion = new ClojureVersion(protoRepl.parseEdn(value))
-          unless @clojureVersion.isSupportedVersion()
-            @appendText("WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.")
-
-          # Handle multiple callbacks for this which can happen during REPL startup
-          # with cider-nrepl middleware for some reason.
-          unless responseLoggingStarted
-            @startResponseLogging()
-            responseLoggingStarted = true
-
-        # Create a session for requests that we don't want the values printed to
-        # the repl.
-        @conn.clone (err, messages)=>
-          @cmdSession = messages[0]["new-session"]
-          @emitter.emit 'proto-repl-repl:start'
-
+      # Only print values from the regular session.
+      if msg.err
+        @appendText(@currentNs + "=> " + msg.err)
+      else if msg.value
+        if atom.config.get("proto-repl.autoPrettyPrint")
+          @appendText(@currentNs + "=>\n" + protoRepl.prettyEdn(msg.value))
+        else
+          @appendText(@currentNs + "=> " + msg.value)
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
@@ -165,16 +121,6 @@ class Repl
   # Appends text to the display area of the text editor.
   appendText: (text, waitUntilOpen=false)->
     @replTextEditor?.appendText(text, waitUntilOpen)
-
-  # Sends the given code to the REPL and calls the given callback with the results
-  sendToRepl: (text, session, resultHandler)->
-    return null unless @running()
-    @conn.eval text, @currentNs, session, (err, messages)=>
-      for msg in messages
-        if msg.value
-          resultHandler(value: msg.value)
-        else if msg.err
-          resultHandler(error: msg.err)
 
   displayInline: (editor, range, tree)->
     end = range.end.row
@@ -221,17 +167,6 @@ class Repl
         tree = [result.error]
       @displayInline(editor, range, tree)
 
-
-  # Wraps the given code in an eval and a read-string. This safely handles
-  # unbalanced parentheses, other kinds of invalid code, and handling reader
-  # conditionals. http://clojure.org/guides/reader_conditionals
-  wrapCodeInReadEval: (code)->
-    escapedStr = EditorUtils.escapeClojureCodeInString(code)
-    if @clojureVersion?.isReaderConditionalSupported()
-      "(eval (read-string {:read-cond :allow} #{escapedStr}))"
-    else
-      "(eval (read-string #{escapedStr}))"
-
   inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
@@ -256,9 +191,6 @@ class Repl
   executeCode: (code, options={})->
     return null unless @running()
 
-    # Wrap code in read eval to handle invalid code and reader conditionals
-    code = @wrapCodeInReadEval(code)
-
     # If a handler is supplied use that otherwise use the default.
     resultHandler = options?.resultHandler
     handler = (result)=>
@@ -270,12 +202,7 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-    if options.displayInRepl == false
-      session = @cmdSession
-    else
-      session = @session
-
-    @sendToRepl code, session, (result)=>
+    @process.sendCommand code, options.displayInRepl, (result)=>
       # check if it's an extension response
       if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
         parsed = window.protoRepl.parseEdn(result.value)
@@ -306,12 +233,9 @@ class Repl
     @appendText("Stopping REPL")
     @process.stop(@session)
     @process = null
-    @conn = null
 
   interrupt: ->
-    return null unless @running()
-    @conn.interrupt @session, (err, result)=>
-      @appendText("interrupted")
+    @process.interrupt()
 
   clear: ->
     @replTextEditor.clear()

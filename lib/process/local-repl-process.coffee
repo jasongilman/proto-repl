@@ -3,6 +3,7 @@ LeinRunner = require.resolve './lein-runner'
 BootRunner = require.resolve './boot-runner'
 path = require 'path'
 fs = require('fs')
+NReplConnection = require './nrepl-connection'
 
 # The code to send to the repl to exit.
 EXIT_CMD="(System/exit 0)"
@@ -18,12 +19,12 @@ class LocalReplProcess
   appendText: null
 
   # The nREPL connection
-  conn: null
+  conn: new NReplConnection()
 
   # reference to a running process
   process: null
 
-  constructor: (@appendText, @createConn)->
+  constructor: (@appendText)->
     null
 
   # Searches upwords to find the root project if proto repl was opened in a
@@ -49,7 +50,7 @@ class LocalReplProcess
       else
         currentPath unless matches.length == 0
 
-  start: (projectPath)->
+  start: (projectPath, connOptions)->
     if @running()
       return
 
@@ -108,7 +109,8 @@ class LocalReplProcess
 
     # The nREPL port was captured from output
     @process.on 'proto-repl-process:nrepl-port', (port) =>
-      @conn = @createConn({port: port})
+      connOptions.port = port
+      @conn.start(connOptions)
 
     # The process exited.
     @process.on 'proto-repl-process:exit', ()=>
@@ -116,20 +118,28 @@ class LocalReplProcess
       # The REPL Text editor may or may not be still open at this point.
       # We track that separately.
       @process = null
-      @conn = null
+      @conn.close()
 
   running: ()->
-    @process != null
+    @process != null && @conn.connected()
+
+  # TODO displayInRepl doesn't really make sense as an argument.
+  # Need to think through what this is really doing and what really makes sense
+  # As an argument to the connection.
+  sendCommand: (code, displayInRepl, resultHandler)->
+    @conn.sendCommand(code, displayInRepl, resultHandler)
+
+  interrupt: ->
+    @conn.interrupt()
 
   # Stops the running process
   stop: (session)->
     try
       # Tell the process to shutdown
-      @conn?.eval(EXIT_CMD, "user", session)
-      @conn?.close session, => return
+      @conn.sendCommand EXIT_CMD,true, => return
+      @conn.close()
     catch error
       console.log("Error trying to send exit command to REPL.", error)
-    @conn = null
     # Kill the process to make sure.
     @process?.send event: 'kill'
     @process = null
