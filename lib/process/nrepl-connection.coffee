@@ -22,14 +22,12 @@ class NReplConnection
 
   # TODO rename the response logging stuff. It should be message handling.
 
-
   # TODO document what the handler will be passed.
   start: ({host, port, messageHandler, startCallback})->
     if @connected()
       @close()
 
     host ?= "localhost"
-    console.log("Connectin to", host, port)
     @conn = nrepl.connect({port: port, host: host, verbose: false})
     responseLoggingStarted = false
 
@@ -77,7 +75,13 @@ class NReplConnection
     # Log any output from the nRepl connection messages
     @conn.messageStream.on "messageSequence", (id, messages)=>
       for msg in messages
-        messageHandler(msg)
+        if msg.session == @session
+          messageHandler(msg)
+        else if msg.session == @cmdSession && msg.out
+          # TODO I don't like that we have to have this much logic here about
+          # what messages to send to the handler or not. We have to allow output
+          # for the cmdSession though.
+          messageHandler(msg)
 
   # Returns true if the connection is open.
   connected: ->

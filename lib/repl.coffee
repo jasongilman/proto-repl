@@ -91,16 +91,17 @@ class Repl
     @process = new RemoteReplProcess(
       (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
     @appendText("Starting remote REPL connection on #{host}:#{port}", true)
-    @process.start host: host,
-                   port: port,
-                   messageHandler: ((msg)=> @handleConnectionMessage(msg)),
-                   startCallback: => @emitter.emit 'proto-repl-repl:start'
+    connOptions =
+      host: host,
+      port: port,
+      messageHandler: ((msg)=> @handleConnectionMessage(msg)),
+      startCallback: => @emitter.emit 'proto-repl-repl:start'
+    @process.start(connOptions)
 
   handleConnectionMessage: (msg)->
     if msg.out
       @appendText(msg.out)
-    else if msg.session == @session
-
+    else
       # Set the current ns
       if msg.ns
         @currentNs = msg.ns
@@ -202,7 +203,12 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-    @process.sendCommand code, options.displayInRepl, (result)=>
+    if options.displayInRepl == false
+      displayInRepl = false
+    else
+      displayInRepl = true
+
+    @process.sendCommand code, displayInRepl, (result)=>
       # check if it's an extension response
       if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
         parsed = window.protoRepl.parseEdn(result.value)
