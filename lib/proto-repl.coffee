@@ -1,3 +1,13 @@
+# This is built from the ClojureScript edn-reader project.
+# Rebuild it with lein cljsbuild once.
+# edn_reader = require './edn-reader'
+require './edn_reader/goog/bootstrap/nodejs.js'
+require './edn_reader/main.js'
+# TODO rename the EDN reader project. The name makes no sense anymore.
+# I'm thinking it will eventually become almost all of Proto REPL.
+# I'll migrate all the coffeescript code to ClojureScript
+edn_reader = require './edn_reader/edn_reader/core.js'
+
 {CompositeDisposable, Range, Point} = require 'atom'
 NReplConnectionView = require './views/nrepl-connection-view'
 Repl = require './repl'
@@ -6,14 +16,6 @@ path = require 'path'
 EditorUtils = require './editor-utils'
 SaveRecallFeature = require './features/save-recall-feature'
 CompletionProvider = require './completion-provider'
-
-# This is built from the ClojureScript edn-reader project.
-# Rebuild it with lein cljsbuild once.
-# edn_reader = require './edn-reader'
-require './edn_reader/goog/bootstrap/nodejs.js'
-require './edn_reader/main.js'
-edn_reader = require './edn_reader/edn_reader/core.js'
-
 
 module.exports = ProtoRepl =
   config:
@@ -108,6 +110,7 @@ module.exports = ProtoRepl =
       'proto-repl:toggle': => @toggle()
       'proto-repl:toggle-current-project-clj': => @toggleCurrentEditorDir()
       'proto-repl:remote-nrepl-connection': => @remoteNReplConnection()
+      'proto-repl:start-self-hosted-repl': => @selfHostedRepl()
       'proto-repl:clear-repl': => @clearRepl()
       'proto-repl:toggle-auto-scroll': => @toggleAutoScroll()
       'proto-repl:execute-selected-text': => @executeSelectedText()
@@ -235,6 +238,19 @@ module.exports = ProtoRepl =
     @connectionView ?= new NReplConnectionView(confirmCallback)
     @connectionView.show()
 
+  selfHostedRepl: ->
+    if @repl == null
+      @repl = new Repl(@codeExecutionExtensions)
+      @prepareRepl(@repl)
+      @repl.startSelfHostedConnection()
+    else
+      @repl.startSelfHostedConnection()
+
+  # Returns the type of the REPL that's currently running.
+  # "SelfHosted", "Remote", Local"
+  getReplType: ->
+    @repl?.getType()
+
   clearRepl: ->
     @repl?.clear()
 
@@ -282,7 +298,8 @@ module.exports = ProtoRepl =
 
   # Puts the given text in the namespace
   putTextInNamespace: (text, ns) ->
-    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (quote #{text})))"
+    # "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (quote #{text})))"
+    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] #{text})"
 
   executeCodeInNs: (code, options={})->
     if editor = atom.workspace.getActiveTextEditor()
