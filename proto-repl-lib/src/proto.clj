@@ -20,8 +20,8 @@
   []
   (reset! saved-values-atom {}))
 
-;; TODO each set of saved values should be given a version number. This will allow
-;; the GUI to more efficiently fetch and display only the changes.
+;; Each set of saved values could be given a unique version number. This would
+;; allow the GUI to more efficiently fetch and display only the changes.
 (defn save*
   "Swaps in the map of var values"
   [uniq-id var-values-map]
