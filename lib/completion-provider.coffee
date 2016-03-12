@@ -3,6 +3,7 @@
 
 {Range, Point} = require 'atom'
 EditorUtils = require './editor-utils'
+self_hosted_clj = require './edn_reader/edn_reader/self_hosted.js'
 
 # Converts a completion result into a suggestion for Autocomplete
 completionToSuggestion = (prefix, {candidate, docs, type})->
@@ -66,14 +67,18 @@ module.exports =
 
     if prefix != ""
       new Promise (resolve) ->
-        # code = "(do (require 'compliment.core) (compliment.core/completions \"#{prefix}\"))"
-        code = completionsCode(editor, bufferPosition, prefix)
-        protoRepl.executeCode code,
-          displayInRepl: false
-          resultHandler: (result)->
-            if result.error
-              console.log result.error
-            else
-              completions = protoRepl.parseEdn(result.value)
-              suggestions = (completionToSuggestion(prefix, c) for c in completions)
-              resolve suggestions
+        if protoRepl.getReplType() == "SelfHosted"
+          self_hosted_clj.completions prefix, (matches)->
+            suggestions = (completionToSuggestion(prefix, c) for c in matches)
+            resolve suggestions
+        else
+          code = completionsCode(editor, bufferPosition, prefix)
+          protoRepl.executeCode code,
+            displayInRepl: false
+            resultHandler: (result)->
+              if result.error
+                console.log result.error
+              else
+                completions = protoRepl.parseEdn(result.value)
+                suggestions = (completionToSuggestion(prefix, c) for c in completions)
+                resolve suggestions

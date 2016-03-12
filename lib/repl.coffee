@@ -4,6 +4,7 @@ ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
 LocalReplProcess = require './process/local-repl-process'
 RemoteReplProcess = require './process/remote-repl-process'
+SelfHostedProcess = require './process/self-hosted-process'
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
 
@@ -68,6 +69,11 @@ class Repl
   running: ->
     @process?.running()
 
+  # Returns the type of the REPL that's currently running.
+  # "SelfHosted", "Remote", Local"
+  getType: ->
+    @process?.getType()
+
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->
     if @running()
@@ -86,17 +92,27 @@ class Repl
   startRemoteReplConnection: ({host, port})->
     if @running()
       @appendText("REPL already running")
-      return
+    else
+      @process = new RemoteReplProcess(
+        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
+      @appendText("Starting remote REPL connection on #{host}:#{port}", true)
+      connOptions =
+        host: host,
+        port: port,
+        messageHandler: ((msg)=> @handleConnectionMessage(msg)),
+        startCallback: => @emitter.emit 'proto-repl-repl:start'
+      @process.start(connOptions)
 
-    @process = new RemoteReplProcess(
-      (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
-    @appendText("Starting remote REPL connection on #{host}:#{port}", true)
-    connOptions =
-      host: host,
-      port: port,
-      messageHandler: ((msg)=> @handleConnectionMessage(msg)),
-      startCallback: => @emitter.emit 'proto-repl-repl:start'
-    @process.start(connOptions)
+  startSelfHostedConnection: ->
+    if @running()
+      @appendText("REPL already running")
+    else
+      @process = new SelfHostedProcess(
+        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
+      connOptions=
+        messageHandler: ((msg)=> @handleConnectionMessage(msg)),
+        startCallback: => @emitter.emit 'proto-repl-repl:start'
+      @process.start connOptions
 
   handleConnectionMessage: (msg)->
     if msg.out
@@ -237,7 +253,7 @@ class Repl
   exit: ->
     return null unless @running()
     @appendText("Stopping REPL")
-    @process.stop(@session)
+    @process.stop()
     @process = null
 
   interrupt: ->

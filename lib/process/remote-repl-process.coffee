@@ -14,6 +14,9 @@ class RemoteReplProcess
   constructor: (@appendText)->
     null
 
+  getType: ->
+    "Remote"
+
   start: (connOptions)->
     @conn.start(connOptions)
     # TODO how do we append repl closed when we close the connection?
@@ -32,5 +35,5 @@ class RemoteReplProcess
     @conn.connected()
 
   # Closes the remote connection.
-  stop: (session)->
+  stop: ()->
     @conn.close()

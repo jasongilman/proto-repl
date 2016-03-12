@@ -27,6 +27,9 @@ class LocalReplProcess
   constructor: (@appendText)->
     null
 
+  getType: ->
+    "Local"
+
   # Searches upwords to find the root project if proto repl was opened in a
   # subdirectory of the project.
   getRootProject: (currentPath, limit=0) ->
@@ -133,7 +136,7 @@ class LocalReplProcess
     @conn.interrupt()
 
   # Stops the running process
-  stop: (session)->
+  stop: ()->
     try
       # Tell the process to shutdown
       @conn.sendCommand EXIT_CMD,true, => return
