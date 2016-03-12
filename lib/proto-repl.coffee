@@ -444,24 +444,28 @@ module.exports = ProtoRepl =
       word
 
   prettyPrint: ->
+    # TODO make this work in self hosted repl by getting the last value and using
+    # fipp to print it.
     @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
 
   refreshNamespacesCommand:
     "(do
        (require 'user)
-       (let [r 'user/reset
-             result (cond
-                     (find-var r)
-                     ((resolve r))
+       (if (find-ns 'user)
+         (let [r 'user/reset
+               result (cond
+                       (find-var r)
+                       ((resolve r))
 
-                     (find-ns 'clojure.tools.namespace.repl)
-                     (eval `(clojure.tools.namespace.repl/refresh :after '~r))
+                       (find-ns 'clojure.tools.namespace.repl)
+                       (eval `(clojure.tools.namespace.repl/refresh :after '~r))
 
-                     :else
-                     (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
-         (when (isa? (type result) Exception)
-           (println (.getMessage result)))
-         result))"
+                       :else
+                       (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
+           (when (isa? (type result) Exception)
+             (println (.getMessage result)))
+           result))
+        (println \"No user namespace defined to allow refreshing. Define a user namespace.\"))"
 
   refreshResultHandler: (callback, result)->
     # Value will contain an exception if it's not valid otherwise it will be nil
@@ -478,24 +482,30 @@ module.exports = ProtoRepl =
   # clojure.tools.namespace is a dependency and setup with standard user/reset
   # function. Will invoke the optional callback if refresh is successful.
   refreshNamespaces: (callback=null)->
-    @appendText("Refreshing code...\n")
-    @executeCode @refreshNamespacesCommand,
-      displayInRepl: false,
-      resultHandler: (result)=>
-        @refreshResultHandler(callback, result)
+    if @getReplType() == "SelfHosted"
+      @appendText("Refreshing not supported in self hosted REPL.")
+    else
+      @appendText("Refreshing code...\n")
+      @executeCode @refreshNamespacesCommand,
+        displayInRepl: false,
+        resultHandler: (result)=>
+          @refreshResultHandler(callback, result)
 
   # Refreshes all of the code in the project whether it has changed or not.
   # Presumes clojure.tools.namespace is a dependency and setup with standard
   # user/reset function. Will invoke the optional callback if refresh is
   # successful.
   superRefreshNamespaces: (callback=null)->
-    @appendText("Clearing all and then refreshing code...\n")
-    @executeCode "(do
-                    (when (find-ns 'clojure.tools.namespace.repl)
-                      (eval '(clojure.tools.namespace.repl/clear)))
-                    #{@refreshNamespacesCommand})",
-      displayInRepl: false,
-      resultHandler: (result)=> @refreshResultHandler(callback, result)
+    if @getReplType() == "SelfHosted"
+      @appendText("Refreshing not supported in self hosted REPL.")
+    else
+      @appendText("Clearing all and then refreshing code...\n")
+      @executeCode "(do
+                      (when (find-ns 'clojure.tools.namespace.repl)
+                        (eval '(clojure.tools.namespace.repl/clear)))
+                      #{@refreshNamespacesCommand})",
+        displayInRepl: false,
+        resultHandler: (result)=> @refreshResultHandler(callback, result)
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()

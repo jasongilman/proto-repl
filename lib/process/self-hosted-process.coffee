@@ -1,10 +1,10 @@
-# TODO the name edn reader is temporary for now. It really means the clojurescript
-# portion of proto repl
 self_hosted_clj = require '../edn_reader/edn_reader/self_hosted.js'
 {allowUnsafeEval, allowUnsafeNewFunction} = require 'loophole'
 
 module.exports=
-# TODO
+
+# This is fake process that allows a self hosted ClojureScript REPL. The Related
+# code is in edn-reader.self-hosted.
 class SelfHostedProcess
 
   # A function that can be used to write back messages to the REPL.
@@ -20,7 +20,6 @@ class SelfHostedProcess
     return if @running()
     @messageHandler = messageHandler
     @startRedirectingConsoleOutput()
-    @appendText("Self Hosted REPL Started")
     startCallback()
 
   # TODO displayInRepl doesn't really make sense as an argument.
@@ -31,9 +30,14 @@ class SelfHostedProcess
     # TypeError: Cannot read property 'call' of undefined at eval
     # if somewhere within the code you refer to a function that's not defined.
 
+    # TODO another problem is with defining functions that refer to vars that don't exists
+    # There's no error until runtime. But with another user or replumb reepl they get compilation errors.
+
     allowUnsafeEval =>
       allowUnsafeNewFunction =>
+        console.debug("Evaling", code)
         self_hosted_clj.eval_str code, (result)=>
+          console.debug("Result:", result)
           if result["success?"]
             @messageHandler value: result.value
             resultHandler value: result.value

@@ -111,7 +111,9 @@ class Repl
         (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
       connOptions=
         messageHandler: ((msg)=> @handleConnectionMessage(msg)),
-        startCallback: => @emitter.emit 'proto-repl-repl:start'
+        startCallback: =>
+          @appendText("Self Hosted REPL Started", true)
+          @emitter.emit 'proto-repl-repl:start'
       @process.start connOptions
 
   handleConnectionMessage: (msg)->
