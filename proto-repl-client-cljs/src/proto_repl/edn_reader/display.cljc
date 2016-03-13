@@ -1,4 +1,4 @@
-(ns edn-reader.display
+(ns proto-repl.edn-reader.display
     "Contains functions for converting EDN data structures into trees for display
      in Atom Ink"
     (:require [clojure.string :as str]

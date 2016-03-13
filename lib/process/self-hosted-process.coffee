@@ -1,4 +1,4 @@
-self_hosted_clj = require '../edn_reader/edn_reader/self_hosted.js'
+self_hosted_clj = require '../proto_repl/proto_repl/self_hosted.js'
 {allowUnsafeEval, allowUnsafeNewFunction} = require 'loophole'
 
 module.exports=
@@ -22,7 +22,7 @@ class SelfHostedProcess
     @startRedirectingConsoleOutput()
     startCallback()
 
-
+  # Evaluates the clojure code invoking successCb on success and errorCb on failure.
   eval: (code, successCb, errorCb)->
     allowUnsafeEval =>
       allowUnsafeNewFunction =>
@@ -36,10 +36,17 @@ class SelfHostedProcess
               result.error.toString()
             errorCb(error)
 
+  # Switches to the specified namespace. Calls successCb if successful and
+  # errorCb if there was a problem.
   switchNs: (ns, successCb, errorCb)->
     @eval "(in-ns '#{ns})", (()-> successCb()), ((error)-> errorCb(error))
 
-  # TODO docs
+  # Sends a command to the repl.
+  # * code - string of clojure code to execute
+  # * options - map of options
+  #   * displayInRepl - false to display the result in repl. Defaults to true.
+  #   * ns - the namespace to execute the code in.
+  # * resultHandler - The result handler to handle the resulting value.
   sendCommand: (code, options, resultHandler)->
     # TODO beef up error responses. It currently returns
     # TypeError: Cannot read property 'call' of undefined at eval
@@ -47,7 +54,6 @@ class SelfHostedProcess
 
     # TODO another problem is with defining functions that refer to vars that don't exists
     # There's no error until runtime. But with another user or replumb reepl they get compilation errors.
-
     successCb = (value)=>
       @messageHandler value: value
       resultHandler value: value
@@ -55,10 +61,6 @@ class SelfHostedProcess
     errorHandler = (error)=>
       resultHandler error: error
       @messageHandler err: error
-
-    # TODO need to pass the source paths for the project to the eval function.
-    # How should they be specified?
-
     if options.ns
       @switchNs options.ns, (()=> @eval(code, successCb, errorHandler)), errorHandler
     else

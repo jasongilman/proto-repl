@@ -1,11 +1,11 @@
-(ns edn-reader.core
+(ns proto-repl.edn-reader
   "Defines a functions for working with EDN."
   (:require [cljs.reader :as r]
             [clojure.string :as str]
             [cljs.nodejs :as nodejs]
             [clojure.walk :as w]
             [fipp.edn :as fipp]
-            [edn-reader.display :as d]))
+            [proto-repl.edn-reader.display :as d]))
 
 (nodejs/enable-util-print!)
 
