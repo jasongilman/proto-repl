@@ -13,6 +13,8 @@
  (fn [tag data]
    data))
 
+;; TODO this should take the source paths for loading
+
 (defn eval-str
   "Evaluates the clojure code using replumb and invokes the callback."
   [code callback]

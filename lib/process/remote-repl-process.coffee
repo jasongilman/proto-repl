@@ -22,11 +22,8 @@ class RemoteReplProcess
     # TODO how do we append repl closed when we close the connection?
     # Originally was doing something different.
 
-  # TODO displayInRepl doesn't really make sense as an argument.
-  # Need to think through what this is really doing and what really makes sense
-  # As an argument to the connection.
-  sendCommand: (code, displayInRepl, resultHandler)->
-    @conn.sendCommand(code, displayInRepl, resultHandler)
+  sendCommand: (code, options, resultHandler)->
+    @conn.sendCommand(code, options, resultHandler)
 
   interrupt: ->
     @conn.interrupt()

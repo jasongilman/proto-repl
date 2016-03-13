@@ -22,10 +22,25 @@ class SelfHostedProcess
     @startRedirectingConsoleOutput()
     startCallback()
 
-  # TODO displayInRepl doesn't really make sense as an argument.
-  # Need to think through what this is really doing and what really makes sense
-  # As an argument to the connection.
-  sendCommand: (code, displayInRepl, resultHandler)->
+
+  eval: (code, successCb, errorCb)->
+    allowUnsafeEval =>
+      allowUnsafeNewFunction =>
+        console.debug("Evaling", code)
+        self_hosted_clj.eval_str code, (result)=>
+          console.debug("Result:", result)
+          if result["success?"]
+            successCb(result.value)
+          else
+            error = result.error.cause?.toString() ||
+              result.error.toString()
+            errorCb(error)
+
+  switchNs: (ns, successCb, errorCb)->
+    @eval "(in-ns '#{ns})", (()-> successCb()), ((error)-> errorCb(error))
+
+  # TODO docs
+  sendCommand: (code, options, resultHandler)->
     # TODO beef up error responses. It currently returns
     # TypeError: Cannot read property 'call' of undefined at eval
     # if somewhere within the code you refer to a function that's not defined.
@@ -33,19 +48,21 @@ class SelfHostedProcess
     # TODO another problem is with defining functions that refer to vars that don't exists
     # There's no error until runtime. But with another user or replumb reepl they get compilation errors.
 
-    allowUnsafeEval =>
-      allowUnsafeNewFunction =>
-        console.debug("Evaling", code)
-        self_hosted_clj.eval_str code, (result)=>
-          console.debug("Result:", result)
-          if result["success?"]
-            @messageHandler value: result.value
-            resultHandler value: result.value
-          else
-            error = result.error.cause?.toString() ||
-              result.error.toString()
-            resultHandler error: error
-            @messageHandler err: error
+    successCb = (value)=>
+      @messageHandler value: value
+      resultHandler value: value
+
+    errorHandler = (error)=>
+      resultHandler error: error
+      @messageHandler err: error
+
+    # TODO need to pass the source paths for the project to the eval function.
+    # How should they be specified?
+
+    if options.ns
+      @switchNs options.ns, (()=> @eval(code, successCb, errorHandler)), errorHandler
+    else
+      @eval(code, successCb, errorHandler)
 
   interrupt: ->
     # doesn't do anything
