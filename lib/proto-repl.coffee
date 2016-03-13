@@ -1,12 +1,9 @@
-# This is built from the ClojureScript edn-reader project.
+# Load the ClojureScript code
 # Rebuild it with lein cljsbuild once.
 # edn_reader = require './edn-reader'
-require './edn_reader/goog/bootstrap/nodejs.js'
-require './edn_reader/main.js'
-# TODO rename the EDN reader project. The name makes no sense anymore.
-# I'm thinking it will eventually become almost all of Proto REPL.
-# I'll migrate all the coffeescript code to ClojureScript
-edn_reader = require './edn_reader/edn_reader/core.js'
+require './proto_repl/goog/bootstrap/nodejs.js'
+require './proto_repl/main.js'
+edn_reader = require './proto_repl/proto_repl/edn_reader.js'
 
 {CompositeDisposable, Range, Point} = require 'atom'
 NReplConnectionView = require './views/nrepl-connection-view'

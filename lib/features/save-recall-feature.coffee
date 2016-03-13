@@ -49,7 +49,6 @@ class SaveRecallFeature
   # Clears any displayed saved values and any values saved in the proto namespace.
   clearSavedValues: ->
     @protoRepl.executeCode "(proto/clear-saved-values!)", displayInRepl: false
-    ## TODO just get one of the text editors or any view
     if editor = atom.workspace.getActiveTextEditor()
       atom.commands.dispatch(atom.views.getView(editor), 'inline-results:clear-all')
 

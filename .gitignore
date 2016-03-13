@@ -1,4 +1,5 @@
 .DS_Store
 npm-debug.log
 node_modules
-lib/edn_reader
+# Generated proto repl client code.
+lib/proto_repl

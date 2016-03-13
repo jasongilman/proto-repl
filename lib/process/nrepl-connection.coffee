@@ -22,16 +22,14 @@ class NReplConnection
   constructor: ()->
     null
 
-  # TODO rename the response logging stuff. It should be message handling.
-
-  # TODO document what the handler will be passed.
+  # Starts the nREPL connection.
   start: ({host, port, messageHandler, startCallback})->
     if @connected()
       @close()
 
     host ?= "localhost"
     @conn = nrepl.connect({port: port, host: host, verbose: false})
-    responseLoggingStarted = false
+    messageHandlingStarted = false
 
     @conn.once 'connect', =>
 
@@ -53,9 +51,9 @@ class NReplConnection
         @determineClojureVersion =>
           # Handle multiple callbacks for this which can happen during REPL startup
           # with cider-nrepl middleware for some reason.
-          unless responseLoggingStarted
-            @startResponseLogging(messageHandler)
-            responseLoggingStarted = true
+          unless messageHandlingStarted
+            @startMessageHandling(messageHandler)
+            messageHandlingStarted = true
 
         # Create a session for requests that we don't want the values printed to
         # the repl.
@@ -68,12 +66,11 @@ class NReplConnection
       value = (msg.value for msg in messages)[0]
       @clojureVersion = new ClojureVersion(protoRepl.parseEdn(value))
       unless @clojureVersion.isSupportedVersion()
-        # TODO test this
         atom.notifications.addWarning "WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.",
           dismissable: true
       callback()
 
-  startResponseLogging: (messageHandler)->
+  startMessageHandling: (messageHandler)->
     # Log any output from the nRepl connection messages
     @conn.messageStream.on "messageSequence", (id, messages)=>
       for msg in messages
@@ -104,10 +101,12 @@ class NReplConnection
     else
       "(eval (read-string #{escapedStr}))"
 
-  # Sends the given code to the REPL and calls the given callback with the results
-  # TODO document options
-  # TODO displayInRepl doesn't quite make sense here. We need a better
-  # description of what this is. Maybe it's logOutput?
+  # Sends a command to the repl.
+  # * code - string of clojure code to execute
+  # * options - map of options
+  #   * displayInRepl - false to display the result in repl. Defaults to true.
+  #   * ns - the namespace to execute the code in.
+  # * resultHandler - The result handler to handle the resulting value.
   sendCommand: (code, options, resultHandler)->
     return null unless @connected()
 

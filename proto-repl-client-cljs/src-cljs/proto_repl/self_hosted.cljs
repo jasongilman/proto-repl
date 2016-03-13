@@ -1,4 +1,4 @@
-(ns edn-reader.self-hosted
+(ns proto-repl.self-hosted
   "Provides functions for implementing a self hosted repl."
   (:require [cljs.reader :as r]
             [clojure.string :as str]
@@ -13,13 +13,11 @@
  (fn [tag data]
    data))
 
-;; TODO this should take the source paths for loading
-
 (defn eval-str
   "Evaluates the clojure code using replumb and invokes the callback."
   [code callback]
   (replumb/read-eval-call
-   ;; TODO provide source paths.
+   ;; TODO provide source paths. eval-str should take the source paths.
    (replumb/nodejs-options [] node-io/read-file!)
    (fn [res]
      (callback res))
