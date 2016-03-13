@@ -296,16 +296,11 @@ module.exports = ProtoRepl =
   executeCode: (code, options={})->
     @repl?.executeCode(code, options)
 
-  # Puts the given text in the namespace
-  putTextInNamespace: (text, ns) ->
-    # "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] (eval (quote #{text})))"
-    "(binding [*ns* (or (find-ns '#{ns}) (find-ns 'user))] #{text})"
-
   executeCodeInNs: (code, options={})->
     if editor = atom.workspace.getActiveTextEditor()
       ns = EditorUtils.findNsDeclaration(editor)
       if ns
-        code = @putTextInNamespace(code, ns)
+        options.ns = ns
       @executeCode(code, options)
 
   # Executes the selected code.
@@ -450,22 +445,22 @@ module.exports = ProtoRepl =
 
   refreshNamespacesCommand:
     "(do
-       (require 'user)
-       (if (find-ns 'user)
-         (let [r 'user/reset
-               result (cond
-                       (find-var r)
-                       ((resolve r))
+      (require 'user)
+      (if (find-ns 'user)
+        (let [r 'user/reset
+              result (cond
+                      (find-var r)
+                      ((resolve r))
 
-                       (find-ns 'clojure.tools.namespace.repl)
-                       (eval `(clojure.tools.namespace.repl/refresh :after '~r))
+                      (find-ns 'clojure.tools.namespace.repl)
+                      (eval `(clojure.tools.namespace.repl/refresh :after '~r))
 
-                       :else
-                       (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
-           (when (isa? (type result) Exception)
-             (println (.getMessage result)))
-           result))
-        (println \"No user namespace defined to allow refreshing. Define a user namespace.\"))"
+                      :else
+                      (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
+          (when (isa? (type result) Exception)
+            (println (.getMessage result)))
+          result)
+       (println \"No user namespace defined to allow refreshing. Define a user namespace.\")))"
 
   refreshResultHandler: (callback, result)->
     # Value will contain an exception if it's not valid otherwise it will be nil

@@ -221,12 +221,7 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-    if options.displayInRepl == false
-      displayInRepl = false
-    else
-      displayInRepl = true
-
-    @process.sendCommand code, displayInRepl, (result)=>
+    @process.sendCommand code, options, (result)=>
       # check if it's an extension response
       if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
         parsed = window.protoRepl.parseEdn(result.value)

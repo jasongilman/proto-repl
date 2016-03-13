@@ -17,6 +17,8 @@ class NReplConnection
 
   clojureVersion: null
 
+  currentNs: "user"
+
   constructor: ()->
     null
 
@@ -75,6 +77,11 @@ class NReplConnection
     # Log any output from the nRepl connection messages
     @conn.messageStream.on "messageSequence", (id, messages)=>
       for msg in messages
+
+        # Set the current ns
+        if msg.ns
+          @currentNs = msg.ns
+
         if msg.session == @session
           messageHandler(msg)
         else if msg.session == @cmdSession && msg.out
@@ -98,18 +105,31 @@ class NReplConnection
       "(eval (read-string #{escapedStr}))"
 
   # Sends the given code to the REPL and calls the given callback with the results
-  sendCommand: (code, displayInRepl, resultHandler)->
+  # TODO document options
+  # TODO displayInRepl doesn't quite make sense here. We need a better
+  # description of what this is. Maybe it's logOutput?
+  sendCommand: (code, options, resultHandler)->
     return null unless @connected()
-    if displayInRepl
-      session = @session
-    else
+
+    if options.displayInRepl == false
       session = @cmdSession
+    else
+      session = @session
 
     # Wrap code in read eval to handle invalid code and reader conditionals
     code = @wrapCodeInReadEval(code)
 
-    @conn.eval code, @currentNs, session, (err, messages)=>
+    # TODO this is causing the REPL to change namespace after executing something
+    # in another namespace.
+    ns = options.ns || @currentNs
+
+    @conn.eval code, ns, session, (err, messages)=>
       for msg in messages
+
+        # TODO the namespace could be corrected here. or we could pass the Namespaces
+        # as an additional message...?
+        # Need to rethink when values are printed out and when the namespace
+        # prompt is printed
         if msg.value
           resultHandler(value: msg.value)
         else if msg.err
