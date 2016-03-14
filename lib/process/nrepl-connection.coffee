@@ -38,7 +38,6 @@ class NReplConnection
         atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
         @conn = null
 
-      # TODO we need an emitter
       # When repl connection closed
       @conn.on 'finish', =>
         @conn = null
@@ -84,7 +83,7 @@ class NReplConnection
           if msg.session == @session
             messageHandler(msg)
           else if msg.session == @cmdSession && msg.out
-            # TODO I don't like that we have to have this much logic here about
+            # I don't like that we have to have this much logic here about
             # what messages to send to the handler or not. We have to allow output
             # for the cmdSession though.
             messageHandler(msg)

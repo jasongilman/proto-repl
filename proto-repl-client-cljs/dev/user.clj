@@ -7,4 +7,4 @@
 (defn reset []
   (clojure.tools.namespace.repl/refresh))
 
-(println "EDN Reader Leiningen project started")
+(println "Proto REPL Client CLJS project started")
