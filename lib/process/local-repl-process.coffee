@@ -131,6 +131,7 @@ class LocalReplProcess
 
   interrupt: ->
     @conn.interrupt()
+    @appendText("Interrupting")
 
   # Stops the running process
   stop: ()->

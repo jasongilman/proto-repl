@@ -248,6 +248,9 @@ module.exports = ProtoRepl =
   getReplType: ->
     @repl?.getType()
 
+  isSelfHosted: ->
+    @repl?.isSelfHosted()
+
   clearRepl: ->
     @repl?.clear()
 
@@ -474,7 +477,7 @@ module.exports = ProtoRepl =
   # clojure.tools.namespace is a dependency and setup with standard user/reset
   # function. Will invoke the optional callback if refresh is successful.
   refreshNamespaces: (callback=null)->
-    if @getReplType() == "SelfHosted"
+    if @isSelfHosted()
       @appendText("Refreshing not supported in self hosted REPL.")
     else
       @appendText("Refreshing code...\n")
@@ -488,7 +491,7 @@ module.exports = ProtoRepl =
   # user/reset function. Will invoke the optional callback if refresh is
   # successful.
   superRefreshNamespaces: (callback=null)->
-    if @getReplType() == "SelfHosted"
+    if @isSelfHosted()
       @appendText("Refreshing not supported in self hosted REPL.")
     else
       @appendText("Clearing all and then refreshing code...\n")
@@ -501,139 +504,172 @@ module.exports = ProtoRepl =
 
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()
-      # Escape file name
-      fileName = editor.getPath().replace(/\\/g,"\\\\")
-      @executeCode("(do (println \"Loading File #{fileName}\") (load-file \"#{fileName}\"))")
+      if @isSelfHosted()
+        @appendText("Loading files is not supported yet in self hosted REPL.")
+      else
+        # Escape file name
+        fileName = editor.getPath().replace(/\\/g,"\\\\")
+        @executeCode("(do (println \"Loading File #{fileName}\") (load-file \"#{fileName}\"))")
 
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
-      code = "(clojure.test/run-tests)"
-      if atom.config.get("proto-repl.refreshBeforeRunningTestFile")
-        @refreshNamespaces =>
-          @executeCodeInNs(code)
+      if @isSelfHosted()
+        @appendText("Running tests is not supported yet in self hosted REPL.")
       else
-        @executeCodeInNs(code)
-
-  runTestUnderCursor: ->
-    if editor = atom.workspace.getActiveTextEditor()
-      if testName = @getClojureVarUnderCursor(editor)
-        code = "(do (clojure.test/test-vars [#'#{testName}]) (println \"tested #{testName}\"))"
-        if atom.config.get("proto-repl.refreshBeforeRunningSingleTest")
+        code = "(clojure.test/run-tests)"
+        if atom.config.get("proto-repl.refreshBeforeRunningTestFile")
           @refreshNamespaces =>
             @executeCodeInNs(code)
         else
           @executeCodeInNs(code)
 
+  runTestUnderCursor: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if @isSelfHosted()
+        @appendText("Running tests is not supported yet in self hosted REPL.")
+      else
+        if testName = @getClojureVarUnderCursor(editor)
+          code = "(do (clojure.test/test-vars [#'#{testName}]) (println \"tested #{testName}\"))"
+          if atom.config.get("proto-repl.refreshBeforeRunningSingleTest")
+            @refreshNamespaces =>
+              @executeCodeInNs(code)
+          else
+            @executeCodeInNs(code)
+
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
-      @refreshNamespaces =>
-        # Tests are only run if the refresh is successful.
-        @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
+      if @isSelfHosted()
+        @appendText("Running tests is not supported yet in self hosted REPL.")
+      else
+        @refreshNamespaces =>
+          # Tests are only run if the refresh is successful.
+          @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
 
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
       if varName = @getClojureVarUnderCursor(editor)
 
+        if @isSelfHosted()
+          code = "(doc #{varName})"
+          parser = (value)-> value.substr(26)
+        else
+          code =
+            "(do
+              (require 'clojure.repl)
+              (with-out-str (clojure.repl/doc #{varName})))"
+          parser = (value)=> @parseEdn(value).substr(26)
+
         if @ink && atom.config.get('proto-repl.showInlineResults')
           range = editor.getSelectedBufferRange()
           range.end.column = Infinity
           inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
-            # Strip off the "----" at the beginning
-            [varName, [@parseEdn(value).substr(26)]])
-          @executeCodeInNs "(do
-                              (require 'clojure.repl)
-                              (with-out-str (clojure.repl/doc #{varName})))",
+            [varName, [parser(value)]])
+          @executeCodeInNs code,
                           displayInRepl: false
                           resultHandler: inlineHandler
         else
-          @executeCodeInNs "(do
-                              (require 'clojure.repl)
-                              (clojure.repl/doc #{varName}))"
+          @executeCodeInNs code
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()
       if varName = @getClojureVarUnderCursor(editor)
-        @executeCodeInNs("(do (require 'clojure.repl) (clojure.repl/source #{varName}))")
+        if @isSelfHosted()
+          # code = "(source #{varName})"
+          @appendText("Showing source code is not yet supported in self hosted REPL.")
+        else
+          code = "(do (require 'clojure.repl) (clojure.repl/source #{varName}))"
+          @executeCodeInNs(code)
 
   # Lists all the vars in the selected namespace or namespace alias
   listNsVars: ->
     if editor = atom.workspace.getActiveTextEditor()
       if nsName = @getClojureVarUnderCursor(editor)
-        text = "(do
-                  (require 'clojure.repl)
-                  (let [selected-symbol '#{nsName}
-                        selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
-                    (println \"\\nVars in\" (str selected-ns \":\"))
-                    (println \"------------------------------\")
-                    (doseq [s (clojure.repl/dir-fn selected-ns)]
-                      (println s))
-                    (println \"------------------------------\")))"
-        @executeCodeInNs(text)
+        if @isSelfHosted()
+          # code = "(dir #{nsName})"
+          @appendText("Listing namespace functions is not yet supported in self hosted REPL.")
+        else
+          code = "(do
+                    (require 'clojure.repl)
+                    (let [selected-symbol '#{nsName}
+                          selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
+                      (println \"\\nVars in\" (str selected-ns \":\"))
+                      (println \"------------------------------\")
+                      (doseq [s (clojure.repl/dir-fn selected-ns)]
+                        (println s))
+                      (println \"------------------------------\")))"
+          @executeCodeInNs(code)
 
   # Lists all the vars with their documentation in the selected namespace or namespace alias
   listNsVarsWithDocs: ->
     if editor = atom.workspace.getActiveTextEditor()
       if nsName = @getClojureVarUnderCursor(editor)
-        text = "(do
-                  (require 'clojure.repl)
-                  (let [selected-symbol '#{nsName}
-                        selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
-                    (println (str \"\\n\" selected-ns \":\"))
-                    (println \"\" (:doc (meta (the-ns selected-ns))))
-                    (doseq [s (clojure.repl/dir-fn selected-ns) :let [m (-> (str selected-ns \"/\" s) symbol find-var meta)]]
-                      (println \"---------------------------\")
-                      (println (:name m))
-                      (cond
-                        (:forms m) (doseq [f (:forms m)]
-                                     (print \"  \")
-                                     (prn f))
-                        (:arglists m) (prn (:arglists m)))
-                      (println \" \" (:doc m)))
-                    (println \"------------------------------\")))"
+        if @isSelfHosted()
+          # code = "(dir #{nsName})"
+          @appendText("Listing namespace functions is not yet supported in self hosted REPL.")
+        else
+          code = "(do
+                    (require 'clojure.repl)
+                    (let [selected-symbol '#{nsName}
+                          selected-ns (get (ns-aliases *ns*) selected-symbol selected-symbol)]
+                      (println (str \"\\n\" selected-ns \":\"))
+                      (println \"\" (:doc (meta (the-ns selected-ns))))
+                      (doseq [s (clojure.repl/dir-fn selected-ns) :let [m (-> (str selected-ns \"/\" s) symbol find-var meta)]]
+                        (println \"---------------------------\")
+                        (println (:name m))
+                        (cond
+                          (:forms m) (doseq [f (:forms m)]
+                                       (print \"  \")
+                                       (prn f))
+                          (:arglists m) (prn (:arglists m)))
+                        (println \" \" (:doc m)))
+                      (println \"------------------------------\")))"
 
-        @executeCodeInNs(text)
+          @executeCodeInNs(code)
 
   # Opens the file containing the currently selected var or namespace in the REPL. If the file is located
   # inside of a jar file it will decompress the jar file then open it. It will first check to see if a
   # jar file has already been decompressed once to avoid doing it multiple times for the same library.
   # Assumes that the Atom command line alias "atom" can be used to invoke Atom.
   openFileContainingVar: ->
-    if editor = atom.workspace.getActiveTextEditor()
-      if selected = @getClojureVarUnderCursor(editor)
-        text = "(do (require 'clojure.repl)
-                    (require 'clojure.java.shell)
-                    (require 'clojure.java.io)
-                    (let [var-sym '#{selected}
-                          the-var (or (some->> (or (get (ns-aliases *ns*) var-sym) (find-ns var-sym))
-                                               clojure.repl/dir-fn
-                                               first
-                                               name
-                                               (str (name var-sym) \"/\")
-                                               symbol)
-                                      var-sym)
-                          {:keys [file line]} (meta (eval `(var ~the-var)))
-                          file-path (.getPath (.getResource (clojure.lang.RT/baseLoader) file))]
-                      (if-let [[_
-                                jar-path
-                                partial-jar-path
-                                within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
-                        (let [decompressed-path (str (System/getProperty \"user.home\")
-                                                     \"/.lein/tmp-atom-jars/\"
-                                                     partial-jar-path)
-                              decompressed-file-path (str decompressed-path \"/\" within-file-path)
-                              decompressed-path-dir (clojure.java.io/file decompressed-path)]
-                          (when-not (.exists decompressed-path-dir)
-                            (println \"decompressing\" jar-path \"to\" decompressed-path)
-                            (.mkdirs decompressed-path-dir)
-                            (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
-                          [decompressed-file-path line])
-                        [file-path line])))"
-        @executeCodeInNs text,
-          displayInRepl: false
-          resultHandler: (result)=>
-            if result.value
-              @appendText("Opening #{result.value}")
-              [file, line] = @parseEdn(result.value)
-              atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
-            else
-              @appendText("Error trying to open: #{result.error}")
+    if @isSelfHosted()
+      @appendText("Opening files containing vars is not yet supported in self hosted REPL.")
+    else
+      if editor = atom.workspace.getActiveTextEditor()
+        if selected = @getClojureVarUnderCursor(editor)
+          text = "(do (require 'clojure.repl)
+                      (require 'clojure.java.shell)
+                      (require 'clojure.java.io)
+                      (let [var-sym '#{selected}
+                            the-var (or (some->> (or (get (ns-aliases *ns*) var-sym) (find-ns var-sym))
+                                                 clojure.repl/dir-fn
+                                                 first
+                                                 name
+                                                 (str (name var-sym) \"/\")
+                                                 symbol)
+                                        var-sym)
+                            {:keys [file line]} (meta (eval `(var ~the-var)))
+                            file-path (.getPath (.getResource (clojure.lang.RT/baseLoader) file))]
+                        (if-let [[_
+                                  jar-path
+                                  partial-jar-path
+                                  within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
+                          (let [decompressed-path (str (System/getProperty \"user.home\")
+                                                       \"/.lein/tmp-atom-jars/\"
+                                                       partial-jar-path)
+                                decompressed-file-path (str decompressed-path \"/\" within-file-path)
+                                decompressed-path-dir (clojure.java.io/file decompressed-path)]
+                            (when-not (.exists decompressed-path-dir)
+                              (println \"decompressing\" jar-path \"to\" decompressed-path)
+                              (.mkdirs decompressed-path-dir)
+                              (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
+                            [decompressed-file-path line])
+                          [file-path line])))"
+          @executeCodeInNs text,
+            displayInRepl: false
+            resultHandler: (result)=>
+              if result.value
+                @appendText("Opening #{result.value}")
+                [file, line] = @parseEdn(result.value)
+                atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
+              else
+                @appendText("Error trying to open: #{result.error}")

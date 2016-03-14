@@ -67,7 +67,7 @@ module.exports =
 
     if prefix != ""
       new Promise (resolve) ->
-        if protoRepl.getReplType() == "SelfHosted"
+        if protoRepl.isSelfHosted()
           self_hosted_clj.completions prefix, (matches)->
             suggestions = (completionToSuggestion(prefix, c) for c in matches)
             resolve suggestions

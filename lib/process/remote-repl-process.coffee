@@ -27,6 +27,7 @@ class RemoteReplProcess
 
   interrupt: ->
     @conn.interrupt()
+    @appendText("Interrupting")
 
   running: ()->
     @conn.connected()
