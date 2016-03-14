@@ -26,9 +26,9 @@ class SelfHostedProcess
   eval: (code, successCb, errorCb)->
     allowUnsafeEval =>
       allowUnsafeNewFunction =>
-        console.debug("Evaling", code)
+        # console.debug("Evaling", code)
         self_hosted_clj.eval_str code, (result)=>
-          console.debug("Result:", result)
+          # console.debug("Result:", result)
           if result["success?"]
             successCb(result.value)
           else
@@ -55,12 +55,15 @@ class SelfHostedProcess
     # TODO another problem is with defining functions that refer to vars that don't exists
     # There's no error until runtime. But with another user or replumb reepl they get compilation errors.
     successCb = (value)=>
-      @messageHandler value: value
+      if options.displayInRepl != false
+        @messageHandler value: value
       resultHandler value: value
 
     errorHandler = (error)=>
+      if options.displayInRepl != false
+        @messageHandler err: error
       resultHandler error: error
-      @messageHandler err: error
+      
     if options.ns
       @switchNs options.ns, (()=> @eval(code, successCb, errorHandler)), errorHandler
     else

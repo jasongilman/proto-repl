@@ -74,6 +74,9 @@ class Repl
   getType: ->
     @process?.getType()
 
+  isSelfHosted: ->
+    @getType() == "SelfHosted"
+
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->
     if @running()

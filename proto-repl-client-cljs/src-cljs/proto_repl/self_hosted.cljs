@@ -41,7 +41,8 @@
                      {:candidate (if (str/starts-with? match "cljs.core/")
                                    (str/replace match "cljs.core/" "")
                                    match)
-                      :docs "This would be nice"
+                      ;; TODO support documentation with completion.
+                      :docs ""
                       :type "var"})))
             clj->js
             callback-fn)

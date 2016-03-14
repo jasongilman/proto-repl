@@ -73,19 +73,21 @@ class NReplConnection
   startMessageHandling: (messageHandler)->
     # Log any output from the nRepl connection messages
     @conn.messageStream.on "messageSequence", (id, messages)=>
-      for msg in messages
+      # Skip sending messages if the namespace isn't found.
+      unless @namespaceNotFound(messages)
+        for msg in messages
 
-        # Set the current ns
-        if msg.ns
-          @currentNs = msg.ns
+          # Set the current ns
+          if msg.ns
+            @currentNs = msg.ns
 
-        if msg.session == @session
-          messageHandler(msg)
-        else if msg.session == @cmdSession && msg.out
-          # TODO I don't like that we have to have this much logic here about
-          # what messages to send to the handler or not. We have to allow output
-          # for the cmdSession though.
-          messageHandler(msg)
+          if msg.session == @session
+            messageHandler(msg)
+          else if msg.session == @cmdSession && msg.out
+            # TODO I don't like that we have to have this much logic here about
+            # what messages to send to the handler or not. We have to allow output
+            # for the cmdSession though.
+            messageHandler(msg)
 
   # Returns true if the connection is open.
   connected: ->
@@ -100,6 +102,12 @@ class NReplConnection
       "(eval (read-string {:read-cond :allow} #{escapedStr}))"
     else
       "(eval (read-string #{escapedStr}))"
+
+  # Returns true if any of the messages indicate the namespace wasn't found.
+  namespaceNotFound: (messages)->
+    for msg in messages
+      if msg.status?.length > 0
+        return true if msg.status[0] == "namespace-not-found"
 
   # Sends a command to the repl.
   # * code - string of clojure code to execute
@@ -116,30 +124,31 @@ class NReplConnection
       session = @session
 
     # Wrap code in read eval to handle invalid code and reader conditionals
-    code = @wrapCodeInReadEval(code)
-
-    # TODO this is causing the REPL to change namespace after executing something
-    # in another namespace.
+    wrappedCode = @wrapCodeInReadEval(code)
     ns = options.ns || @currentNs
 
-    @conn.eval code, ns, session, (err, messages)=>
-      for msg in messages
+    @conn.eval wrappedCode, ns, session, (err, messages)=>
 
-        # TODO the namespace could be corrected here. or we could pass the Namespaces
-        # as an additional message...?
-        # Need to rethink when values are printed out and when the namespace
-        # prompt is printed
-        if msg.value
-          resultHandler(value: msg.value)
-        else if msg.err
-          resultHandler(error: msg.err)
+      # If the namespace hasn't been defined this will fail. We redefine the Namespace
+      # and retry.
+      if @namespaceNotFound(messages)
+        unless options.retrying
+          options.retrying = true # Must set this to prevent a double retry.
+          options.ns = @currentNs # Retry with current namespace.
+          @sendCommand(code, options, resultHandler)
+      else
+        for msg in messages
+          if msg.value
+            resultHandler(value: msg.value)
+          else if msg.err
+            resultHandler(error: msg.err)
 
   interrupt: ->
     return null unless @connected()
     @conn.interrupt @session, (err, result)=>
-      @appendText("interrupted")
+      null
     @conn.interrupt @cmdSession, (err, result)=>
-      @appendText("interrupted")
+      null
 
   close: ->
     return null unless @connected()
