@@ -3,6 +3,7 @@
   (:require [cljs.reader :as r]
             [clojure.string :as str]
             [cljs.nodejs :as nodejs]
+            [prc]
             [replumb.core :as replumb]
             [replumb.nodejs.io :as node-io]))
 
@@ -13,12 +14,22 @@
  (fn [tag data]
    data))
 
+(def path-module
+  (delay (nodejs/require "path")))
+
+(def atom-project-path
+  (delay
+   (let [project-path (first (js->clj (js/atom.packages.getPackageDirPaths)))
+         separator (.-sep (deref path-module))
+         path (deref path-module)]
+     (str/join separator [project-path "proto-repl" "lib" "proto_repl"]))))
+
 (defn eval-str
   "Evaluates the clojure code using replumb and invokes the callback."
   [code callback]
   (replumb/read-eval-call
    ;; TODO provide source paths. eval-str should take the source paths.
-   (replumb/nodejs-options [] node-io/read-file!)
+   (replumb/nodejs-options [@atom-project-path] node-io/read-file!)
    (fn [res]
      (callback res))
    code))
