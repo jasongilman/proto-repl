@@ -299,3 +299,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 ## 1.1.0
 
 * Added self hosted ClojureScript REPL.
+
+## 1.1.1
+
+* Fixing proto repl packaging problem
