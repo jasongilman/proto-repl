@@ -13,6 +13,8 @@
 'atom-workspace atom-text-editor:not([mini])':
   'ctrl-, l': 'proto-repl:toggle'
   'ctrl-, shift-l': 'proto-repl:toggle-current-project-clj'
+  'ctrl-, j': 'proto-repl:start-self-hosted-repl'
+  'ctrl-, y': 'proto-repl:remote-nrepl-connection'
   'ctrl-, e': 'proto-repl:exit-repl'
   'ctrl-, k': 'proto-repl:clear-repl'
   'ctrl-< s': 'proto-repl:toggle-auto-scroll'

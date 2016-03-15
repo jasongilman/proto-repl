@@ -18,7 +18,7 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 
 ## Usage
 
-### Start a Local REPL
+### Start a Local Clojure REPL
 
 A local Proto REPL primarily works with projects using [Leiningen](http://leiningen.org) or [Boot](http://boot-clj.com/).
 
@@ -31,7 +31,31 @@ See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo
 
 ### Connecting to a Remote REPL
 
-Proto REPL can connect to a remote Clojure process using [nREPL](https://github.com/clojure/tools.nrepl). Connect to the remote REPL by triggering the Command Palette (cmd-alt-p) and selecting "Proto REPL: Remote Nrepl Connection". Enter the host and port of the remote nREPL server and it will connect.
+Proto REPL can connect to a remote Clojure process using [nREPL](https://github.com/clojure/tools.nrepl). Connect to the remote REPL by triggering the Command Palette (cmd-alt-p) and selecting "Proto REPL: Remote Nrepl Connection". Enter the host and port of the remote nREPL server and it will connect. The keybinding `ctrl-, y` will also work.
+
+### Starting a Self Hosted ClojureScript REPL
+
+Proto REPL includes the ability to start a self hosted ClojureScript REPL. This is a REPL that runs inside of the Atom editor using ClojureScript. It's currently fairly limited in its capabilities but it will continue to be improved in the future. The ability to run a REPL inside Atom will make it easier to use Proto REPL to develop Proto REPL itself and write more of Proto REPL's code in ClojureScript. It also removes the need to have Java or any build system like Leiningen or Boot installed to do basic things.
+
+Start the self hosted repl by triggering the Command Palette and selecting "Proto REPL: Start Self Hosted Repl". The keybinding `ctrl-, j` will also work.
+
+This is a list of the features currently supported in the self hosted REPL.
+
+* Executing commands in the REPL.
+* Executing blocks or selections of code.
+* Autocompletion of vars (does not include documentation yet)
+* Using [Proto REPL Charts](https://github.com/jasongilman/proto-repl-charts) to draw charts and graphs.
+* Inline display of results
+* Showing documentation of a var.
+* Automatic evaluation mode.
+
+This is a list of features currently _not_ yet supported in the self hosted REPL.
+
+* Loading external files.
+* Saving and displaying captured values
+* Interrupting long running commands.
+* Printing var source code.
+* Opening the definition of a var.
 
 ### Usage Outside of Leiningen Projects
 
@@ -165,7 +189,9 @@ Make sure that the path to the `lein` or `boot` command is correct in the Proto 
 ### Dependencies
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
+  * Not required for self hosted REPL.
 * [Leiningen](http://leiningen.org) or [Boot](https://github.com/boot-clj/boot)
+  * Not required for self hosted REPL.
 * [Atom Ink](https://atom.io/packages/ink)
   * This is an optional feature but many of Proto REPL's advanced features won't work without it.
 * Add a dependency to the Clojure proto-repl-lib in your project's dependencies. [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl)
@@ -186,7 +212,7 @@ See [https://git.io/atom_clojure_setup](https://git.io/atom_clojure_setup) for i
 
 ### Recommended Additional Packages
 
-These packages go well with Proto REPL.
+These packages go well with Proto REPL. See the link the previous section for the settings to use and the best way to combine all these together.
 
 * [ink](https://atom.io/packages/ink)
 * [proto-repl-charts](https://atom.io/packages/proto-repl-charts)
@@ -210,7 +236,8 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 |------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `ctrl-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
 | `ctrl-, shift-L` | `proto-repl:toggle`                   | Starts the REPL using the current open project.clj                                                                                       |
-|                  | `proto-repl:remote-nrepl-connection`  | Connects to a remote nREPL session.                                                                                                      |
+| `ctrl-, y`       | `proto-repl:remote-nrepl-connection`  | Connects to a remote nREPL session.                                                                                                      |
+| `ctrl-, j`       | `proto-repl:start-self-hosted-repl`   | Starts a self hosted REPL.                                                                                                               |
 | `ctrl-, e`       | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
 | `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
 | `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
@@ -222,13 +249,13 @@ Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press
 | `ctrl-shift-, r` | `proto-repl:super-refresh-namespaces` | Clears all loaded namespaces using `clojure.tools.namespace` the runs the `user/reset` function.                                         |
 | `ctrl-, p`       | `proto-repl:pretty-print`             | Pretty prints the last value returned at the REPL.                                                                                       |
 | `ctrl-, x`       | `proto-repl:run-tests-in-namespace`   | Runs all the tests in the current namespace.                                                                                             |
-| `ctrl-, t`       | `proto-repl:run-test-under-cursor`    | Runs the test that has a name under the cursor.                                                                                                       |
+| `ctrl-, t`       | `proto-repl:run-test-under-cursor`    | Runs the test that has a name under the cursor.                                                                                          |
 | `ctrl-, a`       | `proto-repl:run-all-tests`            | Runs all the test in the current project.                                                                                                |
-| `ctrl-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation of a var under the cursor.                                                                                  |
+| `ctrl-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation of a var under the cursor.                                                                                      |
 | `ctrl-, c`       | `proto-repl:print-var-code`           | Prints out the code of the var under the cursor.                                                                                         |
 | `ctrl-, o`       | `proto-repl:open-file-containing-var` | Opens the code of the var or namespace under the cursor. This works even with vars defined in libraries.                                 |
-| `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the namespace under the cursor.                                                                                                |
-| `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the namespace under the cursor with documentation.                                                                             |
+| `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the namespace under the cursor.                                                                                        |
+| `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the namespace under the cursor with documentation.                                                                     |
 | `shift-ctrl-c`   | `proto-repl:interrupt`                | Attempts to interrupt the currently running command in the REPL.                                                                         |
 | `ctrl-shift-, i` | `proto-repl:insert-save-value-call`   | Inserts a call to `proto/save` with a unique id                                                                                          |
 | `ctrl-shift-, d` | `proto-repl:display-saved-values`     | Displays values saved using the `proto/save` function.                                                                                   |
