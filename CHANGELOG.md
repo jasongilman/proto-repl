@@ -294,4 +294,8 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 ## 1.0.3
 
-* Changed boot startup so that it will use the dev profile. 
+* Changed boot startup so that it will use the dev profile.
+
+## 1.1.0
+
+* Added self hosted ClojureScript REPL.

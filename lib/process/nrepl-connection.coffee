@@ -92,15 +92,19 @@ class NReplConnection
   connected: ->
     @conn != null
 
-  # Wraps the given code in an eval and a read-string. This safely handles
-  # unbalanced parentheses, other kinds of invalid code, and handling reader
-  # conditionals. http://clojure.org/guides/reader_conditionals
+  # Returns true if the code might have a reader conditional in it
+  # Avoids unnecesary eval'ing for regular code.
+  codeMayContainReaderConditional: (code)->
+    code.includes("#?")
+
+  # Wraps the given code in an eval and a read-string. This is required for
+  # handling reader conditionals. http://clojure.org/guides/reader_conditionals
   wrapCodeInReadEval: (code)->
-    escapedStr = EditorUtils.escapeClojureCodeInString(code)
-    if @clojureVersion?.isReaderConditionalSupported()
+    if @clojureVersion?.isReaderConditionalSupported() && @codeMayContainReaderConditional(code)
+      escapedStr = EditorUtils.escapeClojureCodeInString(code)
       "(eval (read-string {:read-cond :allow} #{escapedStr}))"
     else
-      "(eval (read-string #{escapedStr}))"
+      code
 
   # Returns true if any of the messages indicate the namespace wasn't found.
   namespaceNotFound: (messages)->

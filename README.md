@@ -56,6 +56,7 @@ This is a list of features currently _not_ yet supported in the self hosted REPL
 * Interrupting long running commands.
 * Printing var source code.
 * Opening the definition of a var.
+* Running tests.
 
 ### Usage Outside of Leiningen Projects
 
