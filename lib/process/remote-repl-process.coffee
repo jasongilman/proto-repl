@@ -25,6 +25,9 @@ class RemoteReplProcess
   sendCommand: (code, options, resultHandler)->
     @conn.sendCommand(code, options, resultHandler)
 
+  getCurrentNs: ->
+    @conn.getCurrentNs()
+
   interrupt: ->
     @conn.interrupt()
     @appendText("Interrupting")

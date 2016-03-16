@@ -7,7 +7,6 @@ RemoteReplProcess = require './process/remote-repl-process'
 SelfHostedProcess = require './process/self-hosted-process'
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
-
 module.exports =
 
 # Represents the REPL where code is executed and displayed. It is split into three
@@ -27,9 +26,6 @@ class Repl
 
   # A map of code execution extension names to callback functions.
   codeExecutionExtensions: null
-
-  # The current namespace
-  currentNs: "user"
 
   constructor: (@codeExecutionExtensions)->
     @emitter = new Emitter
@@ -77,6 +73,10 @@ class Repl
   isSelfHosted: ->
     @getType() == "SelfHosted"
 
+  handleReplStarted: ->
+    @appendText(@process.getCurrentNs() + "=>", true)
+    @emitter.emit 'proto-repl-repl:start'
+
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->
     if @running()
@@ -86,7 +86,7 @@ class Repl
         (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
       @process.start projectPath,
         messageHandler: (msg)=> @handleConnectionMessage(msg)
-        startCallback: => @emitter.emit 'proto-repl-repl:start'
+        startCallback: => @handleReplStarted()
 
   # Starts nRepl connection
   # * `options` An {Object} with following keys
@@ -103,7 +103,7 @@ class Repl
         host: host,
         port: port,
         messageHandler: ((msg)=> @handleConnectionMessage(msg)),
-        startCallback: => @emitter.emit 'proto-repl-repl:start'
+        startCallback: => @handleReplStarted()
       @process.start(connOptions)
 
   startSelfHostedConnection: ->
@@ -115,26 +115,22 @@ class Repl
       connOptions=
         messageHandler: ((msg)=> @handleConnectionMessage(msg)),
         startCallback: =>
-          @appendText("Self Hosted REPL Started", true)
-          @emitter.emit 'proto-repl-repl:start'
+          @appendText("Self Hosted REPL Started!", true)
+          @handleReplStarted()
       @process.start connOptions
 
   handleConnectionMessage: (msg)->
     if msg.out
       @appendText(msg.out)
     else
-      # Set the current ns
-      if msg.ns
-        @currentNs = msg.ns
-
       # Only print values from the regular session.
       if msg.err
-        @appendText(@currentNs + "=> " + msg.err)
+        @appendText(@process.getCurrentNs() + "=> " + msg.err)
       else if msg.value
         if atom.config.get("proto-repl.autoPrettyPrint")
-          @appendText(@currentNs + "=>\n" + protoRepl.prettyEdn(msg.value))
+          @appendText(@process.getCurrentNs() + "=>\n" + protoRepl.prettyEdn(msg.value))
         else
-          @appendText(@currentNs + "=> " + msg.value)
+          @appendText(@process.getCurrentNs() + "=> " + msg.value)
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->

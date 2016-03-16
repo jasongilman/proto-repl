@@ -1,6 +1,8 @@
 self_hosted_clj = require '../proto_repl/proto_repl/self_hosted.js'
 {allowUnsafeEval, allowUnsafeNewFunction} = require 'loophole'
 
+DEFAULT_NS = "cljs.user"
+
 module.exports=
 
 # This is fake process that allows a self hosted ClojureScript REPL. The Related
@@ -10,6 +12,8 @@ class SelfHostedProcess
   # A function that can be used to write back messages to the REPL.
   appendText: null
 
+  currentNs: DEFAULT_NS
+
   constructor: (@appendText)->
     null
 
@@ -18,6 +22,7 @@ class SelfHostedProcess
 
   start: ({messageHandler, startCallback})->
     return if @running()
+    @currentNs = DEFAULT_NS
     @messageHandler = messageHandler
     @startRedirectingConsoleOutput()
     startCallback()
@@ -39,7 +44,14 @@ class SelfHostedProcess
   # Switches to the specified namespace. Calls successCb if successful and
   # errorCb if there was a problem.
   switchNs: (ns, successCb, errorCb)->
-    @eval "(in-ns '#{ns})", (()-> successCb()), ((error)-> errorCb(error))
+    @eval "(in-ns '#{ns})",
+      (()=>
+        @currentNs = ns
+        successCb()),
+      ((error)-> errorCb(error))
+
+  getCurrentNs: ->
+    @currentNs
 
   # Sends a command to the repl.
   # * code - string of clojure code to execute
@@ -63,7 +75,7 @@ class SelfHostedProcess
       if options.displayInRepl != false
         @messageHandler err: error
       resultHandler error: error
-      
+
     if options.ns
       @switchNs options.ns, (()=> @eval(code, successCb, errorHandler)), errorHandler
     else

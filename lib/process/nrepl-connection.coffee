@@ -2,6 +2,8 @@ nrepl = require('jg-nrepl-client')
 ClojureVersion = require './clojure-version'
 EditorUtils = require '../editor-utils'
 
+DEFAULT_NS = "user"
+
 module.exports =
 
 class NReplConnection
@@ -17,7 +19,7 @@ class NReplConnection
 
   clojureVersion: null
 
-  currentNs: "user"
+  currentNs: DEFAULT_NS
 
   constructor: ()->
     null
@@ -30,6 +32,7 @@ class NReplConnection
     host ?= "localhost"
     @conn = nrepl.connect({port: port, host: host, verbose: false})
     messageHandlingStarted = false
+    @currentNs = DEFAULT_NS
 
     @conn.once 'connect', =>
 
@@ -91,6 +94,9 @@ class NReplConnection
   # Returns true if the connection is open.
   connected: ->
     @conn != null
+
+  getCurrentNs: ->
+    @currentNs
 
   # Returns true if the code might have a reader conditional in it
   # Avoids unnecesary eval'ing for regular code.

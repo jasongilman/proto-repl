@@ -46,6 +46,8 @@
 '.platform-darwin atom-workspace atom-text-editor:not([mini])':
   'cmd-alt-l': 'proto-repl:toggle'
   'cmd-alt-shift-l': 'proto-repl:toggle-current-project-clj'
+  'cmd-alt-j': 'proto-repl:start-self-hosted-repl'
+  'cmd-alt-y': 'proto-repl:remote-nrepl-connection'
   'cmd-alt-shift-s': 'proto-repl:toggle-auto-scroll'
   'cmd-alt-b': 'proto-repl:execute-block'
   'cmd-alt-shift-b': 'proto-repl:execute-top-block'
