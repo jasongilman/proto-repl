@@ -467,7 +467,7 @@ module.exports = ProtoRepl =
     # nil will also be returned if there is no clojure.tools.namespace available.
     # The callback will still be invoked in that case. That's important so that
     # run all tests will still work without it.
-    if result.value == "nil"
+    if result.value
       @appendText("Refresh complete")
       callback() if callback
     else if result.error
@@ -482,7 +482,7 @@ module.exports = ProtoRepl =
     else
       @appendText("Refreshing code...\n")
       @executeCode @refreshNamespacesCommand,
-        displayInRepl: false,
+        displayInRepl: true,
         resultHandler: (result)=>
           @refreshResultHandler(callback, result)
 
@@ -499,7 +499,7 @@ module.exports = ProtoRepl =
                       (when (find-ns 'clojure.tools.namespace.repl)
                         (eval '(clojure.tools.namespace.repl/clear)))
                       #{@refreshNamespacesCommand})",
-        displayInRepl: false,
+        displayInRepl: true,
         resultHandler: (result)=> @refreshResultHandler(callback, result)
 
   loadCurrentFile: ->
