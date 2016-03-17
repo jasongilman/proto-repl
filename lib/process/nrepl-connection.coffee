@@ -137,20 +137,25 @@ class NReplConnection
     ns = options.ns || @currentNs
 
     @conn.eval wrappedCode, ns, session, (err, messages)=>
+      try
+        # If the namespace hasn't been defined this will fail. We redefine the Namespace
+        # and retry.
+        if @namespaceNotFound(messages)
+          unless options.retrying
+            options.retrying = true # Must set this to prevent a double retry.
+            options.ns = @currentNs # Retry with current namespace.
+            @sendCommand(code, options, resultHandler)
+        else
+          for msg in messages
+            if msg.value
+              resultHandler(value: msg.value)
+            else if msg.err
+              resultHandler(error: msg.err)
+      catch error
+        console.error
+        atom.notifications.addError "Error in handler: " + error,
+          detail: error, dismissable: true
 
-      # If the namespace hasn't been defined this will fail. We redefine the Namespace
-      # and retry.
-      if @namespaceNotFound(messages)
-        unless options.retrying
-          options.retrying = true # Must set this to prevent a double retry.
-          options.ns = @currentNs # Retry with current namespace.
-          @sendCommand(code, options, resultHandler)
-      else
-        for msg in messages
-          if msg.value
-            resultHandler(value: msg.value)
-          else if msg.err
-            resultHandler(error: msg.err)
 
   interrupt: ->
     return null unless @connected()
