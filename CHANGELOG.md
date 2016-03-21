@@ -307,3 +307,8 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 ## 1.1.2
 
 * Changing how Proto REPL tracks namespaces of the current REPL. Fixed issue where the repl was stuck after changing the namespace.
+
+## 1.1.3
+
+# Fixed issue in refresh handler that would cause it not to run all tests or not print refresh had completed.
+# Added try catch to result handlers to help avoid cases where the REPL would stop working.
