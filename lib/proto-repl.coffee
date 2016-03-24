@@ -445,22 +445,27 @@ module.exports = ProtoRepl =
 
   refreshNamespacesCommand:
     "(do
-      (require 'user)
-      (if (find-ns 'user)
-        (let [r 'user/reset
-              result (cond
-                      (find-var r)
-                      ((resolve r))
-
-                      (find-ns 'clojure.tools.namespace.repl)
-                      (eval `(clojure.tools.namespace.repl/refresh :after '~r))
-
-                      :else
-                      (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
-          (when (isa? (type result) Exception)
-            (println (.getMessage result)))
-          result)
-       (println \"No user namespace defined to allow refreshing. Define a user namespace.\")))"
+      (try
+        (require 'user)
+        (catch java.io.FileNotFoundException e
+          (println \"No user namespace defined.\")))
+      (let [r 'user/reset
+            result (cond
+                     (find-var r)
+                     ((resolve r))
+    
+                     (find-ns 'clojure.tools.namespace.repl)
+                     (do
+                       (println (str \"Using clojure.tools.namespace.repl/refresh to reload\\n\"
+                                     \"You can use your own refresh function, just define reset function in user namespace\\n\"
+                                     \"See this https://github.com/clojure/tools.namespace#reloading-code-motivation for why you should use it\"))
+                       (eval `(clojure.tools.namespace.repl/refresh)))
+    
+                     :else
+                     (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
+        (when (isa? (type result) Exception)
+          (println (.getMessage result)))
+        result))"
 
   refreshResultHandler: (callback, result)->
     # Value will contain an exception if it's not valid otherwise it will be nil
