@@ -448,21 +448,23 @@ module.exports = ProtoRepl =
       (try
         (require 'user)
         (catch java.io.FileNotFoundException e
-          (println \"No user namespace defined.\")))
-      (let [r 'user/reset
+          (println (str \"No user namespace defined. Defaulting to clojure.tools.namespace.repl/refresh.\\n\"))))
+      (try
+        (require 'clojure.tools.namespace.repl)
+        (catch java.io.FileNotFoundException e
+          (println \"clojure.tools.namespace.repl not available. Add as a dependency to allow refresh.\")))
+      (let [user-reset 'user/reset
+            ctnr-refresh 'clojure.tools.namespace.repl/refresh
             result (cond
-                     (find-var r)
-                     ((resolve r))
-    
-                     (find-ns 'clojure.tools.namespace.repl)
-                     (do
-                       (println (str \"Using clojure.tools.namespace.repl/refresh to reload\\n\"
-                                     \"You can use your own refresh function, just define reset function in user namespace\\n\"
-                                     \"See this https://github.com/clojure/tools.namespace#reloading-code-motivation for why you should use it\"))
-                       (eval `(clojure.tools.namespace.repl/refresh)))
-    
+                     (find-var user-reset)
+                     ((resolve user-reset))
+
+                     (find-var ctnr-refresh)
+                     ((resolve ctnr-refresh))
+
                      :else
-                     (println \"clojure.tools.namespace.repl not available. Add as a dependency and require in user.clj.\"))]
+                      (println (str \"You can use your own refresh function, just define reset function in user namespace\\n\"
+                                    \"See this https://github.com/clojure/tools.namespace#reloading-code-motivation for why you should use it\")))]
         (when (isa? (type result) Exception)
           (println (.getMessage result)))
         result))"
@@ -487,7 +489,7 @@ module.exports = ProtoRepl =
     else
       @appendText("Refreshing code...\n")
       @executeCode @refreshNamespacesCommand,
-        displayInRepl: true,
+        displayInRepl: false,
         resultHandler: (result)=>
           @refreshResultHandler(callback, result)
 
@@ -504,7 +506,7 @@ module.exports = ProtoRepl =
                       (when (find-ns 'clojure.tools.namespace.repl)
                         (eval '(clojure.tools.namespace.repl/clear)))
                       #{@refreshNamespacesCommand})",
-        displayInRepl: true,
+        displayInRepl: false,
         resultHandler: (result)=> @refreshResultHandler(callback, result)
 
   loadCurrentFile: ->

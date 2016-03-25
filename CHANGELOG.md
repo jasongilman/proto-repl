@@ -312,3 +312,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 # Fixed issue in refresh handler that would cause it not to run all tests or not print refresh had completed.
 # Added try catch to result handlers to help avoid cases where the REPL would stop working.
+
+## 1.1.4
+
+# Fixed #78 refreshing of code so it doesn't fail when user namespace is not available.
