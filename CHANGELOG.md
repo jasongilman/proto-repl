@@ -316,3 +316,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 ## 1.1.4
 
 # Fixed #78 refreshing of code so it doesn't fail when user namespace is not available.
+
+## 1.1.5
+
+# Test change for Atom 1.7.
