@@ -310,13 +310,17 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 ## 1.1.3
 
-# Fixed issue in refresh handler that would cause it not to run all tests or not print refresh had completed.
-# Added try catch to result handlers to help avoid cases where the REPL would stop working.
+* Fixed issue in refresh handler that would cause it not to run all tests or not print refresh had completed.
+* Added try catch to result handlers to help avoid cases where the REPL would stop working.
 
 ## 1.1.4
 
-# Fixed #78 refreshing of code so it doesn't fail when user namespace is not available.
+* Fixed #78 refreshing of code so it doesn't fail when user namespace is not available.
 
 ## 1.1.5
 
-# Test change for Atom 1.7.
+* Test change for Atom 1.7.
+
+# 1.1.6
+
+* #69 - Improving performance of tree view display.

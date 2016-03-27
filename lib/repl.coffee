@@ -7,6 +7,19 @@ RemoteReplProcess = require './process/remote-repl-process'
 SelfHostedProcess = require './process/self-hosted-process'
 replHelpText = ";; This Clojure REPL is divided into two areas, top and bottom, delimited by a line of dashes. The top area shows code that's been executed in the REPL, standard out from running code, and the results of executed expressions. The bottom area allows Clojure code to be entered. The code can be executed by pressing shift+enter.\n\n;; Try it now by typing (+ 1 1) in the bottom section and pressing shift+enter.\n\n;; Working in another Clojure file and sending forms to the REPL is the most efficient way to work. Use the following key bindings to send code to the REPL. See the settings for more keybindings.\n\n;; ctrl-, then b - execute block. Finds the block of Clojure code your cursor is in and executes that.\n\n;; Try it now. Put your cursor inside this block and press ctrl and comma together,\n;; release, then press b.\n(+ 2 3)\n\n;; ctrl-, s - Executes the selection. Sends the selected text to the REPL.\n\n;; Try it now. Select these three lines and press ctrl and comma together, \n;; release, then press s.\n(println \"hello 1\")\n(println \"hello 2\")\n(println \"hello 3\")\n\n;; You can disable this help text in the settings.\n"
 
+# temporary usage of copy of Atom Ink Tree view
+TreeView = require './tree-view'
+
+# Temporary performance helpers
+
+startTime = ->
+  window.performance.now()
+
+logElapsed = (name, start)->
+  elapsed = window.performance.now()-start
+  console.log(name + " " + elapsed.toFixed() + " ms")
+
+
 module.exports =
 
 # Represents the REPL where code is executed and displayed. It is split into three
@@ -157,7 +170,9 @@ class Repl
             view = document.createElement 'div'
             view.appendChild(new Text(x))
             view
-        @ink.tree.treeView(head, childViews, {})
+        # Temporarily using copy of Tree view for better performance. See tree-view.coffee
+        # @ink.tree.treeView(head, childViews, {})
+        TreeView.treeView(head, childViews, {})
       else
         view = document.createElement 'div'
         view.appendChild(new Text(head))
@@ -190,7 +205,10 @@ class Repl
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
       io = options.inlineOptions
       handler = @makeInlineHandler io.editor, io.range, (value)->
-        protoRepl.ednToDisplayTree(value)
+        ednToDisplayTreeStartTime = startTime()
+        result = protoRepl.ednToDisplayTree(value)
+        logElapsed("ednToDisplayTree", ednToDisplayTreeStartTime)
+        result
 
       handler(result)
 
@@ -220,7 +238,12 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
+    sendCommandStart = startTime()
+
     @process.sendCommand code, options, (result)=>
+
+      logElapsed("sendCommand", sendCommandStart)
+
       # check if it's an extension response
       if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
         parsed = window.protoRepl.parseEdn(result.value)
