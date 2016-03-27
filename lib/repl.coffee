@@ -205,10 +205,7 @@ class Repl
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
       io = options.inlineOptions
       handler = @makeInlineHandler io.editor, io.range, (value)->
-        ednToDisplayTreeStartTime = startTime()
-        result = protoRepl.ednToDisplayTree(value)
-        logElapsed("ednToDisplayTree", ednToDisplayTreeStartTime)
-        result
+        protoRepl.ednToDisplayTree(value)
 
       handler(result)
 
@@ -238,11 +235,7 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-    sendCommandStart = startTime()
-
     @process.sendCommand code, options, (result)=>
-
-      logElapsed("sendCommand", sendCommandStart)
 
       # check if it's an extension response
       if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
