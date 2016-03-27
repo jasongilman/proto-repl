@@ -152,7 +152,7 @@ class NReplConnection
             else if msg.err
               resultHandler(error: msg.err)
       catch error
-        console.error
+        console.error error
         atom.notifications.addError "Error in handler: " + error,
           detail: error, dismissable: true
 
