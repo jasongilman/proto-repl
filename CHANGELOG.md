@@ -326,3 +326,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 * #69 - Improving performance of tree view display.
 * #69, #77 - Changing pretty printing to be off by default. You can reenable pretty printing by default in the settings or use `cmd-, p` to pretty print the results.
   * The automatic pretty printing didn't perform as well as I would like and wouldn't correctly display values for certain Clojure types. Pretty printing through `cmd-, p` uses the Clojure REPL to pretty print the results so it's correctly displayed.
+
+# 1.1.7
+
+* #89 - Allowing other completion providers to work with Proto REPL. 

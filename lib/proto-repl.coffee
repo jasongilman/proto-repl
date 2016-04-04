@@ -243,6 +243,10 @@ module.exports = ProtoRepl =
     else
       @repl.startSelfHostedConnection()
 
+  # Returns true if the REPL is running
+  running: ->
+    @repl?.running()
+
   # Returns the type of the REPL that's currently running.
   # "SelfHosted", "Remote", Local"
   getReplType: ->

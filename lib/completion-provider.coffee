@@ -60,14 +60,17 @@ module.exports =
   selector: '.source.clojure'
   disableForSelector: '.source.clojure .comment, .source.clojure .string'
   inclusionPriority: 100
-  excludeLowerPriority: true
+  excludeLowerPriority: false
 
   getSuggestions: ({editor, bufferPosition, scopeDescriptor}) ->
     prefix = getPrefix(editor, bufferPosition)
 
     if prefix != ""
       new Promise (resolve) ->
-        if protoRepl.isSelfHosted()
+        if !protoRepl.running()
+          # if we're not running resolve this so other suggestors can be triggered
+          resolve []
+        else if protoRepl.isSelfHosted()
           self_hosted_clj.completions prefix, (matches)->
             suggestions = (completionToSuggestion(prefix, c) for c in matches)
             resolve suggestions
