@@ -43,10 +43,6 @@ module.exports = (currentWorkingDir, bootPath, args) ->
 
       emit('proto-repl-process:data', dataStr)
 
-    processData("repl started")
-    processData("exec: " + bootExec)
-    processData("args: " + args)
-
     replProcess.on 'error', (error)->
         processData("Error starting repl: " + error +
         "\nYou may need to configure the boot path in proto-repl settings\n")

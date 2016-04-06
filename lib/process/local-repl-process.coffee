@@ -119,6 +119,7 @@ class LocalReplProcess
       # We track that separately.
       @process = null
       @conn.close()
+      @appendText("\nREPL Closed\n")
 
   running: ()->
     @process != null && @conn.connected()
@@ -131,6 +132,7 @@ class LocalReplProcess
 
   interrupt: ->
     @conn.interrupt()
+    @appendText("Interrupting")
 
   # Stops the running process
   stop: ()->
