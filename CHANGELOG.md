@@ -329,4 +329,8 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 # 1.1.7
 
-* #89 - Allowing other completion providers to work with Proto REPL. 
+* #89 - Allowing other completion providers to work with Proto REPL.
+
+# 1.1.8
+
+* #91 - Fixing Remote REPL connection error handling

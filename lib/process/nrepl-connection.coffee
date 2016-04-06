@@ -34,13 +34,12 @@ class NReplConnection
     messageHandlingStarted = false
     @currentNs = DEFAULT_NS
 
+    # Handle and show errors
+    @conn.on 'error', (err)=>
+      atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
+      @conn = null
+
     @conn.once 'connect', =>
-
-      # Handle and show errors
-      @conn.on 'error', (err)=>
-        atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
-        @conn = null
-
       # When repl connection closed
       @conn.on 'finish', =>
         @conn = null
