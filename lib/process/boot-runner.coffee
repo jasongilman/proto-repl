@@ -11,10 +11,10 @@ module.exports = (currentWorkingDir, bootPath, args) ->
   try
     if process.platform == "win32"
       # Windows
-      if bootPath.endsWith("boot.bat")
+      if bootPath.endsWith("boot.exe")
         bootExec = bootPath
       else
-        bootExec = path.join(bootPath, "boot.bat")
+        bootExec = path.join(bootPath, "boot.exe")
       envPath = filteredEnv["Path"] || ""
       filteredEnv["Path"] = envPath + path.delimiter + bootPath
     else
