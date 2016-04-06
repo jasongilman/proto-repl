@@ -11,10 +11,10 @@ module.exports = (currentWorkingDir, bootPath, args) ->
   try
     if process.platform == "win32"
       # Windows
-      if bootPath.endsWith("boot.bat")
+      if bootPath.endsWith("boot.exe")
         bootExec = bootPath
       else
-        bootExec = path.join(bootPath, "boot.bat")
+        bootExec = path.join(bootPath, "boot.exe")
       envPath = filteredEnv["Path"] || ""
       filteredEnv["Path"] = envPath + path.delimiter + bootPath
     else
@@ -25,14 +25,11 @@ module.exports = (currentWorkingDir, bootPath, args) ->
 
     replProcess = childProcess.spawn bootExec, args, cwd: currentWorkingDir, env: filteredEnv
 
-    replProcess.on 'error', (error)->
-      processData("Error starting repl: " + error +
-      "\nYou may need to configure the boot path in proto-repl settings\n")
 
     # The nREPL port is extracted from the output of the REPL process. We could
     # look on the file system for the .nrepl-port file which is more standard
     # but there are issues if you want to start multiple REPLs in the same project.
-    # proto-repl-process:nrepl-port is emitted with the nREPL port is found.
+    # proto-repl-process:nrepl-port is emitted when the nREPL port is found.
     portFound = false
 
     processData = (data) ->
@@ -45,6 +42,14 @@ module.exports = (currentWorkingDir, bootPath, args) ->
           emit('proto-repl-process:nrepl-port', port)
 
       emit('proto-repl-process:data', dataStr)
+
+    processData("repl started")
+    processData("exec: " + bootExec)
+    processData("args: " + args)
+
+    replProcess.on 'error', (error)->
+        processData("Error starting repl: " + error +
+        "\nYou may need to configure the boot path in proto-repl settings\n")
 
     replProcess.stdout.on 'data', processData
     replProcess.stderr.on 'data', processData

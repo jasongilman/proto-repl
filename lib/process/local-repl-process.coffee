@@ -115,7 +115,6 @@ class LocalReplProcess
 
     # The process exited.
     @process.on 'proto-repl-process:exit', ()=>
-      @appendText("\nREPL Closed\n")
       # The REPL Text editor may or may not be still open at this point.
       # We track that separately.
       @process = null
@@ -132,7 +131,6 @@ class LocalReplProcess
 
   interrupt: ->
     @conn.interrupt()
-    @appendText("Interrupting")
 
   # Stops the running process
   stop: ()->
