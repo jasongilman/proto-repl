@@ -482,7 +482,7 @@ module.exports = ProtoRepl =
       @appendText("Refresh complete")
       callback() if callback
     else if result.error
-      @appendText("Refresh failed: " + result.error)
+      @appendText("Refresh Warning: " + result.error)
 
   # Refreshes any changed code in the project since the last refresh. Presumes
   # clojure.tools.namespace is a dependency and setup with standard user/reset
