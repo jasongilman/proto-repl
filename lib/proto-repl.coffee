@@ -562,14 +562,14 @@ module.exports = ProtoRepl =
         if @isSelfHosted()
           code = "(doc #{varName})"
           parser = (value)-> value.substr(26)
-        else
+        else if @ink && atom.config.get('proto-repl.showInlineResults')
           code =
             "(do
               (require 'clojure.repl)
+              (clojure.repl/doc #{varName})
               (with-out-str (clojure.repl/doc #{varName})))"
           parser = (value)=> @parseEdn(value).substr(26)
 
-        if @ink && atom.config.get('proto-repl.showInlineResults')
           range = editor.getSelectedBufferRange()
           range.end.column = Infinity
           inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
@@ -578,6 +578,10 @@ module.exports = ProtoRepl =
                           displayInRepl: false
                           resultHandler: inlineHandler
         else
+          code =
+            "(do
+              (require 'clojure.repl)
+              (clojure.repl/doc #{varName}))"
           @executeCodeInNs code
 
   printVarCode: ->

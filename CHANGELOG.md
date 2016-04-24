@@ -338,3 +338,4 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.1.9
 
 * #98 - Fixing error loading with Atom Ink.
+* #94 - Fixed display of documentation in the REPL.
