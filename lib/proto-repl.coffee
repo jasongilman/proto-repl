@@ -277,7 +277,6 @@ module.exports = ProtoRepl =
     if @repl
       @repl.ink = @ink
     @loading = new ink.Loading
-    @spinner = new ink.Spinner @loading
 
   ##############################################################################
   ## Code Execution
