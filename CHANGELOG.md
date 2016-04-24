@@ -334,3 +334,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.1.8
 
 * #91 - Fixing Remote REPL connection error handling
+
+# 1.1.9
+
+* #98 - Fixing error loading with Atom Ink.
