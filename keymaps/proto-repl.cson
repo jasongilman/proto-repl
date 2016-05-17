@@ -11,6 +11,39 @@
 ## Common key bindings for every OS.
 
 'atom-workspace atom-text-editor:not([mini])':
+
+  'ctrl-alt-, l': 'proto-repl:toggle'
+  'ctrl-alt-, shift-l': 'proto-repl:toggle-current-project-clj'
+  'ctrl-alt-, j': 'proto-repl:start-self-hosted-repl'
+  'ctrl-alt-, y': 'proto-repl:remote-nrepl-connection'
+  'ctrl-alt-, e': 'proto-repl:exit-repl'
+  'ctrl-alt-, k': 'proto-repl:clear-repl'
+  'ctrl-alt-< s': 'proto-repl:toggle-auto-scroll'
+  'ctrl-alt-, b': 'proto-repl:execute-block'
+  'ctrl-alt-, B': 'proto-repl:execute-top-block'
+  'ctrl-alt-, s': 'proto-repl:execute-selected-text'
+  'ctrl-alt-, f': 'proto-repl:load-current-file'
+  'ctrl-alt-, r': 'proto-repl:refresh-namespaces'
+  'ctrl-alt-< r': 'proto-repl:super-refresh-namespaces'
+  'ctrl-alt-, p': 'proto-repl:pretty-print'
+  'ctrl-alt-, x': 'proto-repl:run-tests-in-namespace'
+  'ctrl-alt-, t': 'proto-repl:run-test-under-cursor'
+  'ctrl-alt-, a': 'proto-repl:run-all-tests'
+  'ctrl-alt-, d': 'proto-repl:print-var-documentation'
+  'ctrl-alt-, c': 'proto-repl:print-var-code'
+  'ctrl-alt-, n': 'proto-repl:list-ns-vars'
+  'ctrl-alt-< n': 'proto-repl:list-ns-vars-with-docs'
+  'ctrl-alt-, o': 'proto-repl:open-file-containing-var'
+  'ctrl-shift-c': 'proto-repl:interrupt'
+  'shift-enter': 'proto-repl:execute-text-entered-in-repl'
+  'ctrl-alt-< i': 'proto-repl:insert-save-value-call'
+  'ctrl-alt-< d': 'proto-repl:display-saved-values'
+  'ctrl-alt-< c': 'proto-repl:clear-saved-values'
+
+  # Legacy keybindings.
+  # The keybindings were all originally ctrl-, but this had conflicts on Linux
+  # and windows with preferences so it was changed to ctrl-alt-, The original
+  # ones are left here for now so as not to break existing users methods.
   'ctrl-, l': 'proto-repl:toggle'
   'ctrl-, shift-l': 'proto-repl:toggle-current-project-clj'
   'ctrl-, j': 'proto-repl:start-self-hosted-repl'
@@ -33,14 +66,9 @@
   'ctrl-, n': 'proto-repl:list-ns-vars'
   'ctrl-< n': 'proto-repl:list-ns-vars-with-docs'
   'ctrl-, o': 'proto-repl:open-file-containing-var'
-  'ctrl-shift-c': 'proto-repl:interrupt'
-  'shift-enter': 'proto-repl:execute-text-entered-in-repl'
-
-  # Save and recall beta keybindings
   'ctrl-< i': 'proto-repl:insert-save-value-call'
   'ctrl-< d': 'proto-repl:display-saved-values'
   'ctrl-< c': 'proto-repl:clear-saved-values'
-
 
 ## Mac Specific Keybindings
 '.platform-darwin atom-workspace atom-text-editor:not([mini])':

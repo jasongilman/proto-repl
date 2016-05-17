@@ -31,13 +31,13 @@ See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo
 
 ### Connecting to a Remote REPL
 
-Proto REPL can connect to a remote Clojure process using [nREPL](https://github.com/clojure/tools.nrepl). Connect to the remote REPL by triggering the Command Palette (cmd-alt-p) and selecting "Proto REPL: Remote Nrepl Connection". Enter the host and port of the remote nREPL server and it will connect. The keybinding `ctrl-, y` will also work.
+Proto REPL can connect to a remote Clojure process using [nREPL](https://github.com/clojure/tools.nrepl). Connect to the remote REPL by triggering the Command Palette (cmd-alt-p) and selecting "Proto REPL: Remote Nrepl Connection". Enter the host and port of the remote nREPL server and it will connect. The keybinding `ctrl-alt-, y` will also work.
 
 ### Starting a Self Hosted ClojureScript REPL
 
 Proto REPL includes the ability to start a self hosted ClojureScript REPL. This is a REPL that runs inside of the Atom editor using ClojureScript. It's currently fairly limited in its capabilities but it will continue to be improved in the future. The ability to run a REPL inside Atom will make it easier to use Proto REPL to develop Proto REPL itself and write more of Proto REPL's code in ClojureScript. It also removes the need to have Java or any build system like Leiningen or Boot installed to do basic things.
 
-Start the self hosted repl by triggering the Command Palette and selecting "Proto REPL: Start Self Hosted Repl". The keybinding `ctrl-, j` will also work.
+Start the self hosted repl by triggering the Command Palette and selecting "Proto REPL: Start Self Hosted Repl". The keybinding `ctrl-alt-, j` will also work.
 
 This is a list of the features currently supported in the self hosted REPL.
 
@@ -72,7 +72,7 @@ Code can be sent to the REPL from within the REPL itself or any other open text 
 
 #### Sending a Block
 
-A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `ctrl-, b` (Press ctrl and comma together, release, then press b) can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
+A block of Clojure code is code that's delimited by parentheses `()`, curly braces `{}` (defines a map literal in Clojure), or square brackets `[]` (defines a vector literal in Clojure). The key binding `ctrl-alt-, b` (Press ctrl and comma together, release, then press b) can be used to send a block from the current text editor. The block that is sent depends on the position of the cursor. The cursor may be located nested inside several blocks, directly after a block, or before a block. The logic for block finding searches for blocks in the following order.
 
 1. A block directly after the cursor.
 2. A block directly before the cursor.
@@ -93,7 +93,7 @@ The block detection also can find the start and end of a Github Flavored Markdow
 
 #### Sending a Selection
 
-An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `ctrl-, s` (Press ctrl and comma together, release, then press s). This allows sending multiple blocks of code at once.
+An arbitrary set of selected Clojure code can be sent to the REPL by selecting the code and using the key binding `ctrl-alt-, s` (Press ctrl and comma together, release, then press s). This allows sending multiple blocks of code at once.
 
 ### Autocompletion
 
@@ -173,10 +173,10 @@ You can also specify specific bindings to save. For example `(proto/save 1 m a)`
 
 #### Using the save value feature
 
-1. Insert a call to `proto/save` in the code using the keybinding `ctrl-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
+1. Insert a call to `proto/save` in the code using the keybinding `ctrl-alt-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
 2. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh before executing the code.
-3. Show the values by pressing the keybinding `ctrl-shift-, d`
-4. Saved values can be cleared with the keybinding `ctrl-shift-, c`
+3. Show the values by pressing the keybinding `ctrl-alt-shift-, d`
+4. Saved values can be cleared with the keybinding `ctrl-alt-shift-, c`
 
 There's currently a limit of 20 saved values in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're meant to be used in local development only.
 
@@ -231,33 +231,33 @@ See [extending_proto_repl.md](https://github.com/jasongilman/proto-repl/blob/mas
 
 ## Keybindings and Events
 
-Keyboard shortcuts below refer to using `ctrl-,` then a letter. That means press the `ctrl` key and the comma key at the same time, release them, and then press the subsequent letter. Some keyboard shortcuts also include the shift key.
+Keyboard shortcuts below refer to using `ctrl-alt-,` then a letter. That means press the `ctrl` key and the comma key at the same time, release them, and then press the subsequent letter. Some keyboard shortcuts also include the shift key.
 
-| Keybinding       | Event                                 | Action                                                                                                                                   |
-|------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
-| `ctrl-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
-| `ctrl-, shift-L` | `proto-repl:toggle`                   | Starts the REPL using the current open project.clj                                                                                       |
-| `ctrl-, y`       | `proto-repl:remote-nrepl-connection`  | Connects to a remote nREPL session.                                                                                                      |
-| `ctrl-, j`       | `proto-repl:start-self-hosted-repl`   | Starts a self hosted REPL.                                                                                                               |
-| `ctrl-, e`       | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
-| `ctrl-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
-| `ctrl-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
-| `ctrl-, b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
-| `ctrl-, B`       | `proto-repl:execute-top-block`        | Sends the current top-level block of Clojure code to the REPL for execution.                                                             |
-| `ctrl-, s`       | `proto-repl:execute-selected-text`    | Sends the selected text to the REPL for execution.                                                                                       |
-| `ctrl-, f`       | `proto-repl:load-current-file`        | Loads the current file in the repl.                                                                                                      |
-| `ctrl-, r`       | `proto-repl:refresh-namespaces`       | Runs the `user/reset` function. See [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) |
-| `ctrl-shift-, r` | `proto-repl:super-refresh-namespaces` | Clears all loaded namespaces using `clojure.tools.namespace` the runs the `user/reset` function.                                         |
-| `ctrl-, p`       | `proto-repl:pretty-print`             | Pretty prints the last value returned at the REPL.                                                                                       |
-| `ctrl-, x`       | `proto-repl:run-tests-in-namespace`   | Runs all the tests in the current namespace.                                                                                             |
-| `ctrl-, t`       | `proto-repl:run-test-under-cursor`    | Runs the test that has a name under the cursor.                                                                                          |
-| `ctrl-, a`       | `proto-repl:run-all-tests`            | Runs all the test in the current project.                                                                                                |
-| `ctrl-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation of a var under the cursor.                                                                                      |
-| `ctrl-, c`       | `proto-repl:print-var-code`           | Prints out the code of the var under the cursor.                                                                                         |
-| `ctrl-, o`       | `proto-repl:open-file-containing-var` | Opens the code of the var or namespace under the cursor. This works even with vars defined in libraries.                                 |
-| `ctrl-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the namespace under the cursor.                                                                                        |
-| `ctrl-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the namespace under the cursor with documentation.                                                                     |
-| `shift-ctrl-c`   | `proto-repl:interrupt`                | Attempts to interrupt the currently running command in the REPL.                                                                         |
-| `ctrl-shift-, i` | `proto-repl:insert-save-value-call`   | Inserts a call to `proto/save` with a unique id                                                                                          |
-| `ctrl-shift-, d` | `proto-repl:display-saved-values`     | Displays values saved using the `proto/save` function.                                                                                   |
-| `ctrl-shift-, c` | `proto-repl:clear-saved-values`       | Clears previously saved values using the `proto/save` function.                                                                          |
+| Keybinding           | Event                                 | Action                                                                                                                                   |
+|----------------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `ctrl-alt-, L`       | `proto-repl:toggle`                   | Starts the REPL                                                                                                                          |
+| `ctrl-alt-, shift-L` | `proto-repl:toggle`                   | Starts the REPL using the current open project.clj                                                                                       |
+| `ctrl-alt-, y`       | `proto-repl:remote-nrepl-connection`  | Connects to a remote nREPL session.                                                                                                      |
+| `ctrl-alt-, j`       | `proto-repl:start-self-hosted-repl`   | Starts a self hosted REPL.                                                                                                               |
+| `ctrl-alt-, e`       | `proto-repl:exit-repl`                | Exits the REPL                                                                                                                           |
+| `ctrl-alt-, k`       | `proto-repl:clear-repl`               | Clears REPL Output                                                                                                                       |
+| `ctrl-alt-shift-, s` | `proto-repl:toggle-auto-scroll`       | Enables/Disables autoscrolling the REPL                                                                                                  |
+| `ctrl-alt-, b`       | `proto-repl:execute-block`            | Sends the current block of Clojure code to the REPL for execution.                                                                       |
+| `ctrl-alt-, B`       | `proto-repl:execute-top-block`        | Sends the current top-level block of Clojure code to the REPL for execution.                                                             |
+| `ctrl-alt-, s`       | `proto-repl:execute-selected-text`    | Sends the selected text to the REPL for execution.                                                                                       |
+| `ctrl-alt-, f`       | `proto-repl:load-current-file`        | Loads the current file in the repl.                                                                                                      |
+| `ctrl-alt-, r`       | `proto-repl:refresh-namespaces`       | Runs the `user/reset` function. See [My Clojure Workflow, Reloaded](http://thinkrelevance.com/blog/2013/06/04/clojure-workflow-reloaded) |
+| `ctrl-alt-shift-, r` | `proto-repl:super-refresh-namespaces` | Clears all loaded namespaces using `clojure.tools.namespace` the runs the `user/reset` function.                                         |
+| `ctrl-alt-, p`       | `proto-repl:pretty-print`             | Pretty prints the last value returned at the REPL.                                                                                       |
+| `ctrl-alt-, x`       | `proto-repl:run-tests-in-namespace`   | Runs all the tests in the current namespace.                                                                                             |
+| `ctrl-alt-, t`       | `proto-repl:run-test-under-cursor`    | Runs the test that has a name under the cursor.                                                                                          |
+| `ctrl-alt-, a`       | `proto-repl:run-all-tests`            | Runs all the test in the current project.                                                                                                |
+| `ctrl-alt-, d`       | `proto-repl:print-var-documentation`  | Prints the documentation of a var under the cursor.                                                                                      |
+| `ctrl-alt-, c`       | `proto-repl:print-var-code`           | Prints out the code of the var under the cursor.                                                                                         |
+| `ctrl-alt-, o`       | `proto-repl:open-file-containing-var` | Opens the code of the var or namespace under the cursor. This works even with vars defined in libraries.                                 |
+| `ctrl-alt-, n`       | `proto-repl:list-ns-vars`             | Lists the vars in the namespace under the cursor.                                                                                        |
+| `ctrl-alt-shift-, n` | `proto-repl:list-ns-vars-with-docs`   | Lists the vars in the namespace under the cursor with documentation.                                                                     |
+| `shift-ctrl-c`       | `proto-repl:interrupt`                | Attempts to interrupt the currently running command in the REPL.                                                                         |
+| `ctrl-alt-shift-, i` | `proto-repl:insert-save-value-call`   | Inserts a call to `proto/save` with a unique id                                                                                          |
+| `ctrl-alt-shift-, d` | `proto-repl:display-saved-values`     | Displays values saved using the `proto/save` function.                                                                                   |
+| `ctrl-alt-shift-, c` | `proto-repl:clear-saved-values`       | Clears previously saved values using the `proto/save` function.                                                                          |

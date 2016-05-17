@@ -339,3 +339,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * #98 - Fixing error loading with Atom Ink.
 * #94 - Fixed display of documentation in the REPL.
+
+# 1.1.10
+
+* #56 - Changing keybindings from ctrl-, initiator to ctrl-alt-, to avoid preferences conflict. Leaving the old ones in place to avoid breaking existing users workflows.
