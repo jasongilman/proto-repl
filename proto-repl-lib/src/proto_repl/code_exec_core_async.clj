@@ -62,8 +62,8 @@
         ;; Wait for a response or until we timeout.
         resp (a/alt!!
               response-chan ([v] v)
-              (a/timeout read-timeout) :timeout)]
-    (if (= resp :timeout)
+              (a/timeout read-timeout) ::timeout)]
+    (if (= resp ::timeout)
       (throw (Exception.
               (format "Timed out after %s ms sending data to %s extension."
                       read-timeout extension-name)))
@@ -76,12 +76,16 @@
 (defn read-request
   "TODO"
   []
-  (let [msg (a/<!! request-channel)]
-    (if-let [response-chan (:response-chan msg)]
-      (do
-       (swap! requests-waiting-for-response assoc (:id msg) msg)
-       (assoc msg :requires-response true))
-      (assoc msg :requires-response false))))
+  (let [msg (a/alt!!
+             request-channel ([v] v)
+             (a/timeout read-timeout) ::timeout)]
+    (if (= msg ::timeout)
+      msg
+      (if-let [response-chan (:response-chan msg)]
+        (do
+         (swap! requests-waiting-for-response assoc (:id msg) msg)
+         (assoc msg :requires-response true))
+        (assoc msg :requires-response false)))))
 
 (defn respond-to
   "TODO"

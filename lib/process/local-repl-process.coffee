@@ -117,6 +117,8 @@ class LocalReplProcess
     @process.on 'proto-repl-process:exit', ()=>
       # The REPL Text editor may or may not be still open at this point.
       # We track that separately.
+      # TODO would it be better to move the stop callback into the nrepl connection?
+      connOptions?.stopCallback()
       @process = null
       @conn.close()
       @appendText("\nREPL Closed\n")
