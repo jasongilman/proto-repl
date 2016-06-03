@@ -343,3 +343,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.1.10
 
 * #56 - Changing keybindings from ctrl-, initiator to ctrl-alt-, to avoid preferences conflict. Leaving the old ones in place to avoid breaking existing users workflows.
+
+# 1.1.11
+
+* #110 - Fixed problem with starting Proto REPL default project REPL when Atom is running in dev mode.

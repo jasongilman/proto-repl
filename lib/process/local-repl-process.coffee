@@ -8,9 +8,6 @@ NReplConnection = require './nrepl-connection'
 # The code to send to the repl to exit.
 EXIT_CMD="(System/exit 0)"
 
-# The path to a default project to use if proto repl is started outside of a leiningen or boot project
-DEFAULT_PROJECT_PATH = "#{atom.packages.getPackageDirPaths()[0]}/proto-repl/proto-no-proj"
-
 module.exports=
 # Represents a locally running REPL process.
 class LocalReplProcess
@@ -53,6 +50,20 @@ class LocalReplProcess
       else
         currentPath unless matches.length == 0
 
+  # Returns the path to a default project to use if proto repl is started
+  # outside of a leiningen or boot project
+  getDefaultProjectPath: ()->
+    # Atom returns multiple possible package dirs so we must search for one that
+    # exists.
+    for p in atom.packages.getPackageDirPaths()
+      possiblePath = p + "/proto-repl/proto-no-proj"
+      try
+        # If this succeeds without error the path exists
+        fs.lstatSync(possiblePath)
+        return possiblePath
+      catch error
+        null
+
   start: (projectPath, connOptions)->
     if @running()
       return
@@ -82,10 +93,10 @@ class LocalReplProcess
         replType = "lein"
       else
         replType = "lein"
-        projectPath = DEFAULT_PROJECT_PATH
+        projectPath = @getDefaultProjectPath()
     else
       replType = "lein"
-      projectPath = DEFAULT_PROJECT_PATH
+      projectPath = @getDefaultProjectPath()
 
     @appendText("Starting REPL with #{replType} in #{projectPath}\n", true)
 
