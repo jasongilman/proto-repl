@@ -347,3 +347,4 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.1.11
 
 * #110 - Fixed problem with starting Proto REPL default project REPL when Atom is running in dev mode.
+* #102 - Added "proto-repl-repl" class to the text editor to allow custom styling. Added option to allow opening REPL in right pane or current pane.

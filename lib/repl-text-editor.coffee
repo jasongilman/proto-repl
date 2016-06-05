@@ -27,8 +27,12 @@ class ReplTextEditor
 
   constructor: ()->
     @emitter = new Emitter
-    # Opens the text editor that will represent the REPL.
-    atom.workspace.open(TAB_TITLE, split:'right').done (textEditor) =>
+    if atom.config.get("proto-repl.openReplInRightPane")
+      options = {split: 'right'}
+    else
+      options = {}
+      # Opens the text editor that will represent the REPL.
+    atom.workspace.open(TAB_TITLE, options).done (textEditor) =>
       window.textEditor = textEditor
       @configureNewTextEditor(textEditor)
       @emitter.emit 'proto-repl-text-editor:open'
@@ -89,6 +93,9 @@ class ReplTextEditor
   ## Text Editor Configuration
 
   configureTextEditorBasics: ()->
+    # Add a class to the text editor so it can be styled
+    @textEditor.editorElement.className += " proto-repl-repl"
+
     # Force the tab to have a title
     @textEditor.getTitle = -> TAB_TITLE
     @textEditor.emitter.emit 'did-change-title', TAB_TITLE

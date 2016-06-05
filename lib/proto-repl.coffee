@@ -80,6 +80,10 @@ module.exports = ProtoRepl =
       description: "Configures whether autocompletion of Clojure forms should be supported. Changing this requires a restart of Atom."
       type: "boolean"
       default: true
+    openReplInRightPane:
+      description: "Configure whether the REPL should open in a pane to the right or the current pane."
+      type: "boolean"
+      default: true
 
   subscriptions: null
   repl: null
