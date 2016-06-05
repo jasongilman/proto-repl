@@ -3,7 +3,8 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [proto-repl-charts "0.2.0"]
-                 [proto-repl "0.1.2"]]
+                 ;; TODO update this to latest
+                 [proto-repl "0.2.0-SNAPSHOT"]]
 
   :profiles
   {:dev {:source-paths ["dev" "src"]}})

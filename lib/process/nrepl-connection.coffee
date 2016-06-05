@@ -50,6 +50,7 @@ class NReplConnection
       # Create a persistent session
       @conn.clone (err, messages)=>
         @session = messages[0]["new-session"]
+        console.log("Main session #{@session}")
 
         # Determine the Clojure Version
         @determineClojureVersion =>
@@ -63,6 +64,7 @@ class NReplConnection
         # the repl.
         @conn.clone (err, messages)=>
           @cmdSession = messages[0]["new-session"]
+          console.log("Command session #{@cmdSession}")
           startCallback()
 
   determineClojureVersion: (callback)->
@@ -120,13 +122,13 @@ class NReplConnection
       if msg.status?.length > 0
         return true if msg.status[0] == "namespace-not-found"
 
-
   optionsToSession: (options, callback)->
     if options.session
       if s = @sessionsByName[options.session]
         callback(s)
       else
         @conn.clone (err, messages)=>
+          console.log(messages)
           s = messages[0]["new-session"]
           @sessionsByName[options.session] = s
           callback(s)
@@ -145,7 +147,6 @@ class NReplConnection
     return null unless @connected()
 
     @optionsToSession options, (session)=>
-      console.log "Using session #{session} for code #{code}"
       # Wrap code in read eval to handle invalid code and reader conditionals
       wrappedCode = @wrapCodeInReadEval(code)
       ns = options.ns || @currentNs

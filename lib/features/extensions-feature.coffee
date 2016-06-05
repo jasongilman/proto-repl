@@ -59,6 +59,8 @@ class ExtensionsFeature
 
   # TODO change some of these console.logs to warnings.
 
+  # TODO document this code
+
   handleResponse: (value)->
     parsed = window.protoRepl.parseEdn(value)
     extensionName = parsed["extension-name"]
@@ -75,7 +77,7 @@ class ExtensionsFeature
               (c/respond-with \"#{id}\" \"#{result}\"))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
-      # session: NREPL_SESSION,
+      session: NREPL_SESSION,
       resultHandler: (result, options)=>
         console.log("Responds with result #{result}")
 
@@ -87,7 +89,7 @@ class ExtensionsFeature
     console.log "Reading next command"
     window.protoRepl.executeCode code,
       displayInRepl: false,
-      # session: NREPL_SESSION,
+      session: NREPL_SESSION,
       resultHandler: (result, options)=>
         console.log result
         if result.value == ":proto-repl.code-exec-core-async/timeout"
@@ -98,12 +100,14 @@ class ExtensionsFeature
           @readNextCommand()
         else
           @numErrors = @numErrors + 1
-          console.log "Error executing command #{result.error}"
           if @numErrors < 10
             # Wait a second after an error before trying again.
             setTimeout(=>
               @readNextCommand()
             , 1000)
+          else
+            console.log "Repeated errors trying to execute command #{result.error}. Stopping automatic extensions feature"
+            @stopExtensionCommandProcessing()
 
   startExtensionCommandProcessing: ->
     @running = true
