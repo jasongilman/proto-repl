@@ -1,7 +1,8 @@
-(ns proto-repl.code-exec-core-async
+(ns proto-repl.extension-comm
   ;; TODO rename this namespace
   "TODO"
-  (require [clojure.core.async :as a]))
+  (require [clojure.core.async :as a]
+           [clojure.edn :as edn]))
 
 ;; TODO prevent refresh
 
@@ -43,6 +44,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Requestor side
 
+;; TODO come up with better names for these.
+
 (defn request
   "TODO"
   [extension-name data]
@@ -52,6 +55,7 @@
   "TODO"
   10000)
 
+;; TODO need better name for how to get results back.
 (defn request-and-wait
   "TODO"
   [extension-name data]
@@ -67,7 +71,10 @@
       (throw (Exception.
               (format "Timed out after %s ms sending data to %s extension."
                       read-timeout extension-name)))
-      resp)))
+      (try
+        (edn/read-string resp)
+        (catch Exception _
+          resp)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

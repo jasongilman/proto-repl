@@ -61,42 +61,42 @@ class ExtensionsFeature
 
   # TODO document this code
 
-  handleResponse: (value)->
-    parsed = window.protoRepl.parseEdn(value)
-    extensionName = parsed["extension-name"]
+  # TODO rename this.
+  handleCommand: (commandEdn)->
+    message = window.protoRepl.parseEdn(commandEdn)
+    extensionName = message["extension-name"]
     if extensionCallback = @codeExecutionExtensions[extensionName]
-      result = extensionCallback(parsed.data)
-      if parsed["requires-response"]
-        @respondWith(parsed.id, result)
+      result = extensionCallback(message.data)
+      if message["requires-response"]
+        @respondWith(message.id, result)
     else
       console.log "No extension registered with name #{extensionName}"
 
   respondWith: (id, result)->
+    console.log("Responding with #{result}")
     code = "(do
-              (require '[proto-repl.code-exec-core-async :as c])
-              (c/respond-with \"#{id}\" \"#{result}\"))"
+              (require '[proto-repl.extension-comm :as c])
+              (c/respond-to \"#{id}\" \"#{protoRepl.jsToEdn(result)}\"))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
       session: NREPL_SESSION,
       resultHandler: (result, options)=>
-        console.log("Responds with result #{result}")
+        console.log("Responds with result", result)
 
   readNextCommand: ->
     return unless @running
     code = "(do
-              (require '[proto-repl.code-exec-core-async :as c])
+              (require '[proto-repl.extension-comm :as c])
               (c/read-request))"
-    console.log "Reading next command"
     window.protoRepl.executeCode code,
       displayInRepl: false,
       session: NREPL_SESSION,
       resultHandler: (result, options)=>
         console.log result
-        if result.value == ":proto-repl.code-exec-core-async/timeout"
-          console.log("timeout waiting for next command.")
+        if result.value == ":proto-repl.extension-comm/timeout"
           @readNextCommand()
         else if result.value
-          @handleResponse(result.value)
+          @handleCommand(result.value)
           @readNextCommand()
         else
           @numErrors = @numErrors + 1
