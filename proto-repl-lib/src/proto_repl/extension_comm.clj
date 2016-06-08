@@ -1,15 +1,13 @@
 (ns proto-repl.extension-comm
-  ;; TODO rename this namespace
-  "TODO"
+  "Provides a mechanism for communication between Proto REPL running in Atom and
+   extensions running in the JVM."
   (require [clojure.core.async :as a]
            [clojure.edn :as edn]))
-
-;; TODO prevent refresh
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def requests-waiting-for-response
-  "TODO"
+  "A map of requests that are waiting for a response."
   (atom {}))
 
 (defn- add-request
@@ -58,23 +56,25 @@
 ;; TODO need better name for how to get results back.
 (defn request-and-wait
   "TODO"
-  [extension-name data]
-  (let [{:keys [response-chan] :as msg} (request-message
-                                         extension-name data true)
-        ;; Put message on request queue
-        _ (a/>!! request-channel msg)
-        ;; Wait for a response or until we timeout.
-        resp (a/alt!!
-              response-chan ([v] v)
-              (a/timeout read-timeout) ::timeout)]
-    (if (= resp ::timeout)
-      (throw (Exception.
-              (format "Timed out after %s ms sending data to %s extension."
-                      read-timeout extension-name)))
-      (try
-        (edn/read-string resp)
-        (catch Exception _
-          resp)))))
+  ([extension-name data]
+   (request-and-wait extension-name data read-timeout))
+  ([extension-name data timeout-ms]
+   (let [{:keys [response-chan] :as msg} (request-message
+                                          extension-name data true)
+         ;; Put message on request queue
+         _ (a/>!! request-channel msg)
+         ;; Wait for a response or until we timeout.
+         resp (a/alt!!
+               response-chan ([v] v)
+               (a/timeout timeout-ms) ::timeout)]
+     (if (= resp ::timeout)
+       (throw (Exception.
+               (format "Timed out after %s ms sending data to %s extension."
+                       timeout-ms extension-name)))
+       (try
+         (edn/read-string resp)
+         (catch Exception _
+           resp))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -90,7 +90,7 @@
       msg
       (if-let [response-chan (:response-chan msg)]
         (do
-         (swap! requests-waiting-for-response assoc (:id msg) msg)
+         (add-request msg)
          (assoc msg :requires-response true))
         (assoc msg :requires-response false)))))
 
@@ -99,13 +99,3 @@
   [id response]
   (let [{:keys [response-chan]} (clear-request id)]
     (a/>!! response-chan response)))
-
-(comment
- (def r (future
-         (request-and-wait "foo" [:command])))
-
- (def requested (read-request))
-
- (respond-to (:id requested) :this-is-my-response)
-
- (deref r))
