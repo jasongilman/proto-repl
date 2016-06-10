@@ -76,7 +76,7 @@ class ExtensionsFeature
     console.log("Responding with #{result}")
     code = "(do
               (require '[proto-repl.extension-comm :as c])
-              (c/respond-to c/saved-extension-comm-state
+              (c/respond-to c/global-ext-state
                  \"#{id}\" \"#{protoRepl.jsToEdn(result)}\"))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
@@ -88,7 +88,7 @@ class ExtensionsFeature
     return unless @running
     code = "(do
               (require '[proto-repl.extension-comm :as c])
-              (c/read-request c/saved-extension-comm-state))"
+              (c/read-request c/global-ext-state))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
       session: NREPL_SESSION,
