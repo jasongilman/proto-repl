@@ -440,7 +440,7 @@ module.exports = ProtoRepl =
       word
 
   prettyPrint: ->
-    # TODO make this work in self hosted repl by getting the last value and using
+    # Could make this work in self hosted repl by getting the last value and using
     # fipp to print it.
     @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
 

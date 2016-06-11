@@ -50,7 +50,6 @@ class NReplConnection
       # Create a persistent session
       @conn.clone (err, messages)=>
         @session = messages[0]["new-session"]
-        console.log("Main session #{@session}")
 
         # Determine the Clojure Version
         @determineClojureVersion =>
@@ -64,7 +63,6 @@ class NReplConnection
         # the repl.
         @conn.clone (err, messages)=>
           @cmdSession = messages[0]["new-session"]
-          console.log("Command session #{@cmdSession}")
           startCallback()
 
   determineClojureVersion: (callback)->
@@ -128,7 +126,6 @@ class NReplConnection
         callback(s)
       else
         @conn.clone (err, messages)=>
-          console.log(messages)
           s = messages[0]["new-session"]
           @sessionsByName[options.session] = s
           callback(s)

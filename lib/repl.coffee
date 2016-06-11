@@ -86,12 +86,12 @@ class Repl
     @getType() == "SelfHosted"
 
   handleReplStarted: ->
-    @extensionsFeature.startExtensionCommandProcessing()
+    @extensionsFeature.startExtensionRequestProcessing()
     @appendText(@process.getCurrentNs() + "=>", true)
     @emitter.emit 'proto-repl-repl:start'
 
   handleReplStopped: ->
-    @extensionsFeature.stopExtensionCommandProcessing()
+    @extensionsFeature.stopExtensionRequestProcessing()
 
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->

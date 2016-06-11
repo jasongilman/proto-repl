@@ -29,7 +29,7 @@
    ;; running in Atom
    :request-chan (a/chan 10)})
 
-(def ^:private global-ext-state
+(def global-ext-state
   "Global mutable state (the best kind) that tracks requests to extensions
    running in Atom. This is kept in a var instead due to the limitations from
    where it's called in Atom. Functions in this namespace allow passing in the
