@@ -73,6 +73,9 @@ class Repl
   onDidStart: (callback)->
     @emitter.on 'proto-repl-repl:start', callback
 
+  onDidStop: (callback)->
+    @emitter.on 'proto-repl-repl:stop', callback
+
   # Returns true if the process is running
   running: ->
     @process?.running()
@@ -86,12 +89,11 @@ class Repl
     @getType() == "SelfHosted"
 
   handleReplStarted: ->
-    @extensionsFeature.startExtensionRequestProcessing()
     @appendText(@process.getCurrentNs() + "=>", true)
     @emitter.emit 'proto-repl-repl:start'
 
   handleReplStopped: ->
-    @extensionsFeature.stopExtensionRequestProcessing()
+    @emitter.emit 'proto-repl-repl:stop'
 
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->

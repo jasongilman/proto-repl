@@ -49,18 +49,36 @@
    c ([v] v)
    (a/timeout timeout-ms) ::timeout))
 
-(defn read-request
-  "Reads the next message that was sent to an extension in Atom."
-  [ext-state]
-  (let [{:keys [requests-waiting-for-response]} ext-state
-        msg (read-within (:request-chan ext-state) read-timeout)]
-    (if (= msg ::timeout)
-      msg
-      (if-let [response-chan (:response-chan msg)]
-        (do
-         (swap! requests-waiting-for-response assoc (:id msg) response-chan)
-         msg)
-        msg))))
+(defn- read-up-to
+  "Reads up to num messages off the channel."
+  [c num]
+  (loop [msgs (transient [])]
+    (if (>= (count msgs) num)
+      (persistent! msgs)
+      (let [msg (a/alt!! c ([v] v) :default ::no-msg)]
+        (if (and msg (not= msg ::no-msg))
+          (recur (conj! msgs msg))
+          (persistent! msgs))))))
+
+(defn read-requests
+  "Reads the next set of max-to-read messages that was sent to an extension in
+   Atom. Blocks if no messages are available."
+  [ext-state max-to-read]
+  (let [{:keys [requests-waiting-for-response request-chan]} ext-state
+        msgs (read-up-to request-chan max-to-read)
+        msgs (if (empty? msgs)
+               ;; We didn't find any messages so just read one blocking with a
+               ;; timeout.
+               [(read-within request-chan read-timeout)]
+               msgs)]
+    (if (= msgs [::timeout])
+      ::timeout
+      (do
+       (doseq [msg msgs
+               :let [{:keys [response-chan id]} msg]
+               :when response-chan]
+         (swap! requests-waiting-for-response assoc id response-chan))
+       msgs))))
 
 (defn- wait-for-response
   "Waits for a response to the given message for up to timeout-ms."

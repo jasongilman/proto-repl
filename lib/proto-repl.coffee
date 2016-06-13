@@ -213,6 +213,8 @@ module.exports = ProtoRepl =
     repl.onDidStart =>
       if atom.config.get("proto-repl.refreshOnReplStart")
         @refreshNamespaces()
+    repl.onDidStop =>
+      @extensionsFeature.stopExtensionRequestProcessing()
 
   # Starts the REPL in the directory of the file in the current editor.
   toggleCurrentEditorDir: ->
@@ -477,6 +479,10 @@ module.exports = ProtoRepl =
     # run all tests will still work without it.
     if result.value
       @appendText("Refresh complete")
+      # Make sure the extension process is running after ever refresh.
+      # If refreshing or laoding code had failed the extensions feature might not
+      # have stopped itself.
+      @extensionsFeature.startExtensionRequestProcessing()
       callback() if callback
     else if result.error
       @appendText("Refresh Warning: " + result.error)

@@ -26,7 +26,6 @@ class ExtensionsFeature
   constructor: (@protoRepl)->
     null
 
-
   # TODO update the documentation of code execution extensions
 
   # Registers a code execution extension with the given name and callback function.
@@ -49,22 +48,24 @@ class ExtensionsFeature
 
   # Handles a request read from the Clojure side of an extension and sends it to the
   # Atom side.
-  handleRequest: (commandEdn)->
-    message = window.protoRepl.parseEdn(commandEdn)
-    extensionName = message["extension-name"]
-    if extensionCallback = @codeExecutionExtensions[extensionName]
-      result = extensionCallback(message.data)
-      if message["requires-response"]
-        @respondWith(message.id, result)
-    else
-      console.log "No extension registered with name #{extensionName}"
+  handleRequests: (commandEdn)->
+    messages = window.protoRepl.parseEdn(commandEdn)
+    for message in messages
+      extensionName = message["extension-name"]
+      if extensionCallback = @codeExecutionExtensions[extensionName]
+        result = extensionCallback(message.data)
+        if message["requires-response"]
+          @respondWith(message.id, result)
+      else
+        console.log "No extension registered with name #{extensionName}"
 
-  # Responsds to a request from a request with the given id with the response data.
+  # Responds to a request from a request with the given id with the response data.
   respondWith: (id, response)->
     code = "(do
-              (require '[proto-repl.extension-comm :as c])
-              (c/respond-to c/global-ext-state
-                 \"#{id}\" \"#{protoRepl.jsToEdn(response)}\"))"
+             (require '[proto-repl.extension-comm])
+             (proto-repl.extension-comm/respond-to
+               proto-repl.extension-comm/global-ext-state
+               \"#{id}\" \"#{protoRepl.jsToEdn(response)}\"))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
       session: NREPL_SESSION,
@@ -77,8 +78,9 @@ class ExtensionsFeature
   readNextRequest: ->
     return unless @running
     code = "(do
-              (require '[proto-repl.extension-comm :as c])
-              (c/read-request c/global-ext-state))"
+             (require '[proto-repl.extension-comm])
+             (proto-repl.extension-comm/read-requests
+               proto-repl.extension-comm/global-ext-state 10))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
       session: NREPL_SESSION,
@@ -86,7 +88,7 @@ class ExtensionsFeature
         if result.value == ":proto-repl.extension-comm/timeout"
           @readNextRequest()
         else if result.value
-          @handleRequest(result.value)
+          @handleRequests(result.value)
           @readNextRequest()
         else
           @numErrors = @numErrors + 1
@@ -102,9 +104,10 @@ class ExtensionsFeature
   # Starts processing requests to send commands from the Clojure side of an
   # extension to the Atom side of an extension.
   startExtensionRequestProcessing: ->
-    @running = true
-    @numErrors = 0
-    @readNextRequest()
+    unless @running
+      @running = true
+      @numErrors = 0
+      @readNextRequest()
 
   # Stops processing requests.
   stopExtensionRequestProcessing: ->
