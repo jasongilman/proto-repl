@@ -53,9 +53,12 @@ class ExtensionsFeature
     for message in messages
       extensionName = message["extension-name"]
       if extensionCallback = @codeExecutionExtensions[extensionName]
-        result = extensionCallback(message.data)
-        if message["requires-response"]
-          @respondWith(message.id, result)
+        try
+          result = extensionCallback(message.data)
+          if message["requires-response"]
+            @respondWith(message.id, result)
+        catch error
+          console.log "Error handling message #{message}. Error #{error}"
       else
         console.log "No extension registered with name #{extensionName}"
 
