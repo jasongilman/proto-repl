@@ -1,8 +1,9 @@
-(defproject proto-repl "0.1.2"
+(defproject proto-repl "0.2.0"
   :description "A set of helper functions for projects used in Proto REPL"
   :license {:name "MIT"
             :url "https://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [org.clojure/core.async "0.2.374"]
                  ;; For completions
                  [compliment "0.2.7"]]
 

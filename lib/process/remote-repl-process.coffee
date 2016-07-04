@@ -11,6 +11,8 @@ class RemoteReplProcess
   # The nREPL connection
   conn: new NReplConnection()
 
+  stopCallback: null
+
   constructor: (@appendText)->
     null
 
@@ -19,8 +21,7 @@ class RemoteReplProcess
 
   start: (connOptions)->
     @conn.start(connOptions)
-    # TODO how do we append repl closed when we close the connection?
-    # Originally was doing something different.
+    @stopCallback = connOptions.stopCallback
 
   sendCommand: (code, options, resultHandler)->
     @conn.sendCommand(code, options, resultHandler)
@@ -37,4 +38,5 @@ class RemoteReplProcess
 
   # Closes the remote connection.
   stop: ()->
+    @stopCallback?()
     @conn.close()

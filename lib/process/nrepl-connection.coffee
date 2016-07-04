@@ -17,6 +17,9 @@ class NReplConnection
   # value sent to the REPL.
   cmdSession: null
 
+  # A map of sessions to name. These are created on demand when needed.
+  sessionsByName: {}
+
   clojureVersion: null
 
   currentNs: DEFAULT_NS
@@ -117,6 +120,20 @@ class NReplConnection
       if msg.status?.length > 0
         return true if msg.status[0] == "namespace-not-found"
 
+  optionsToSession: (options, callback)->
+    if options.session
+      if s = @sessionsByName[options.session]
+        callback(s)
+      else
+        @conn.clone (err, messages)=>
+          s = messages[0]["new-session"]
+          @sessionsByName[options.session] = s
+          callback(s)
+    else if options.displayInRepl == false
+      callback(@cmdSession)
+    else
+      callback(@session)
+
   # Sends a command to the repl.
   # * code - string of clojure code to execute
   # * options - map of options
@@ -126,34 +143,30 @@ class NReplConnection
   sendCommand: (code, options, resultHandler)->
     return null unless @connected()
 
-    if options.displayInRepl == false
-      session = @cmdSession
-    else
-      session = @session
+    @optionsToSession options, (session)=>
+      # Wrap code in read eval to handle invalid code and reader conditionals
+      wrappedCode = @wrapCodeInReadEval(code)
+      ns = options.ns || @currentNs
 
-    # Wrap code in read eval to handle invalid code and reader conditionals
-    wrappedCode = @wrapCodeInReadEval(code)
-    ns = options.ns || @currentNs
-
-    @conn.eval wrappedCode, ns, session, (err, messages)=>
-      try
-        # If the namespace hasn't been defined this will fail. We redefine the Namespace
-        # and retry.
-        if @namespaceNotFound(messages)
-          unless options.retrying
-            options.retrying = true # Must set this to prevent a double retry.
-            options.ns = @currentNs # Retry with current namespace.
-            @sendCommand(code, options, resultHandler)
-        else
-          for msg in messages
-            if msg.value
-              resultHandler(value: msg.value)
-            else if msg.err
-              resultHandler(error: msg.err)
-      catch error
-        console.error error
-        atom.notifications.addError "Error in handler: " + error,
-          detail: error, dismissable: true
+      @conn.eval wrappedCode, ns, session, (err, messages)=>
+        try
+          # If the namespace hasn't been defined this will fail. We redefine the Namespace
+          # and retry.
+          if @namespaceNotFound(messages)
+            unless options.retrying
+              options.retrying = true # Must set this to prevent a double retry.
+              options.ns = @currentNs # Retry with current namespace.
+              @sendCommand(code, options, resultHandler)
+          else
+            for msg in messages
+              if msg.value
+                resultHandler(value: msg.value)
+              else if msg.err
+                resultHandler(error: msg.err)
+        catch error
+          console.error error
+          atom.notifications.addError "Error in handler: " + error,
+            detail: error, dismissable: true
 
 
   interrupt: ->
@@ -167,4 +180,5 @@ class NReplConnection
     return null unless @connected()
     @conn.close @session, => return
     @conn.close @cmdSession, => return
+    @sessionsByName = {}
     @conn = null

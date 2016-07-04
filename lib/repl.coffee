@@ -37,10 +37,9 @@ class Repl
   # Keeps track of the REPL history.
   replHistory: null
 
-  # A map of code execution extension names to callback functions.
-  codeExecutionExtensions: null
+  extensionsFeature: null
 
-  constructor: (@codeExecutionExtensions)->
+  constructor: (@extensionsFeature)->
     @emitter = new Emitter
     @replTextEditor = new ReplTextEditor()
     @replHistory = new ReplHistory()
@@ -74,6 +73,9 @@ class Repl
   onDidStart: (callback)->
     @emitter.on 'proto-repl-repl:start', callback
 
+  onDidStop: (callback)->
+    @emitter.on 'proto-repl-repl:stop', callback
+
   # Returns true if the process is running
   running: ->
     @process?.running()
@@ -90,6 +92,9 @@ class Repl
     @appendText(@process.getCurrentNs() + "=>", true)
     @emitter.emit 'proto-repl-repl:start'
 
+  handleReplStopped: ->
+    @emitter.emit 'proto-repl-repl:stop'
+
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->
     if @running()
@@ -100,6 +105,7 @@ class Repl
       @process.start projectPath,
         messageHandler: (msg)=> @handleConnectionMessage(msg)
         startCallback: => @handleReplStarted()
+        stopCallback: => @handleReplStopped()
 
   # Starts nRepl connection
   # * `options` An {Object} with following keys
@@ -117,6 +123,7 @@ class Repl
         port: port,
         messageHandler: ((msg)=> @handleConnectionMessage(msg)),
         startCallback: => @handleReplStarted()
+        stopCallback: => @handleReplStopped()
       @process.start(connOptions)
 
   startSelfHostedConnection: ->
@@ -130,6 +137,7 @@ class Repl
         startCallback: =>
           @appendText("Self Hosted REPL Started!", true)
           @handleReplStarted()
+        stopCallback: => @handleReplStopped()
       @process.start connOptions
 
   handleConnectionMessage: (msg)->
@@ -236,16 +244,8 @@ class Repl
       @appendText(options.displayCode)
 
     @process.sendCommand code, options, (result)=>
-
-      # check if it's an extension response
-      if result.value && result.value.match(/\[\s*:proto-repl-code-execution-extension/)
-        parsed = window.protoRepl.parseEdn(result.value)
-        extensionName = parsed[1]
-        data = parsed[2]
-        extensionCallback = @codeExecutionExtensions[extensionName]
-        if extensionCallback
-          extensionCallback(data)
-        else
+      if result.value
+        unless @extensionsFeature.handleReplResult(result.value)
           handler(result)
       else
         handler(result)

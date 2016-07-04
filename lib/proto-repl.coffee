@@ -12,6 +12,7 @@ url = require 'url'
 path = require 'path'
 EditorUtils = require './editor-utils'
 SaveRecallFeature = require './features/save-recall-feature'
+ExtensionsFeature = require './features/extensions-feature'
 CompletionProvider = require './completion-provider'
 
 module.exports = ProtoRepl =
@@ -91,11 +92,7 @@ module.exports = ProtoRepl =
   ink: null
 
   saveRecallFeature: null
-
-  # A map of code execution extension names to callback functions.
-  # See registerCodeExecutionExtension documentation for information on code execution extensions.
-  # The same mutable map is shared with the REPL.
-  codeExecutionExtensions: {}
+  extensionsFeature: null
 
   activate: (state) ->
     window.protoRepl = this
@@ -105,6 +102,7 @@ module.exports = ProtoRepl =
     @subscriptions = new CompositeDisposable
 
     @saveRecallFeature = new SaveRecallFeature(this)
+    @extensionsFeature = new ExtensionsFeature(this)
 
     # Register commands
     @subscriptions.add atom.commands.add 'atom-workspace',
@@ -206,7 +204,7 @@ module.exports = ProtoRepl =
   # Starts the REPL if it's not currently running.
   toggle: (projectPath=null)->
     if @repl == null
-      @repl = new Repl(@codeExecutionExtensions)
+      @repl = new Repl(@extensionsFeature)
       @prepareRepl(@repl)
       @repl.startProcessIfNotRunning(projectPath)
     else
@@ -219,6 +217,8 @@ module.exports = ProtoRepl =
     repl.onDidStart =>
       if atom.config.get("proto-repl.refreshOnReplStart")
         @refreshNamespaces()
+    repl.onDidStop =>
+      @extensionsFeature.stopExtensionRequestProcessing()
 
   # Starts the REPL in the directory of the file in the current editor.
   toggleCurrentEditorDir: ->
@@ -230,7 +230,7 @@ module.exports = ProtoRepl =
   remoteNReplConnection: ->
     confirmCallback = ({port, host})=>
       unless @repl
-        @repl = new Repl(@codeExecutionExtensions)
+        @repl = new Repl(@extensionsFeature)
         @prepareRepl(@repl)
         @repl.onDidStart =>
           @appendText(";; Repl successfuly started")
@@ -241,7 +241,7 @@ module.exports = ProtoRepl =
 
   selfHostedRepl: ->
     if @repl == null
-      @repl = new Repl(@codeExecutionExtensions)
+      @repl = new Repl(@extensionsFeature)
       @prepareRepl(@repl)
       @repl.startSelfHostedConnection()
     else
@@ -296,7 +296,7 @@ module.exports = ProtoRepl =
   # The name will be used to locate the callback function. The third element in
   # the vector will be passed to the callback function.
   registerCodeExecutionExtension: (name, callback)->
-    @codeExecutionExtensions[name] = callback
+    @extensionsFeature.registerCodeExecutionExtension(name, callback)
 
   # Executes the given code string in the REPL. See Repl.executeCode for supported
   # options.
@@ -446,7 +446,7 @@ module.exports = ProtoRepl =
       word
 
   prettyPrint: ->
-    # TODO make this work in self hosted repl by getting the last value and using
+    # Could make this work in self hosted repl by getting the last value and using
     # fipp to print it.
     @executeCode("(do (require 'clojure.pprint) (clojure.pprint/pp))")
 
@@ -483,6 +483,10 @@ module.exports = ProtoRepl =
     # run all tests will still work without it.
     if result.value
       @appendText("Refresh complete")
+      # Make sure the extension process is running after ever refresh.
+      # If refreshing or laoding code had failed the extensions feature might not
+      # have stopped itself.
+      @extensionsFeature.startExtensionRequestProcessing()
       callback() if callback
     else if result.error
       @appendText("Refresh Warning: " + result.error)

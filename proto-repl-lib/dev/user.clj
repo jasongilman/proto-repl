@@ -1,6 +1,7 @@
 (ns user
   (:require clojure.tools.namespace.repl
-            [clojure.repl :refer :all]))
+            [clojure.repl :refer :all]
+            [proto-repl.extension-comm]))
 
 
 (defn reset []

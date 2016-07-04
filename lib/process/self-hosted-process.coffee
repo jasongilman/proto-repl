@@ -60,11 +60,11 @@ class SelfHostedProcess
   #   * ns - the namespace to execute the code in.
   # * resultHandler - The result handler to handle the resulting value.
   sendCommand: (code, options, resultHandler)->
-    # TODO beef up error responses. It currently returns
+    # beef up error responses. It currently returns
     # TypeError: Cannot read property 'call' of undefined at eval
     # if somewhere within the code you refer to a function that's not defined.
 
-    # TODO another problem is with defining functions that refer to vars that don't exists
+    # another problem is with defining functions that refer to vars that don't exists
     # There's no error until runtime. But with another user or replumb reepl they get compilation errors.
     successCb = (value)=>
       if options.displayInRepl != false
