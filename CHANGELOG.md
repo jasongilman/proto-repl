@@ -348,3 +348,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * #110 - Fixed problem with starting Proto REPL default project REPL when Atom is running in dev mode.
 * #102 - Added "proto-repl-repl" class to the text editor to allow custom styling. Added option to allow opening REPL in right pane or current pane.
+
+# 1.2.0
+
+* Added new extensions feature. This allows Proto REPL extensions to communicate with Proto REPL using a backchannel. Proto REPL Charts takes advantage of it for its new canvas drawing feature.
