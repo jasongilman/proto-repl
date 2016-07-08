@@ -20,17 +20,18 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 
 ### Option 1. Quick Start
 
-These are the instructions get up and running. Most things will work but a few
+These are the instructions get up and running quickly. Most features will work but for the best results see [Option 2](#option-2-opinionated-complete-best-way-to-setup-atom-for-clojure-development-with-proto-repl).
 
 1. Install [Atom](https://atom.io/).
 2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/)
 3. Go to Atom settings, select "+ Install" and search for "proto-repl".
-4. Go to the Proto REPL Settings (Atom Preferences, then packages, then Proto REPL)
-5. Modify "Lein Path" to the path where Leiningen was installed. Use `which lein` in a terminal to get the path.
+5. (Optional but recommended) Install the Atom Ink package
+6. Go to the Proto REPL Settings (Atom Preferences, then packages, then Proto REPL)
+7. Modify "Lein Path" to the path where Leiningen was installed. Use `which lein` in a terminal to get the path.
   * This should be something like `/some/path/bin/lein`
   * Proto REPL also works with [Boot](https://github.com/boot-clj/boot)
-6. Restart Atom.
-7. [Start a REPL](#start-a-local-clojure-repl)
+8. Restart Atom.
+9. [Start a REPL](#start-a-local-clojure-repl)
 
 See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo) for a demonstration of the features of Proto REPL.
 
