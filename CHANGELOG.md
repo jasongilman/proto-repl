@@ -352,3 +352,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.2.0
 
 * Added new extensions feature. This allows Proto REPL extensions to communicate with Proto REPL using a backchannel. Proto REPL Charts takes advantage of it for its new canvas drawing feature.
+
+# 1.2.1
+
+* #111 - Made small changes to error message in refresh.

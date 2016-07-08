@@ -459,7 +459,7 @@ module.exports = ProtoRepl =
       (try
         (require 'clojure.tools.namespace.repl)
         (catch java.io.FileNotFoundException e
-          (println \"clojure.tools.namespace.repl not available. Add as a dependency to allow refresh.\")))
+          (println \"clojure.tools.namespace.repl not available. Add proto-repl in your project.clj as a dependency to allow refresh. See https://clojars.org/proto-repl\")))
       (let [user-reset 'user/reset
             ctnr-refresh 'clojure.tools.namespace.repl/refresh
             result (cond
