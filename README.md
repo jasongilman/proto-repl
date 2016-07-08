@@ -16,6 +16,32 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 * [Atom Tool Bar](https://atom.io/packages/tool-bar) integration that allows controlling the REPL.
 * Extensible with the ability to [add your own commands](#extending-proto-repl) or [create visualizations](https://github.com/jasongilman/proto-repl-charts).
 
+## Getting Started
+
+### Option 1. Quick Start
+
+These are the instructions get up and running. Most things will work but a few
+
+1. Install [Atom](https://atom.io/).
+2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/)
+3. Go to Atom settings, select "+ Install" and search for "proto-repl".
+4. Go to the Proto REPL Settings (Atom Preferences, then packages, then Proto REPL)
+5. Modify "Lein Path" to the path where Leiningen was installed. Use `which lein` in a terminal to get the path.
+  * This should be something like `/some/path/bin/lein`
+  * Proto REPL also works with [Boot](https://github.com/boot-clj/boot)
+6. Restart Atom.
+7. [Start a REPL](#start-a-local-clojure-repl)
+
+See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo) for a demonstration of the features of Proto REPL.
+
+### Option 2. Opinionated, Complete, Best Way to Setup Atom for Clojure Development with Proto REPL
+
+Follow the instructions here: [https://git.io/atom_clojure_setup](https://git.io/atom_clojure_setup)
+
+### Setting up an Existing Clojure Project
+
+Add the [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl) library as a dependency.
+
 ## Usage
 
 ### Start a Local Clojure REPL
@@ -26,8 +52,6 @@ A local Proto REPL primarily works with projects using [Leiningen](http://leinin
 or [the Boot tutorial](https://github.com/boot-clj/boot#install) for help creating a new project.)
 2. Start the REPL by bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
   * The REPL can also be started by using the [keyboard shortcuts documented below](#keybindings-and-events).
-
-See the [Proto REPL Demo project](https://github.com/jasongilman/proto-repl-demo) for a demonstration of the features of Proto REPL and more of a description on how it works.
 
 ### Connecting to a Remote REPL
 
@@ -180,14 +204,7 @@ You can also specify specific bindings to save. For example `(proto/save 1 m a)`
 
 There's currently a limit of 20 saved values in proto-repl-lib. After debugging any issues make sure to remove the save calls. They're meant to be used in local development only.
 
-
-## Installation
-
-`apm install proto-repl` or go to your Atom settings, select "+ Install" and search for "proto-repl".
-
-Make sure that the path to the `lein` or `boot` command is correct in the Proto REPL settings depending on whether you're using Leiningen or Boot as your build tool. Proto REPL settings can be accessed in Atom by opening "Preferences" from the main menu, then selecting the "Packages" tab. Proto REPL will be one of the packages listed. Click the "Settings" button there and look for the "Lein Path" or "Boot Path" setting. Use `which lein` in a terminal to get the path.
-
-### Dependencies
+## Dependencies
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
   * Not required for self hosted REPL.
@@ -206,20 +223,6 @@ Supports Clojure 1.6 and greater.
 ### Tool Bar Integration
 
 Proto REPL integrates with the [Atom Tool Bar package](https://atom.io/packages/tool-bar) to provide buttons for common REPL actions. Install tool-bar and then restart Proto REPL to get quick access to actions like refreshing namespaces, pretty printing, and toggling REPL scrolling.
-
-### Recommended Atom Settings
-
-See [https://git.io/atom_clojure_setup](https://git.io/atom_clojure_setup) for instructions on the best way to setup Atom and other packages for Clojure development.
-
-### Recommended Additional Packages
-
-These packages go well with Proto REPL. See the link the previous section for the settings to use and the best way to combine all these together.
-
-* [ink](https://atom.io/packages/ink)
-* [proto-repl-charts](https://atom.io/packages/proto-repl-charts)
-* [tool-bar](https://atom.io/packages/tool-bar)
-* [parinfer](https://atom.io/packages/parinfer)
-* [lisp-paredit](https://atom.io/packages/lisp-paredit)
 
 ## Questions and Discussion
 
