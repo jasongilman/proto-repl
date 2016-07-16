@@ -161,6 +161,7 @@ class Repl
   appendText: (text, waitUntilOpen=false)->
     @replTextEditor?.appendText(text, waitUntilOpen)
 
+  # TODO look for all calls to this
   displayInline: (editor, range, tree)->
     end = range.end.row
 
@@ -169,19 +170,31 @@ class Repl
 
     # Defines a recursive function that can convert the tree of values to
     # display into an Atom Ink tree view. Sub-branches are expandable.
-    recurseTree = ([head, children...])=>
+    recurseTree = ([head, button_options, children...])=>
       if children && children.length > 0
         childViews = children.map  (x)=>
           if x instanceof Array
             recurseTree(x)
           else
+            # TODO this whole else block is never called
             view = document.createElement 'div'
-            view.appendChild(new Text(x))
+            textSpan = document.createElement 'span'
+            textSpan.appendChild(new Text(x))
+
+            console.log "Creating defable"
+            defSpan = document.createElement 'span'
+            defSpan.setAttribute("class", "defable icon icon-chevron-right")
+
+            view.appendChild(textSpan)
+            view.appendChild(defSpan)
+            view.find('> .defable').click => console.log("I'm clicking")
+
             view
         # Temporarily using copy of Tree view for better performance. See tree-view.coffee
         # @ink.tree.treeView(head, childViews, {})
-        TreeView.treeView(head, childViews, {})
+        TreeView.treeView(head, childViews, button_options)
       else
+        ## TODO this is where we could add buttons for individual children
         view = document.createElement 'div'
         view.appendChild(new Text(head))
         view

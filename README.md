@@ -178,7 +178,7 @@ The following code was the same as before but now it has `(proto/save 1)`. The `
 
 ```Clojure
 (reduce (fn [m [a b]]
-         (proto/save 1)
+         (proto/save 2)
          (update m a #(+ b (or % 0))))
        {}
        [[:apples 2] [:oranges 3] [:apples 4] [:cherries 7]])

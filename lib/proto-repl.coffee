@@ -581,7 +581,7 @@ module.exports = ProtoRepl =
           range = editor.getSelectedBufferRange()
           range.end.column = Infinity
           inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
-            [varName, [parser(value)]])
+            [varName, {}, [parser(value)]])
           @executeCodeInNs code,
                           displayInRepl: false
                           resultHandler: inlineHandler

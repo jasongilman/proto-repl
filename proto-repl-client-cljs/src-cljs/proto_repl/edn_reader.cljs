@@ -48,7 +48,12 @@
   [uniq-ids-to-values-str]
   (let [uniq-ids-to-values (r/read-string uniq-ids-to-values-str)]
     (clj->js (into [] (for [[uniq-id vals] uniq-ids-to-values]
-                        [(str uniq-id) (d/saved-value-maps->display-tree-table vals)])))))
+                        ;; TODO pass in uniq-id so that that can be used to do the def
+                        ;; Add a function in proto-repl lib that takes the unique string
+                        ;; and the index number and executes the def.
+                        ;; One issue will be that we need to figure out which namespace
+                        ;; to put it in. That's another tricky bit.
+                        [(str uniq-id) (d/saved-values->display-tree-table vals)])))))
 
 (defn -main [& args])
 

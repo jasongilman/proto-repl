@@ -46,19 +46,22 @@
    (cond
      ;; Handles a map.
      (map? v)
-     (into [(trimmed-str v)]
+     (into [(trimmed-str v) {}]
         ;; Loop over each map entry
         (map (fn [entry]
                [(trimmed-str entry)
+                {}
                 (to-display-tree* (second entry))])
              v))
 
      ;; Handles a sequence
      (or (sequential? v) (set? v))
-     (into [(trimmed-str v)] (map to-display-tree* v))
+     (into [(trimmed-str v) {}] (map to-display-tree* v))
 
      ;; Leaf
      :else [(pr-str v)])))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn value-map->printable-map
   "Takes a map of var names to their values and returns the map with values
@@ -201,32 +204,76 @@
         :let [val-display-tree (to-display-tree* value)]]
     (update-in val-display-tree [0] #(str var-name ": " %))))
 
+;; TODO this should be updated to display a def button as well.
 (defn saved-value-maps->display-tree
   "A simpler display for value maps when they won't fit into a table"
   [value-maps]
   (let [[first-map & others] value-maps]
-    (concat ["Saved values"]
-            (value-map->display-tree-values first-map)
-            [(cons "Previous Values"
-                   (map-indexed
-                    (fn [i value-map]
-                      (into [(str (inc i))] (value-map->display-tree-values value-map)))
-                    others))])))
+    (into ["Saved values" {}]
+          (value-map->display-tree-values first-map)
+          (into ["Previous Values" {}]
+                (map-indexed
+                 (fn [i value-map]
+                   (into [(str (inc i)) {}] (value-map->display-tree-values value-map)))
+                 others)))))
 
-(defn saved-value-maps->display-tree-table
+(defn display-error
+  "TODO"
+  [message]
+  #?(:cljs
+     (js/atom.notifications.addError
+      message {:detail message :dismissable true})))
+
+(defn display-warn
+  "TODO"
+  [message]
+  #?(:cljs
+     (js/atom.notifications.addWarning
+      message {:dismissable true})))
+
+(defn execute-code
+  "TODO"
+  [code]
+  #?(:cljs
+     (let [code-str (pr-str code)
+           options {:displayInRepl false
+                    :resultHandler
+                    (fn [result]
+                      (let [result (js->clj result)]
+                        (cond
+                          (:error result)
+                          (display-error (:error result))
+
+                          (= result.value "false")
+                          (display-warn
+                           "The values could not be defined. You may have captured more subsequent values which are not displayed yet.")
+
+                          (not= result.value "true")
+                          (display-error (str "Unexpected result: " (pr-str result))))))}]
+
+
+       (js/protoRepl.executeCode code-str options))))
+
+(defn def-button
+  [id]
+  {:button_text "def"
+   :button_fn #(execute-code `(proto/def-by-id ~id))})
+
+(defn saved-values->display-tree-table
   "Takes a list of maps of variable names to values and converts it into a table
    of each map showing the values. Each row can be expanded to show more details
    of the values in the event any of them had to be truncated."
-  [value-maps]
-  (if-let [[header & rows] (value-maps->table-rows value-maps)]
+  [saved-values]
+  (if-let [[header & rows] (value-maps->table-rows (map :values saved-values))]
     ;; Indent header by two spaces
-    (cons (str "  " header)
+    (into [(str "  " header) {}]
           (map (fn [row vm]
-                 (cons row (value-map->display-tree-values vm)))
+                 (into [row (def-button (:id vm))]
+                       (value-map->display-tree-values (:values vm))))
                rows
-               value-maps))
+               saved-values))
     ;; There were too many columns to display in a table
-    (saved-value-maps->display-tree value-maps)))
+    (saved-value-maps->display-tree saved-values)))
 
 
 (comment

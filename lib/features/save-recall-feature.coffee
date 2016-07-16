@@ -63,10 +63,12 @@ class SaveRecallFeature
           @protoRepl.appendText("Error polling for saved values #{result.error}")
           return
 
+        console.log result.value
         # Convert the saved values into a map of uniq forms to the display trees
         uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
-        # uniqsToTrees = [["EXAMPLE", exampleTree]]
 
+        # TODO fix problem that occurs when you delete one of the saved values from the code
+        # and then ask to display it.
         for [uniq, tree] in uniqsToTrees
           # find the unique form in an editor
           [editor, range] = protoRepl.EditorUtils.findEditorRangeContainingString(uniq)

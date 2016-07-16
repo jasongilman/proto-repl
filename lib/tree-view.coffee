@@ -3,18 +3,28 @@
 
 {$, $$} = require 'atom-space-pen-views'
 
+# TODO Note this is a deviation from atom ink here. If we want to reuse their
+# code we'll need to backport it to that.
+
 module.exports =
-  treeView: (head, children, {expand}) ->
+  treeView: (head, children, {expand, button_text, button_fn}) ->
     view = $$ ->
       @div class: 'ink tree', =>
-        @span class: 'icon icon-chevron-right'
-        @div class: 'header gutted'
+        @span class: 'expandable icon icon-chevron-right'
+        @div class: 'header gutted', =>
+          @span class: 'text'
+          if button_text
+            @button class: 'clickable btn btn-xs btn-primary inline-block-tight', button_text
         @div class: 'body gutted'
 
     # Setup the header
-    header = view.find('> .header')
+    header = view.find('.text')
     header.append head
     header.click => @toggle view
+
+    if button_fn
+      btn = view.find('.clickable')
+      btn.click => button_fn()
 
     # Setup the body
     body = view.find('> .body')
@@ -25,14 +35,14 @@ module.exports =
     for child in children
       realBody.appendChild child
 
-    view.find('> .icon').click => @toggle view
+    view.find('> .expandable').click => @toggle view
 
     view[0]
 
   toggle: (view) ->
     view = $(view)
     body = view.find('> .body')
-    icon = view.find('> .icon')
+    icon = view.find('> .expandable')
     return unless body[0]?
     body.toggle()
     if body.isVisible()
