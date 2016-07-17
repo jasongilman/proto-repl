@@ -196,27 +196,6 @@
                {:a [1 2 3 4 5 6 7] :b [1 2 3 4 5 6 7 8]}])]
    (println row)))
 
-(defn- value-map->display-tree-values
-  "Takes a map of variable names and values and converts it into a displayable
-   tree of values."
-  [value-map]
-  (for [[var-name value] value-map
-        :let [val-display-tree (to-display-tree* value)]]
-    (update-in val-display-tree [0] #(str var-name ": " %))))
-
-;; TODO this should be updated to display a def button as well.
-(defn saved-value-maps->display-tree
-  "A simpler display for value maps when they won't fit into a table"
-  [value-maps]
-  (let [[first-map & others] value-maps]
-    (into ["Saved values" {}]
-          (value-map->display-tree-values first-map)
-          (into ["Previous Values" {}]
-                (map-indexed
-                 (fn [i value-map]
-                   (into [(str (inc i)) {}] (value-map->display-tree-values value-map)))
-                 others)))))
-
 (defn display-error
   "TODO"
   [message]
@@ -250,33 +229,61 @@
 
                           (not= result.value "true")
                           (display-error (str "Unexpected result: " (pr-str result))))))}]
-
-
        (js/protoRepl.executeCode code-str options))))
 
 (defn def-button
-  [id]
-  {:button_text "def"
-   :button_fn #(execute-code `(proto/def-by-id ~id))})
+  "TODO"
+  ([id]
+   {:button_text "def"
+    :button_class :def-saved-vars
+    :button_fn #(execute-code `(proto/def-by-id ~id))})
+  ([id var-name]
+   {:button_text "def"
+    :button_class :def-saved-var
+    :button_fn #(execute-code `(proto/def-by-id ~id '~var-name))}))
+
+(defn- value-map->display-tree-values
+  "Takes a map of variable names and values and converts it into a displayable
+   tree of values."
+  [{:keys [id values]}]
+  (for [[var-name value] values
+        :let [val-display-tree (to-display-tree* value)]]
+    (-> val-display-tree
+        (update-in [0] #(str var-name ": " %))
+        (assoc-in [1] (def-button id var-name)))))
+
+;; TODO this should be updated to display a def button as well.
+(defn saved-value-maps->display-tree
+  "A simpler display for value maps when they won't fit into a table"
+  [saved-value-set]
+  (let [[first-map & others] saved-value-set]
+    (into ["Saved values" {}]
+          (value-map->display-tree-values first-map)
+          (into ["Previous Values" {}]
+                (map-indexed
+                 (fn [i value-map]
+                   (into [(str (inc i)) {}] (value-map->display-tree-values value-map)))
+                 others)))))
 
 (defn saved-values->display-tree-table
   "Takes a list of maps of variable names to values and converts it into a table
    of each map showing the values. Each row can be expanded to show more details
    of the values in the event any of them had to be truncated."
-  [saved-values]
-  (if-let [[header & rows] (value-maps->table-rows (map :values saved-values))]
+  [saved-value-set]
+  (if-let [[header & rows] (value-maps->table-rows (map :values saved-value-set))]
     ;; Indent header by two spaces
     (into [(str "  " header) {}]
-          (map (fn [row vm]
-                 (into [row (def-button (:id vm))]
-                       (value-map->display-tree-values (:values vm))))
+          (map (fn [row saved-values]
+                 (into [row (def-button (:id saved-values))]
+                       (value-map->display-tree-values saved-values)))
                rows
-               saved-values))
+               saved-value-set))
     ;; There were too many columns to display in a table
-    (saved-value-maps->display-tree saved-values)))
+    (saved-value-maps->display-tree saved-value-set)))
 
 
 (comment
+ ;; TODO update this or delete it
  (saved-value-maps->display-tree-table
   [{'a-normal 5
     'b-normal 4

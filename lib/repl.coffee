@@ -161,7 +161,8 @@ class Repl
   appendText: (text, waitUntilOpen=false)->
     @replTextEditor?.appendText(text, waitUntilOpen)
 
-  # TODO look for all calls to this
+  # TODO document this. What is shape of tree
+  # ["text", {btn options}, ["child", "child2"]
   displayInline: (editor, range, tree)->
     end = range.end.row
 
@@ -176,28 +177,11 @@ class Repl
           if x instanceof Array
             recurseTree(x)
           else
-            # TODO this whole else block is never called
-            view = document.createElement 'div'
-            textSpan = document.createElement 'span'
-            textSpan.appendChild(new Text(x))
-
-            console.log "Creating defable"
-            defSpan = document.createElement 'span'
-            defSpan.setAttribute("class", "defable icon icon-chevron-right")
-
-            view.appendChild(textSpan)
-            view.appendChild(defSpan)
-            view.find('> .defable').click => console.log("I'm clicking")
-
-            view
-        # Temporarily using copy of Tree view for better performance. See tree-view.coffee
-        # @ink.tree.treeView(head, childViews, {})
+            # The button options here are for the head not the child
+            TreeView.leafView(x,{})
         TreeView.treeView(head, childViews, button_options)
       else
-        ## TODO this is where we could add buttons for individual children
-        view = document.createElement 'div'
-        view.appendChild(new Text(head))
-        view
+        TreeView.leafView(head, button_options || {})
     view = recurseTree(tree)
 
     # Add new inline view

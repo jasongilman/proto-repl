@@ -7,14 +7,32 @@
 # code we'll need to backport it to that.
 
 module.exports =
-  treeView: (head, children, {expand, button_text, button_fn}) ->
+
+  leafView: (leaf, {button_text, button_class, button_fn}) ->
+      view = $$ ->
+        @div =>
+          @span class: 'text'
+          if button_text
+            @button class: 'clickable-inline-leaf btn btn-xs btn-primary inline-block-tight', button_text
+
+      # Setup the header
+      header = view.find('.text')
+      header.append leaf
+
+      if button_fn
+        btn = view.find('.clickable-inline-leaf')
+        btn.click => button_fn()
+
+      view[0]
+
+  treeView: (head, children, {expand, button_text, button_class, button_fn}) ->
     view = $$ ->
       @div class: 'ink tree', =>
         @span class: 'expandable icon icon-chevron-right'
         @div class: 'header gutted', =>
           @span class: 'text'
           if button_text
-            @button class: 'clickable btn btn-xs btn-primary inline-block-tight', button_text
+            @button class: 'clickable-inline btn btn-xs btn-primary inline-block-tight', button_text
         @div class: 'body gutted'
 
     # Setup the header
@@ -23,7 +41,7 @@ module.exports =
     header.click => @toggle view
 
     if button_fn
-      btn = view.find('.clickable')
+      btn = view.find('.clickable-inline')
       btn.click => button_fn()
 
     # Setup the body
