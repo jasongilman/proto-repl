@@ -197,50 +197,57 @@
    (println row)))
 
 (defn display-error
-  "TODO"
+  "Displays an error message in atom."
   [message]
   #?(:cljs
      (js/atom.notifications.addError
       message {:detail message :dismissable true})))
 
 (defn display-warn
-  "TODO"
+  "Displays an warning message in atom."
   [message]
   #?(:cljs
      (js/atom.notifications.addWarning
       message {:dismissable true})))
 
-(defn execute-code
-  "TODO"
-  [code]
-  #?(:cljs
-     (let [code-str (pr-str code)
-           options {:displayInRepl false
-                    :resultHandler
-                    (fn [result]
-                      (let [result (js->clj result)]
-                        (cond
-                          (:error result)
-                          (display-error (:error result))
+(defn define-vars-with-id
+  "Executes code in proto repl to define vars that were captured with a specific
+   id and optionally a specific binding."
+  ([id]
+   (define-vars-with-id id nil))
+  ([id var-name]
+   #?(:cljs
+      (let [code (if var-name
+                   `(proto/def-by-id ~id '~var-name)
+                   `(proto/def-by-id ~id))
+            code-str (pr-str code)
+            options {:displayInRepl false
+                     :resultHandler
+                     (fn [result]
+                       (let [result (js->clj result)]
+                         (cond
+                           (:error result)
+                           (display-error (:error result))
 
-                          (= result.value "false")
-                          (display-warn
-                           "The values could not be defined. You may have captured more subsequent values which are not displayed yet.")
+                           (= result.value "false")
+                           (display-warn
+                            "The values could not be defined. You may have captured more subsequent values which are not displayed yet.")
 
-                          (not= result.value "true")
-                          (display-error (str "Unexpected result: " (pr-str result))))))}]
-       (js/protoRepl.executeCode code-str options))))
+                           (not= result.value "true")
+                           (display-error (str "Unexpected result: " (pr-str result))))))}]
+        (js/protoRepl.executeCode code-str options)))))
 
 (defn def-button
-  "TODO"
+  "Returns tree view button options to add a button for defining bindings that
+   were captured"
   ([id]
    {:button_text "def"
     :button_class :def-saved-vars
-    :button_fn #(execute-code `(proto/def-by-id ~id))})
+    :button_fn #(define-vars-with-id id)})
   ([id var-name]
    {:button_text "def"
     :button_class :def-saved-var
-    :button_fn #(execute-code `(proto/def-by-id ~id '~var-name))}))
+    :button_fn #(define-vars-with-id id var-name)}))
 
 (defn- value-map->display-tree-values
   "Takes a map of variable names and values and converts it into a displayable
@@ -252,18 +259,19 @@
         (update-in [0] #(str var-name ": " %))
         (assoc-in [1] (def-button id var-name)))))
 
-;; TODO this should be updated to display a def button as well.
 (defn saved-value-maps->display-tree
   "A simpler display for value maps when they won't fit into a table"
   [saved-value-set]
   (let [[first-map & others] saved-value-set]
-    (into ["Saved values" {}]
-          (value-map->display-tree-values first-map)
-          (into ["Previous Values" {}]
-                (map-indexed
-                 (fn [i value-map]
-                   (into [(str (inc i)) {}] (value-map->display-tree-values value-map)))
-                 others)))))
+    (concat ["Saved values" (def-button (:id first-map))]
+            (value-map->display-tree-values first-map)
+            (into ["Previous Values" {}]
+                  (map-indexed
+                   (fn [i value-map]
+                     (into [(str (inc i))
+                            (def-button (:id value-map))]
+                           (value-map->display-tree-values value-map)))
+                   others)))))
 
 (defn saved-values->display-tree-table
   "Takes a list of maps of variable names to values and converts it into a table

@@ -1,38 +1,46 @@
-# A temporary copy of Atom Ink Tree View until this pull request is merged
-# https://github.com/JunoLab/atom-ink/pull/44
+# This is a modification of the tree view from Atom Ink. It adds the ability to
+# add buttons to the tree view lines.
 
 {$, $$} = require 'atom-space-pen-views'
 
-# TODO Note this is a deviation from atom ink here. If we want to reuse their
-# code we'll need to backport it to that.
+treeButtonClasses = ({button_class})->
+  'btn btn-xs inline-block-tight ' + button_class
+
+treeButtonClicked = ({button_fn}, textDiv)->
+  textDiv.classList.add('clicking-btn')
+  setTimeout(=>
+    textDiv.classList.remove('clicking-btn')
+  , 250)
+  button_fn()
+
 
 module.exports =
 
-  leafView: (leaf, {button_text, button_class, button_fn}) ->
+  leafView: (leaf, btnOptions) ->
       view = $$ ->
-        @div =>
+        @div class: 'ink leaf', =>
+          if btnOptions.button_text
+            @button class: treeButtonClasses(btnOptions), btnOptions.button_text
           @span class: 'text'
-          if button_text
-            @button class: 'clickable-inline-leaf btn btn-xs btn-primary inline-block-tight', button_text
-
       # Setup the header
       header = view.find('.text')
       header.append leaf
 
-      if button_fn
-        btn = view.find('.clickable-inline-leaf')
-        btn.click => button_fn()
+      if btnOptions.button_fn
+        btn = view.find('.btn')
+        window.sampleBtn = btn
+        btn.click => treeButtonClicked(btnOptions, view[0])
 
       view[0]
 
-  treeView: (head, children, {expand, button_text, button_class, button_fn}) ->
+  treeView: (head, children, btnOptions) ->
     view = $$ ->
       @div class: 'ink tree', =>
         @span class: 'expandable icon icon-chevron-right'
         @div class: 'header gutted', =>
+          if btnOptions.button_text
+            @button class: treeButtonClasses(btnOptions), btnOptions.button_text
           @span class: 'text'
-          if button_text
-            @button class: 'clickable-inline btn btn-xs btn-primary inline-block-tight', button_text
         @div class: 'body gutted'
 
     # Setup the header
@@ -40,13 +48,13 @@ module.exports =
     header.append head
     header.click => @toggle view
 
-    if button_fn
-      btn = view.find('.clickable-inline')
-      btn.click => button_fn()
+    if btnOptions.button_fn
+      btn = view.find('.btn')
+      btn.click => treeButtonClicked(btnOptions, view[0])
 
     # Setup the body
     body = view.find('> .body')
-    body.hide() unless expand
+    body.hide()
     # Add the children to the body. Using direct dom manipulation instead of
     # jQuery to improve performance in the presence of many children.
     realBody = body[0]

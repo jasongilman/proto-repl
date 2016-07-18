@@ -25,8 +25,6 @@
   []
   (.toString (java.util.UUID/randomUUID)))
 
-;; Each set of saved values could be given a unique version number. This would
-;; allow the GUI to more efficiently fetch and display only the changes.
 (defn save*
   "Swaps in the map of var values"
   [uniq-id current-ns var-values-map]
@@ -38,7 +36,8 @@
              (let [new-values (conj (or cur-values []) saved-values)]
                (if (> (count new-values) max-number-saved-values)
                  (subvec new-values 1)
-                 new-values))))))
+                 new-values)))))
+  nil)
 
 (defn- gensym-var?
   "Returns true if the symbol represents a gensym var."
@@ -60,36 +59,27 @@
                              [`'~local local]))]
     `(save* ~form-id ~*ns* ~locals-map)))
 
-
-(some->> (saved-values)
-         vals
-         (apply concat))
+(defn- saved-values-with-id
+  "Returns the values that were saved with a specific id."
+  [id]
+  (some->> (saved-values)
+           vals
+           (apply concat)
+           (filter #(= id (:id %)))
+           first))
 
 (defn def-by-id
-  "TODO"
-  [id]
-  (if-let [{:keys [the-ns values]} (some->> (saved-values)
-                                            vals
-                                            (apply concat)
-                                            (filter #(= id (:id %)))
-                                            first)]
-    (do
+  "Def vars for bindings captured with proto/save. Can define all the bindings
+   or just a specific one."
+  ([id]
+   (when-let [{:keys [the-ns values]} (saved-values-with-id id)]
      (doseq [[var-name value] values]
        (intern the-ns var-name value))
      (println "Values set for" (pr-str (keys values)))
-     true)
-    false))
-
-
-
-
-;; TODO add a function for defing values
-;; Takes
-;; - unique id
-;; - index
-;; Figures out the namespace
-;; Gets the values and the var names.
-;; Creates defs and executes them in the namespace.
-
-;;
-;;(intern 'user 'foo "value")
+     true))
+  ([id selected-var]
+   (when-let [{:keys [the-ns values]} (saved-values-with-id id)]
+     (when-let [value (get values selected-var)]
+       (intern the-ns selected-var value)
+       (println "Value set for" selected-var)
+       true))))

@@ -25,12 +25,58 @@
 .proto-repl.ink.inline.result {
   font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
   max-width: 700px;
-  .clickable-inline {
-    line-height: 1.3em;
+
+  .header.gutted{
+    .text {
+      margin-right: 50px;
+    }
   }
-  .clickable-inline-leaf {
-    line-height: 1.3em;
-    margin-left: 20px;
-    // float: right;
+
+  .header.gutted:hover {
+    background: rgba(134, 128, 36, 0.2);
+  }
+
+  .leaf{
+    .text{
+      margin-right: 50px;
+    }
+  }
+
+  .leaf:hover {
+    background: rgba(134, 128, 36, 0.2);
+  }
+
+  // Def button that sets multiple vars.
+  .def-saved-vars {
+    line-height: 1.4em;
+    margin-top: 2px;
+    float: right;
+    z-index: 10;
+    position: relative;
+  }
+
+  .def-saved-vars:hover {
+    background-image: linear-gradient(#4278E4, #365DAB);
+  }
+
+  // highlight color when a def button is clicked
+  .clicking-btn {
+    background: #FFFF0A;
+  }
+  .clicking-btn:hover {
+    background: #FFFF0A;
+  }
+
+  // Def button that setsjust one var.
+  .def-saved-var{
+    line-height: 1.4em;
+    margin-top: 2px;
+    float: right;
+    z-index: 10;
+    position: relative;
+  }
+
+  .def-saved-var:hover {
+    background-image: linear-gradient(#4278E4, #365DAB);
   }
 }
