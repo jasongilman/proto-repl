@@ -356,3 +356,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.2.1
 
 * #111 - Made small changes to error message in refresh.
+
+# 1.3.0
+
+* Added def buttons to the inline saved values.

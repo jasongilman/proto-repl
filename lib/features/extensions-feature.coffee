@@ -1,9 +1,6 @@
 # Identifies the name of the nREPL session to use when making requests for this feature.
 NREPL_SESSION = "ExtensionsSession"
 
-
-# TODO test Proto repl without the lib to make sure it still has basic functionality.
-
 module.exports =
 
 # Allows extensions of Proto REPL to connect to code running in the REPL.

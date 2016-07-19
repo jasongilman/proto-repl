@@ -159,8 +159,6 @@ The visualization shown was created with [Proto REPL Charts](https://atom.io/pac
 
 ### Saving and Viewing Local Binding Values
 
-(Saving and Viewing Local Binding Values is in beta and subject to change. [Please report any issues or suggestions for improvement](https://github.com/jasongilman/proto-repl/issues).)
-
 When you are inside a function or a let block in Clojure there are symbols that have a value. In this example code which sums up `m`, `a`, and `b` are all local bindings.
 
 ```Clojure
@@ -174,11 +172,11 @@ When you are inside a function or a let block in Clojure there are symbols that 
 
 While this code is simple it can be difficult to understand what's happening inside functions and loops. A lot of developers reach for logging or printing to debug this kind of code. When you do that across multiple functions and namespaces those values are mixed together and separate from the code. Proto REPL's new feature for saving and viewing local bindings let's you see the values in context and from multiple requests.
 
-The following code was the same as before but now it has `(proto/save 1)`. The `proto/save` function saves all the local bindings so that they can be viewed in Proto REPL. The `1` in `(proto/save 1)` is just a unique id to tie the saved values back to Proto REPL for display.
+The following code was the same as before but now it has `(proto-repl.saved-values/save 1)`. The `proto-repl.saved-values/save` function saves all the local bindings so that they can be viewed in Proto REPL. The `1` in `(proto-repl.saved-values/save 1)` is just a unique id to tie the saved values back to Proto REPL for display.
 
 ```Clojure
 (reduce (fn [m [a b]]
-         (proto/save 2)
+         (proto-repl.saved-values/save 1)
          (update m a #(+ b (or % 0))))
        {}
        [[:apples 2] [:oranges 3] [:apples 4] [:cherries 7]])
@@ -194,11 +192,15 @@ Tables are limited in the amount of detail that can be shown. Proto REPL will tr
 
 ![saved values table expanded](https://github.com/jasongilman/proto-repl/raw/master/images/saved_values_table_expanded.png)
 
-You can also specify specific bindings to save. For example `(proto/save 1 m a)` will save just the values of local variables `m` and `b`.
+You can also specify specific bindings to save. For example `(proto-repl.saved-values/save 1 m a)` will save just the values of local variables `m` and `b`.
+
+#### The Def button - Defining vars for saved local bindings
+
+The "def" button shown in the saved values table allows you to temporarily define vars in the namespace with names the same as the local bindings. This makes it easy to try out the code with the values that were saved. You can easily reevaluate bits of the code in place and all of the local bindings will be available for use.
 
 #### Using the save value feature
 
-1. Insert a call to `proto/save` in the code using the keybinding `ctrl-alt-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
+1. Insert a call to `proto-repl.saved-values/save` in the code using the keybinding `ctrl-alt-shift-, i` (Press ctrl shift comma together, release then i) This just inserts the save call with a unique number. The unique number allows you to have multiple save calls in different locations within your code.
 2. Execute your code. If you've placed the code in a function or across multiple namespaces you'll need to redefine the modified code or refresh before executing the code.
 3. Show the values by pressing the keybinding `ctrl-alt-shift-, d`
 4. Saved values can be cleared with the keybinding `ctrl-alt-shift-, c`

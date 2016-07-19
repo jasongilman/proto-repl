@@ -132,20 +132,15 @@ class ReplTextEditor
     # Replace buffer applyChange with our own that decides when the change
     # can be applied
     @textEditor.buffer.oldApplyChange = @textEditor.buffer.applyChange
-    @textEditor.buffer.applyChange = (change, skipUndo) ->
-      if change.newStart
-        # Fix for Atom 1.7 and >
-        # TODO after Atom 1.7 is released make this the default and remove skipUndo
-        {newStart, oldExtent, newExtent} = change
-        start = Point.fromObject(newStart)
-        changeForCompare =
-          oldRange: Range(start, start.traverse(oldExtent))
-          newRange: Range(start, start.traverse(newExtent))
-      else
-        changeForCompare = change
+    @textEditor.buffer.applyChange = (change) ->
+      {newStart, oldExtent, newExtent} = change
+      start = Point.fromObject(newStart)
+      changeForCompare =
+        oldRange: Range(start, start.traverse(oldExtent))
+        newRange: Range(start, start.traverse(newExtent))
 
       if shouldAllowChange(changeForCompare)
-        @oldApplyChange(change, skipUndo)
+        @oldApplyChange(change)
 
   # Configures text editor to detect cursor movement indicating forward and backward
   # in history navigation.

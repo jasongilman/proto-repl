@@ -161,8 +161,9 @@ class Repl
   appendText: (text, waitUntilOpen=false)->
     @replTextEditor?.appendText(text, waitUntilOpen)
 
-  # TODO document this. What is shape of tree
-  # ["text", {btn options}, ["child", "child2"]
+  # Displays some result data inline. tree is a recursive structure expected to
+  # be of the shape like the following.
+  # ["text for display", {button options}, [childtree1, childtree2, ...]]
   displayInline: (editor, range, tree)->
     end = range.end.row
 

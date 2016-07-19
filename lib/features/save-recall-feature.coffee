@@ -43,12 +43,12 @@ class SaveRecallFeature
   insertSaveValueCall: ->
     if editor = atom.workspace.getActiveTextEditor()
       @nextUniqueSaveId ||= 1
-      editor.insertText("(proto/save #{@nextUniqueSaveId})")
+      editor.insertText("(proto-repl.saved-values/save #{@nextUniqueSaveId})")
       @nextUniqueSaveId += 1
 
   # Clears any displayed saved values and any values saved in the proto namespace.
   clearSavedValues: ->
-    @protoRepl.executeCode "(proto/clear-saved-values!)", displayInRepl: false
+    @protoRepl.executeCode "(proto-repl.saved-values/clear-saved-values!)", displayInRepl: false
     if editor = atom.workspace.getActiveTextEditor()
       atom.commands.dispatch(atom.views.getView(editor), 'inline-results:clear-all')
 
@@ -56,7 +56,7 @@ class SaveRecallFeature
   # Fetches the latest saved values and displays them inline nest to the code.
   fetchAndDisplaySavedValues: ->
     # Fetch the latest saved values
-   @protoRepl.executeCode "(proto/saved-values)",
+   @protoRepl.executeCode "(proto-repl.saved-values/saved-values)",
       displayInRepl: false
       resultHandler: (result, options)=>
         if result.error
@@ -67,13 +67,12 @@ class SaveRecallFeature
         # Convert the saved values into a map of uniq forms to the display trees
         uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
 
-        # TODO fix problem that occurs when you delete one of the saved values from the code
-        # and then ask to display it.
         for [uniq, tree] in uniqsToTrees
           # find the unique form in an editor
-          [editor, range] = protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
-          # Display the saved values inline next to the call to save them.
-          @protoRepl.repl.displayInline(editor, range, tree)
+          if foundRange = protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
+            [editor, range] = foundRange
+            # Display the saved values inline next to the call to save them.
+            @protoRepl.repl.displayInline(editor, range, tree)
 
   # Polling is currently not used. There's an issue in that if you have a view
   # open it will overwrite the current inline display and collapse it. I need to

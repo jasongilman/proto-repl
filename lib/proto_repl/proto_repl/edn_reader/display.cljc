@@ -218,8 +218,8 @@
   ([id var-name]
    #?(:cljs
       (let [code (if var-name
-                   `(proto/def-by-id ~id '~var-name)
-                   `(proto/def-by-id ~id))
+                   `(proto-repl.saved-values/def-by-id ~id '~var-name)
+                   `(proto-repl.saved-values/def-by-id ~id))
             code-str (pr-str code)
             options {:displayInRepl false
                      :resultHandler

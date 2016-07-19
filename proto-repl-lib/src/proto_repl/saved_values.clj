@@ -1,5 +1,5 @@
-(ns proto
-  "The main namespace for access Proto REPL helper functions")
+(ns proto-repl.saved-values
+  "Allows saving values captured during execution and displaying them in context.")
 
 (def max-number-saved-values
   "The maximum number of saved values that will be saved per id"
@@ -69,7 +69,7 @@
            first))
 
 (defn def-by-id
-  "Def vars for bindings captured with proto/save. Can define all the bindings
+  "Def vars for bindings captured with proto-repl.saved-values/save. Can define all the bindings
    or just a specific one."
   ([id]
    (when-let [{:keys [the-ns values]} (saved-values-with-id id)]
