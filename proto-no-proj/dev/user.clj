@@ -2,7 +2,7 @@
   (:require clojure.tools.namespace.repl
             clojure.test
             [clojure.repl :refer :all]
-            [proto]
+            [proto-repl.saved-values]
             prc))
 
 (defn reset []

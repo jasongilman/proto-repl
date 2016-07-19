@@ -361,6 +361,6 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Added def buttons to the inline saved values.
 
-# 1.3.1
+# 1.3.1 to 1.3.3
 
-* Updating library versions used in the default leiningen project so it uses the new Proto REPL library.
+* Updating library versions used in the default leiningen project so it uses the new Proto REPL library and other miscellaneous problems with the default leiningen project.
