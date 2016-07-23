@@ -289,7 +289,8 @@ module.exports = ProtoRepl =
 
   consumeInk: (ink) ->
     @ink = ink
-    @resolveInkPromise(ink)
+    if (@resolveInkPromise)
+      @resolveInkPromise(ink)
     @loading = new ink.Loading
 
   ##############################################################################
