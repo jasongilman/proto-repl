@@ -417,16 +417,16 @@ module.exports = ProtoRepl =
   # Turns on auto evaluation of the current file.
   autoEvalCurrent: ->
     if !atom.config.get('proto-repl.showInlineResults')
-      @console.stderr("Auto Evaling is not supported unless inline results is enabled")
+      @repl.console.stderr("Auto Evaling is not supported unless inline results is enabled")
       return null
 
     if !@ink
-      @console.stderr("Install Atom Ink package to use auto evaling.")
+      @repl.console.stderr("Install Atom Ink package to use auto evaling.")
       return null
 
     if editor = atom.workspace.getActiveTextEditor()
       if editor.protoReplAutoEvalDisposable
-        @console.stderr("Already auto evaling")
+        @repl.console.stderr("Already auto evaling")
       else
         # Add a handler for when the editor stops changing
         editor.protoReplAutoEvalDisposable = editor.onDidStopChanging =>
@@ -450,7 +450,7 @@ module.exports = ProtoRepl =
   getClojureVarUnderCursor: (editor)->
     word = EditorUtils.getClojureVarUnderCursor(editor)
     if word == ""
-      @console.stderr("This command requires you to position the cursor on a Clojure var.")
+      @repl.console.stderr("This command requires you to position the cursor on a Clojure var.")
       null
     else
       word
