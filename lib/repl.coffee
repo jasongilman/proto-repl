@@ -164,7 +164,7 @@ class Repl
   # Displays some result data inline. tree is a recursive structure expected to
   # be of the shape like the following.
   # ["text for display", {button options}, [childtree1, childtree2, ...]]
-  displayInline: (editor, range, tree)->
+  displayInline: (editor, range, tree, error=false)->
     end = range.end.row
 
     # Remove the existing view if there is one
@@ -186,8 +186,7 @@ class Repl
     view = recurseTree(tree)
 
     # Add new inline view
-    r = new @ink.Result editor, [end, end],
-      content: view
+    r = new @ink.Result editor, [end, end], content: view, error: error
 
     # Adding the class here lets us apply proto repl specific styles to the display.
     r.view.classList.add 'proto-repl'
@@ -200,11 +199,13 @@ class Repl
   # of content for inline display.
   makeInlineHandler: (editor, range, valueToTreeFn)->
     (result) =>
+      isError = false
       if result.value
         tree = valueToTreeFn(result.value)
       else
         tree = [result.error]
-      @displayInline(editor, range, tree)
+        isError = true
+      @displayInline(editor, range, tree, isError)
 
   inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.
