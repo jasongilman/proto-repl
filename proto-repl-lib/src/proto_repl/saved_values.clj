@@ -29,7 +29,7 @@
   "Swaps in the map of var values"
   [uniq-id current-ns var-values-map]
   (let [saved-values {:id (guid)
-                      :the-ns (symbol (str *ns*))
+                      :the-ns current-ns
                       :values var-values-map}]
     (swap! saved-values-atom update uniq-id
            (fn [cur-values]
@@ -56,8 +56,9 @@
 
         form-id (pr-str &form)
         locals-map (into {} (for [local locals]
-                             [`'~local local]))]
-    `(save* ~form-id ~*ns* ~locals-map)))
+                             [`'~local local]))
+        current-ns (symbol (str *ns*))]
+    `(save* ~form-id '~current-ns ~locals-map)))
 
 (defn- saved-values-with-id
   "Returns the values that were saved with a specific id."
