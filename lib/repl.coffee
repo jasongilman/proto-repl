@@ -188,7 +188,8 @@ class Repl
     view = recurseTree(tree)
 
     # Add new inline view
-    r = new @ink.Result editor, [end, end], content: view, error: error
+    r = new @ink.Result editor, [end, end],
+          content: view, error: error, type: if error then 'block' else 'inline'
 
     # Adding the class here lets us apply proto repl specific styles to the display.
     r.view.classList.add 'proto-repl'
