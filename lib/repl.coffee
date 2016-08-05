@@ -1,5 +1,6 @@
 {Task, Emitter} = require 'atom'
 
+Spinner = require './load-widget'
 ReplTextEditor = require './repl-text-editor'
 ReplHistory = require './repl-history'
 LocalReplProcess = require './process/local-repl-process'
@@ -43,6 +44,7 @@ class Repl
     @emitter = new Emitter
     @replTextEditor = new ReplTextEditor()
     @replHistory = new ReplHistory()
+    @loading = new Spinner()
 
     # Connect together repl text editor and history
     @replTextEditor.onHistoryBack =>
@@ -241,7 +243,10 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
+     # to identify when did the spin started
+    spinid = @loading.start(options?.inlineOptions?.editor)
     @process.sendCommand code, options, (result)=>
+      @loading.stop(options?.inlineOptions?.editor, spinid)
       if result.value
         unless @extensionsFeature.handleReplResult(result.value)
           handler(result)
