@@ -81,8 +81,9 @@ class NReplConnection
       unless @namespaceNotFound(messages)
         for msg in messages
 
-          # Set the current ns
-          if msg.ns
+          # Set the current ns, but only if the message is in response
+          # to something sent by the user through the REPL
+          if msg.ns && msg.session == @session
             @currentNs = msg.ns
 
           if msg.session == @session
