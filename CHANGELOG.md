@@ -368,3 +368,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.3.4
 
 * Fixed #129 - saved values correctly captures the namespace.
+
+# 1.3.5
+
+* Fixed #133 - Namespace changing incorrectly back to user.
