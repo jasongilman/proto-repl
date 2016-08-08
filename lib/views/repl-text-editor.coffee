@@ -1,4 +1,5 @@
 {Range, Point, Emitter} = require 'atom'
+ReplHistory = require './repl-history'
 
 # Delimits the output area from the text entry area.
 EDIT_DELIMITER="--------------------\n"
@@ -25,6 +26,10 @@ class ReplTextEditor
   # The index of the row that demarcates output area from text entry area.
   delimiterRow: 0
 
+  # Keeps track of the REPL history.
+  replHistory: null
+
+
   constructor: ()->
     @emitter = new Emitter
     if atom.config.get("proto-repl.openReplInRightPane")
@@ -36,6 +41,17 @@ class ReplTextEditor
       window.textEditor = textEditor
       @configureNewTextEditor(textEditor)
       @emitter.emit 'proto-repl-text-editor:open'
+
+      @replHistory = new ReplHistory()
+      # Connect together repl text editor and history
+      @onHistoryBack =>
+        @replHistory.setCurrentText(@enteredText())
+        @setEnteredText(@replHistory.back())
+
+      @onHistoryForward =>
+        @replHistory.setCurrentText(@enteredText())
+        @setEnteredText(@replHistory.forward())
+
 
   # Calls the callback after the text editor has been opened.
   onDidOpen: (callback)->
@@ -202,3 +218,14 @@ class ReplTextEditor
         @delimiterRow = insertRange.end.row
 
       @autoscroll()
+
+  # Executes the text that was entered in the entry area
+  executeEnteredText: ->
+    if editor = atom.workspace.getActiveTextEditor()
+      if editor == @textEditor
+        code = @enteredText()
+        @clearEnteredText()
+        @replHistory.setLastTextAndAddNewEntry(code)
+        # Wrap code in do block so that multiple statements entered at the REPL
+        # will execute all of them
+        protoRepl.executeCode("(do #{code})", displayCode: code)

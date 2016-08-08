@@ -1,8 +1,7 @@
 {Task, Emitter} = require 'atom'
 
 Spinner = require './load-widget'
-ReplTextEditor = require './repl-text-editor'
-ReplHistory = require './repl-history'
+ReplTextEditor = require './views/repl-text-editor'
 LocalReplProcess = require './process/local-repl-process'
 RemoteReplProcess = require './process/remote-repl-process'
 SelfHostedProcess = require './process/self-hosted-process'
@@ -35,41 +34,12 @@ class Repl
   # The text editor where results are displayed or commands can be enterered
   replTextEditor: null
 
-  # Keeps track of the REPL history.
-  replHistory: null
 
   extensionsFeature: null
 
   constructor: (@extensionsFeature)->
     @emitter = new Emitter
-    @replTextEditor = new ReplTextEditor()
-    @replHistory = new ReplHistory()
     @loading = new Spinner()
-
-    # Connect together repl text editor and history
-    @replTextEditor.onHistoryBack =>
-      if @running()
-        @replHistory.setCurrentText(@replTextEditor.enteredText())
-        @replTextEditor.setEnteredText(@replHistory.back())
-
-    @replTextEditor.onHistoryForward =>
-      if @running()
-        @replHistory.setCurrentText(@replTextEditor.enteredText())
-        @replTextEditor.setEnteredText(@replHistory.forward())
-
-    @replTextEditor.onDidOpen =>
-      # Display the help text when the repl opens.
-      if atom.config.get("proto-repl.displayHelpText")
-        @appendText(replHelpText)
-
-    # The window was closed
-    @replTextEditor.onDidClose =>
-      try
-        @process?.stop(@session)
-        @replTextEditor = null
-        @emitter.emit 'proto-repl-repl:close'
-      catch error
-        console.log("Warning error while closing: " + error)
 
   # Calls the callback after the REPL has been started
   onDidStart: (callback)->
@@ -259,17 +229,10 @@ class Repl
       else
         handler(result)
 
-  # Executes the text that was entered in the entry area
+  # # Executes the text that was entered in the entry area
   executeEnteredText: ->
     return null unless @running()
-    if editor = atom.workspace.getActiveTextEditor()
-      if editor == @replTextEditor.textEditor
-        code = @replTextEditor.enteredText()
-        @replTextEditor.clearEnteredText()
-        @replHistory.setLastTextAndAddNewEntry(code)
-        # Wrap code in do block so that multiple statements entered at the REPL
-        # will execute all of them
-        @executeCode("(do #{code})", displayCode: code)
+    @replTextEditor.executeEnteredText()
 
   exit: ->
     return null unless @running()
