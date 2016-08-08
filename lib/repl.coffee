@@ -1,7 +1,5 @@
 {Task, Emitter} = require 'atom'
 
-ReplTextEditor = require './repl-text-editor'
-ReplHistory = require './repl-history'
 LocalReplProcess = require './process/local-repl-process'
 RemoteReplProcess = require './process/remote-repl-process'
 SelfHostedProcess = require './process/self-hosted-process'
@@ -31,43 +29,48 @@ class Repl
   # A local or remote process
   process: null
 
-  # The text editor where results are displayed or commands can be enterered
-  replTextEditor: null
+  # An Ink Console where results are displayed or commands can be enterered
+  console: null
 
-  # Keeps track of the REPL history.
-  replHistory: null
+  # Ink service
+  ink: null
 
   extensionsFeature: null
 
-  constructor: (@extensionsFeature)->
+  constructor: (@extensionsFeature, @ink)->
     @emitter = new Emitter
-    @replTextEditor = new ReplTextEditor()
-    @replHistory = new ReplHistory()
-
-    # Connect together repl text editor and history
-    @replTextEditor.onHistoryBack =>
-      if @running()
-        @replHistory.setCurrentText(@replTextEditor.enteredText())
-        @replTextEditor.setEnteredText(@replHistory.back())
-
-    @replTextEditor.onHistoryForward =>
-      if @running()
-        @replHistory.setCurrentText(@replTextEditor.enteredText())
-        @replTextEditor.setEnteredText(@replHistory.forward())
-
-    @replTextEditor.onDidOpen =>
-      # Display the help text when the repl opens.
-      if atom.config.get("proto-repl.displayHelpText")
-        @appendText(replHelpText)
-
     # The window was closed
-    @replTextEditor.onDidClose =>
-      try
-        @process?.stop(@session)
-        @replTextEditor = null
-        @emitter.emit 'proto-repl-repl:close'
-      catch error
-        console.log("Warning error while closing: " + error)
+    # TODO: figure out a way to do this
+    # @replTextEditor.onDidClose =>
+    #   try
+    #     @process?.stop(@session)
+    #     @replTextEditor = null
+    #     @emitter.emit 'proto-repl-repl:close'
+    #   catch error
+    #     console.log("Warning error while closing: " + error)
+
+  startConsole: () ->
+    # create the console object
+    @console = @ink.Console.fromId('proto-repl')
+    # overwrite ink's Console title
+    TAB_TITLE = 'Proto-REPL'
+    @console.getTitle = () -> TAB_TITLE
+    @console.emitter.emit('did-change-title', TAB_TITLE)
+    # activate and open the console
+    @console.activate()
+    @console.onEval (ed) => @executeEnteredText ed
+    # set console modes
+    @console.setModes([
+      {name: 'atom-foo', default: true, grammar: 'source.clojure'}
+    ])
+    # TODO: find a way to share the uri between main and repl
+    atom.workspace.open('atom://proto-repl/console',
+      { #TODO: make this configurable
+        split: 'right',
+        searchAllPanes: true
+      })
+    if atom.config.get("proto-repl.displayHelpText")
+      @console.info(replHelpText)
 
   # Calls the callback after the REPL has been started
   onDidStart: (callback)->
@@ -89,7 +92,7 @@ class Repl
     @getType() == "SelfHosted"
 
   handleReplStarted: ->
-    @appendText(@process.getCurrentNs() + "=>", true)
+    @console.info(@process.getCurrentNs() + "=>")
     @emitter.emit 'proto-repl-repl:start'
 
   handleReplStopped: ->
@@ -98,10 +101,9 @@ class Repl
   # Starts the process unless it's already running.
   startProcessIfNotRunning: (projectPath)->
     if @running()
-      @appendText("REPL already running")
+      @console.stderr("REPL already running")
     else
-      @process = new LocalReplProcess(
-        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
+      @process = new LocalReplProcess((text) => @console.info(text))
       @process.start projectPath,
         messageHandler: (msg)=> @handleConnectionMessage(msg)
         startCallback: => @handleReplStarted()
@@ -113,11 +115,10 @@ class Repl
   #   * `port` The {Number} port number to connect
   startRemoteReplConnection: ({host, port})->
     if @running()
-      @appendText("REPL already running")
+      @console.stderr("REPL already running")
     else
-      @process = new RemoteReplProcess(
-        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
-      @appendText("Starting remote REPL connection on #{host}:#{port}", true)
+      @process = new RemoteReplProcess((text) => @console.info(text))
+      @console.info("Starting remote REPL connection on #{host}:#{port}")
       connOptions =
         host: host,
         port: port,
@@ -128,38 +129,35 @@ class Repl
 
   startSelfHostedConnection: ->
     if @running()
-      @appendText("REPL already running")
+      @console.stderr("REPL already running")
     else
-      @process = new SelfHostedProcess(
-        (text, waitUntilOpen=false)=>@appendText(text, waitUntilOpen))
+      @process = new SelfHostedProcess((text) => @console.info(text))
       connOptions=
         messageHandler: ((msg)=> @handleConnectionMessage(msg)),
         startCallback: =>
-          @appendText("Self Hosted REPL Started!", true)
+          @console.info("Self Hosted REPL Started!")
           @handleReplStarted()
         stopCallback: => @handleReplStopped()
       @process.start connOptions
 
   handleConnectionMessage: (msg)->
     if msg.out
-      @appendText(msg.out)
+      @console.stdout(msg.out)
     else
       # Only print values from the regular session.
       if msg.err
-        @appendText(@process.getCurrentNs() + "=> " + msg.err)
+        @console.stderr(msg.err)
       else if msg.value
+        result = @process.getCurrentNs() + "=> "
         if atom.config.get("proto-repl.autoPrettyPrint")
-          @appendText(@process.getCurrentNs() + "=>\n" + protoRepl.prettyEdn(msg.value))
+          result = result + protoRepl.prettyEdn(msg.value)
         else
-          @appendText(@process.getCurrentNs() + "=> " + msg.value)
+          result =  result + msg.value
+        @console.result(document.createTextNode(result), {error: false})
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
     @emitter.on 'proto-repl-repl:close', callback
-
-  # Appends text to the display area of the text editor.
-  appendText: (text, waitUntilOpen=false)->
-    @replTextEditor?.appendText(text, waitUntilOpen)
 
   # Displays some result data inline. tree is a recursive structure expected to
   # be of the shape like the following.
@@ -241,7 +239,12 @@ class Repl
         @normalResultHandler(result, options)
 
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
-      @appendText(options.displayCode)
+      inputCell = @console.getInput()
+      if not (inputCell.editor.getText())
+        inputCell.editor.setText(options.displayCode)
+      @console.logInput() #history
+      @console.done()
+      @console.input()
 
     @process.sendCommand code, options, (result)=>
       if result.value
@@ -251,25 +254,23 @@ class Repl
         handler(result)
 
   # Executes the text that was entered in the entry area
-  executeEnteredText: ->
+  executeEnteredText: (inputCell={}) ->
     return null unless @running()
-    if editor = atom.workspace.getActiveTextEditor()
-      if editor == @replTextEditor.textEditor
-        code = @replTextEditor.enteredText()
-        @replTextEditor.clearEnteredText()
-        @replHistory.setLastTextAndAddNewEntry(code)
-        # Wrap code in do block so that multiple statements entered at the REPL
-        # will execute all of them
-        @executeCode("(do #{code})", displayCode: code)
+    editor = @console.getInput().editor
+    return null unless editor.getText().trim()
+    code = editor.getText()
+    #@replHistory.setLastTextAndAddNewEntry(code)
+    # Wrap code in do block so that multiple statements entered at the REPL
+    # will execute all of them
+    @executeCode("(do #{code})", displayCode: code)
 
   exit: ->
     return null unless @running()
-    @appendText("Stopping REPL")
+    @console.info("Stopping REPL")
     @process.stop()
     @process = null
 
   interrupt: ->
     @process.interrupt()
 
-  clear: ->
-    @replTextEditor.clear()
+  clear: -> @console.reset()
