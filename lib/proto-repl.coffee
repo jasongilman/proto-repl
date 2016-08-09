@@ -264,9 +264,15 @@ module.exports = ProtoRepl =
   clearRepl: ->
     @repl?.clear()
 
-  # Appends the specified text to the REPL
-  appendText: (text)->
-    @repl?.appendText(text)
+  # Helpers for adding text to the REPL.
+  info: (text)->
+    @repl?.info(text)
+
+  stderr: (text)->
+    @repl?.stderr(text)
+
+  stdout: (text)->
+    @repl?.stdout(text)
 
   # Interrupts the currently executing command.
   interrupt: ()->
@@ -408,16 +414,16 @@ module.exports = ProtoRepl =
   # Turns on auto evaluation of the current file.
   autoEvalCurrent: ->
     if !atom.config.get('proto-repl.showInlineResults')
-      @appendText("Auto Evaling is not supported unless inline results is enabled")
+      @stderr("Auto Evaling is not supported unless inline results is enabled")
       return null
 
     if !@ink
-      @appendText("Install Atom Ink package to use auto evaling.")
+      @stderr("Install Atom Ink package to use auto evaling.")
       return null
 
     if editor = atom.workspace.getActiveTextEditor()
       if editor.protoReplAutoEvalDisposable
-        @appendText("Already auto evaling")
+        @stderr("Already auto evaling")
       else
         # Add a handler for when the editor stops changing
         editor.protoReplAutoEvalDisposable = editor.onDidStopChanging =>
@@ -441,7 +447,7 @@ module.exports = ProtoRepl =
   getClojureVarUnderCursor: (editor)->
     word = EditorUtils.getClojureVarUnderCursor(editor)
     if word == ""
-      @appendText("This command requires you to position the cursor on a Clojure var.")
+      @stderr("This command requires you to position the cursor on a Clojure var.")
       null
     else
       word
@@ -483,23 +489,23 @@ module.exports = ProtoRepl =
     # The callback will still be invoked in that case. That's important so that
     # run all tests will still work without it.
     if result.value
-      @appendText("Refresh complete")
+      @info("Refresh complete")
       # Make sure the extension process is running after ever refresh.
       # If refreshing or laoding code had failed the extensions feature might not
       # have stopped itself.
       @extensionsFeature.startExtensionRequestProcessing()
       callback() if callback
     else if result.error
-      @appendText("Refresh Warning: " + result.error)
+      @stderr("Refresh Warning: " + result.error)
 
   # Refreshes any changed code in the project since the last refresh. Presumes
   # clojure.tools.namespace is a dependency and setup with standard user/reset
   # function. Will invoke the optional callback if refresh is successful.
   refreshNamespaces: (callback=null)->
     if @isSelfHosted()
-      @appendText("Refreshing not supported in self hosted REPL.")
+      @stderr("Refreshing not supported in self hosted REPL.")
     else
-      @appendText("Refreshing code...\n")
+      @info("Refreshing code...\n")
       @executeCode @refreshNamespacesCommand,
         displayInRepl: false,
         resultHandler: (result)=>
@@ -511,9 +517,9 @@ module.exports = ProtoRepl =
   # successful.
   superRefreshNamespaces: (callback=null)->
     if @isSelfHosted()
-      @appendText("Refreshing not supported in self hosted REPL.")
+      @stderr("Refreshing not supported in self hosted REPL.")
     else
-      @appendText("Clearing all and then refreshing code...\n")
+      @info("Clearing all and then refreshing code...\n")
       @executeCode "(do
                       (when (find-ns 'clojure.tools.namespace.repl)
                         (eval '(clojure.tools.namespace.repl/clear)))
@@ -524,7 +530,7 @@ module.exports = ProtoRepl =
   loadCurrentFile: ->
     if editor = atom.workspace.getActiveTextEditor()
       if @isSelfHosted()
-        @appendText("Loading files is not supported yet in self hosted REPL.")
+        @stderr("Loading files is not supported yet in self hosted REPL.")
       else
         # Escape file name
         fileName = editor.getPath().replace(/\\/g,"\\\\")
@@ -533,7 +539,7 @@ module.exports = ProtoRepl =
   runTestsInNamespace: ->
     if editor = atom.workspace.getActiveTextEditor()
       if @isSelfHosted()
-        @appendText("Running tests is not supported yet in self hosted REPL.")
+        @stderr("Running tests is not supported yet in self hosted REPL.")
       else
         code = "(clojure.test/run-tests)"
         if atom.config.get("proto-repl.refreshBeforeRunningTestFile")
@@ -545,7 +551,7 @@ module.exports = ProtoRepl =
   runTestUnderCursor: ->
     if editor = atom.workspace.getActiveTextEditor()
       if @isSelfHosted()
-        @appendText("Running tests is not supported yet in self hosted REPL.")
+        @stderr("Running tests is not supported yet in self hosted REPL.")
       else
         if testName = @getClojureVarUnderCursor(editor)
           code = "(do (clojure.test/test-vars [#'#{testName}]) (println \"tested #{testName}\"))"
@@ -558,7 +564,7 @@ module.exports = ProtoRepl =
   runAllTests: ->
     if editor = atom.workspace.getActiveTextEditor()
       if @isSelfHosted()
-        @appendText("Running tests is not supported yet in self hosted REPL.")
+        @stderr("Running tests is not supported yet in self hosted REPL.")
       else
         @refreshNamespaces =>
           # Tests are only run if the refresh is successful.
@@ -598,7 +604,7 @@ module.exports = ProtoRepl =
       if varName = @getClojureVarUnderCursor(editor)
         if @isSelfHosted()
           # code = "(source #{varName})"
-          @appendText("Showing source code is not yet supported in self hosted REPL.")
+          @stderr("Showing source code is not yet supported in self hosted REPL.")
         else
           code = "(do (require 'clojure.repl) (clojure.repl/source #{varName}))"
           @executeCodeInNs(code)
@@ -609,7 +615,7 @@ module.exports = ProtoRepl =
       if nsName = @getClojureVarUnderCursor(editor)
         if @isSelfHosted()
           # code = "(dir #{nsName})"
-          @appendText("Listing namespace functions is not yet supported in self hosted REPL.")
+          @stderr("Listing namespace functions is not yet supported in self hosted REPL.")
         else
           code = "(do
                     (require 'clojure.repl)
@@ -628,7 +634,7 @@ module.exports = ProtoRepl =
       if nsName = @getClojureVarUnderCursor(editor)
         if @isSelfHosted()
           # code = "(dir #{nsName})"
-          @appendText("Listing namespace functions is not yet supported in self hosted REPL.")
+          @stderr("Listing namespace functions is not yet supported in self hosted REPL.")
         else
           code = "(do
                     (require 'clojure.repl)
@@ -655,7 +661,7 @@ module.exports = ProtoRepl =
   # Assumes that the Atom command line alias "atom" can be used to invoke Atom.
   openFileContainingVar: ->
     if @isSelfHosted()
-      @appendText("Opening files containing vars is not yet supported in self hosted REPL.")
+      @stderr("Opening files containing vars is not yet supported in self hosted REPL.")
     else
       if editor = atom.workspace.getActiveTextEditor()
         if selected = @getClojureVarUnderCursor(editor)
@@ -691,8 +697,8 @@ module.exports = ProtoRepl =
             displayInRepl: false
             resultHandler: (result)=>
               if result.value
-                @appendText("Opening #{result.value}")
+                @info("Opening #{result.value}")
                 [file, line] = @parseEdn(result.value)
                 atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
               else
-                @appendText("Error trying to open: #{result.error}")
+                @stderr("Error trying to open: #{result.error}")
