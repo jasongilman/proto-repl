@@ -1,5 +1,5 @@
 {CompositeDisposable, Range, Point, Emitter} = require 'atom'
-
+Highlights = require 'highlights'
 CONSOLE_URI = 'atom://proto-repl/console'
 
 # TODOs
@@ -22,6 +22,7 @@ class InkConsole
   subscriptions: null
   ink: null
   console: null
+  higlighter: null
 
   constructor: (@ink)->
     @emitter = new Emitter
@@ -34,6 +35,7 @@ class InkConsole
         return @console
     ))
     @startConsole()
+    @highlighter = new Highlights(registry: atom.grammars)
 
   startConsole: () ->
     # create the console object
@@ -80,7 +82,15 @@ class InkConsole
     @console.stdout(text)
 
   result: (text)->
-    @console.result(document.createTextNode(text), {error: false})
+    html = @highlighter.highlightSync
+      fileContents: text
+      scopeName: 'source.clojure'
+
+    div = document.createElement('div')
+    div.innerHTML = html
+    el = div.firstChild
+    
+    @console.result(el, {error: false})
 
   displayExecutedCode: (code)->
     inputCell = @console.getInput()
