@@ -33,6 +33,7 @@ class Repl
   # The text editor where results are displayed or commands can be enterered
   replTextEditor: null
 
+  ink: null
 
   extensionsFeature: null
 
@@ -53,6 +54,11 @@ class Repl
         @emitter.emit 'proto-repl-repl:close'
       catch error
         console.log("Warning error while closing: " + error)
+
+  consumeInk: (ink)->
+    @ink = ink
+    # TODO what else.
+
 
   # Calls the callback after the REPL has been started
   onDidStart: (callback)->

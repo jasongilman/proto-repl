@@ -208,10 +208,12 @@ module.exports = ProtoRepl =
       @prepareRepl(@repl)
       @repl.startProcessIfNotRunning(projectPath)
     else
+      # REPL already running
       @repl.startProcessIfNotRunning(projectPath)
 
   prepareRepl: (repl)->
-    repl.ink = @ink
+    if @ink
+      repl.consumeInk(@ink)
     repl.onDidClose =>
       @repl = null
     repl.onDidStart =>
@@ -278,8 +280,7 @@ module.exports = ProtoRepl =
 
   consumeInk: (ink) ->
     @ink = ink
-    if @repl
-      @repl.ink = @ink
+    @repl?.consumeInk(@ink)
     @loading = new ink.Loading
 
   ##############################################################################
