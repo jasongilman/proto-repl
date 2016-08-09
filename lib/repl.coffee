@@ -249,7 +249,7 @@ class Repl
   # # Executes the text that was entered in the entry area
   executeEnteredText: ->
     return null unless @running()
-    @replTextEditor.executeEnteredText()
+    @replView.executeEnteredText()
 
   exit: ->
     return null unless @running()
