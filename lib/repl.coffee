@@ -34,12 +34,18 @@ class Repl
   # The text editor where results are displayed or commands can be enterered
   replTextEditor: null
 
+  ink: null
 
   extensionsFeature: null
 
   constructor: (@extensionsFeature)->
     @emitter = new Emitter
     @loading = new Spinner()
+
+  consumeInk: (ink)->
+    @ink = ink
+    # TODO what else.
+
 
   # Calls the callback after the REPL has been started
   onDidStart: (callback)->
