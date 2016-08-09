@@ -6,8 +6,10 @@ CONSOLE_URI = 'atom://proto-repl/console'
 ## - executed code should not be printed with "ns => <result>"
 ## - executed result should be printed with clojure style
 ## - clear repl doesn't work.
-## - shift+enter to execute code gets exception
+
 ## - enter in code entry area gets exception
+# Caused by lisp paredit. We need to disable that in the Atom ink console.
+
 ## - Need to tweak some info and stdout calls. Stdout should go to real stdout
 # info type stuff explicitly from proto repl should be info
 
@@ -45,7 +47,7 @@ class InkConsole
     @console.onEval (ed) => @executeEnteredText ed
     # set console modes
     @console.setModes([
-      {name: 'atom-foo', default: true, grammar: 'source.clojure'}
+      {name: 'proto-repl', default: true, grammar: 'source.clojure'}
     ])
     atom.workspace.open(CONSOLE_URI,
       {
@@ -95,4 +97,4 @@ class InkConsole
     code = editor.getText()
     # Wrap code in do block so that multiple statements entered at the REPL
     # will execute all of them
-    @protoRepl.executeCode("(do #{code})", displayCode: code)
+    protoRepl.executeCode("(do #{code})", displayCode: code)
