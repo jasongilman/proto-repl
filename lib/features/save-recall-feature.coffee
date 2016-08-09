@@ -60,7 +60,7 @@ class SaveRecallFeature
       displayInRepl: false
       resultHandler: (result, options)=>
         if result.error
-          @protoRepl.appendText("Error polling for saved values #{result.error}")
+          @protoRepl.stderr("Error polling for saved values #{result.error}")
           return
 
         console.log result.value

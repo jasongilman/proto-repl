@@ -219,6 +219,21 @@ class ReplTextEditor
 
       @autoscroll()
 
+  info: (text)->
+    @appendText(text, true)
+
+  stderr: (text)->
+    @appendText(text)
+
+  stdout: (text)->
+    @appendText(text)
+
+  result: (text)->
+    @appendText(text)
+
+  displayExecutedCode: (code)->
+    @appendText(text)
+
   # Executes the text that was entered in the entry area
   executeEnteredText: ->
     if editor = atom.workspace.getActiveTextEditor()
