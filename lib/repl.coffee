@@ -243,8 +243,12 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @appendText(options.displayCode)
 
-     # to identify when did the spin started
-    spinid = @loading.start(options?.inlineOptions?.editor)
+    if options.inlineOptions?
+      editor = options.inlineOptions.editor
+      range = options.inlineOptions.range
+      # use the id for asynchronous eval/result
+      spinid = @loading.startAt(editor, range)
+
     @process.sendCommand code, options, (result)=>
       @loading.stop(options?.inlineOptions?.editor, spinid)
       if result.value

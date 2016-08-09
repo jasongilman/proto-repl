@@ -10,46 +10,44 @@ class Spinner
   constructor: () ->
     # only one loading decorator per editor is allowed
     @decorationsByEditorId = {}
-    @widget = document.createElement 'div' # + id = proto-repl-spinner
+
+  widget: () ->
+    widget = document.createElement 'div'
     # widget.id = 'proto-repl-spinner'
-    @widget.classList.add('sk-folding-cube')
-    @widget.innerHTML = """
+    widget.classList.add('sk-folding-cube')
+    widget.innerHTML = """
         <div class="sk-cube1 sk-cube"></div>
         <div class="sk-cube2 sk-cube"></div>
         <div class="sk-cube4 sk-cube"></div>
         <div class="sk-cube3 sk-cube"></div>
     """
+    return widget
 
-  start: (editor) =>
-    return unless editor
+  startAt: (editor, range) =>
+    return unless editor and range
 
-    timestamp = Date.now() # id of the spinner
     type = 'overlay'
-    decoration = @decorationsByEditorId[editor.id]
-    # reset the decorator if there was already one
-    if decoration?
-      decoration.destroy()
-      @decorationsByEditorId[editor.id] = null
+    decorations = @decorationsByEditorId[editor.id]
+    # create a map to store decorators if it doesn't exists
+    if decorations is undefined
+      decorations = new Map()
+      @decorationsByEditorId[editor.id] = decorations
 
-    item = @widget
-    marker = editor.getLastCursor().marker
-    # create a decoration that follows the marker. A Decoration object is
-    # returned which can be updated
+    item = @widget()
+    marker = editor.markBufferRange(range)
     decoration = editor.decorateMarker(marker, {type, item})
-    decoration.timestamp = timestamp
     # keep track of editor - marker relationship
-    @decorationsByEditorId[editor.id] = decoration
-    return timestamp
+    id = Date.now() # id of the spinner
+    decorations.set(id, decoration)
+    return id
 
-  stop: (editor, timestamp = Date.now()) =>
+  stop: (editor, id) =>
     return unless editor
-    decoration = @decorationsByEditorId[editor.id]
-    # To avoid bugs with asynchronous answers, we only allow to destroy the last
-    # decorator created. They are always destroyed if the timestamp is missing
-    if decoration? & (timestamp >= decoration.timestamp)
-      decoration.destroy()
-      @decorationsByEditorId[editor.id] = null
-
-  isLoading: (editor) ->
-    decoration = @decorationsByEditorId[editor.id]
-    return decoration?
+    decorations = @decorationsByEditorId[editor.id]
+    return unless decorations
+    # remove the oldest if no timestamp was passed
+    if not id?
+      timestamps = Array.from(decorations.keys())
+      id = Math.min.apply(null, timestamps)
+    decorations.get(id).destroy()
+    decorations.delete(id)
