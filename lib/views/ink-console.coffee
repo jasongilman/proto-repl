@@ -4,7 +4,6 @@ CONSOLE_URI = 'atom://proto-repl/console'
 
 # TODOs
 ## - executed code should not be printed with "ns => <result>"
-## - executed result should be printed with clojure style
 ## - clear repl doesn't work.
 
 ## - enter in code entry area gets exception
@@ -72,6 +71,8 @@ class InkConsole
   clear: ->
     @console.reset()
 
+  # TODO add comments for these methods
+
   info: (text)->
     @console.info(text)
 
@@ -89,7 +90,8 @@ class InkConsole
     div = document.createElement('div')
     div.innerHTML = html
     el = div.firstChild
-    
+    el.classList.add("proto-repl-console")
+
     @console.result(el, {error: false})
 
   displayExecutedCode: (code)->
