@@ -86,7 +86,6 @@ class Repl
     @getType() == "SelfHosted"
 
   handleReplStarted: ->
-    @info(@process.getCurrentNs() + "=>")
     @emitter.emit 'proto-repl-repl:start'
 
   handleReplStopped: ->
@@ -146,14 +145,13 @@ class Repl
     else
       # Only print values from the regular session.
       if msg.err
-        @stderr(@process.getCurrentNs() + "=> " + msg.err)
+        @stderr(msg.err)
       else if msg.value
-        result = @process.getCurrentNs() + "=>"
+        @info(@process.getCurrentNs() + "=>")
         if atom.config.get("proto-repl.autoPrettyPrint")
-          result = result + "\n" + protoRepl.prettyEdn(msg.value)
+          @replView.result(protoRepl.prettyEdn(msg.value))
         else
-          result = result + " " + msg.value
-        @replView.result(result)
+          @replView.result(msg.value)
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
