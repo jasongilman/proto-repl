@@ -25,7 +25,7 @@ These are the instructions get up and running quickly. Most features will work b
 1. Install [Atom](https://atom.io/).
 2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/)
 3. Go to Atom settings, select "+ Install" and search for "proto-repl".
-5. (Optional but recommended) Install the Atom Ink package
+5. Install the Atom Ink package.
 6. Go to the Proto REPL Settings (Atom Preferences, then packages, then Proto REPL)
 7. Modify "Lein Path" to the path where Leiningen was installed. Use `which lein` in a terminal to get the path.
   * This should be something like `/some/path/bin/lein`
@@ -62,7 +62,7 @@ Proto REPL can connect to a remote Clojure process using [nREPL](https://github.
 
 Proto REPL includes the ability to start a self hosted ClojureScript REPL. This is a REPL that runs inside of the Atom editor using ClojureScript. It's currently fairly limited in its capabilities but it will continue to be improved in the future. The ability to run a REPL inside Atom will make it easier to use Proto REPL to develop Proto REPL itself and write more of Proto REPL's code in ClojureScript. It also removes the need to have Java or any build system like Leiningen or Boot installed to do basic things.
 
-Start the self hosted repl by triggering the Command Palette and selecting "Proto REPL: Start Self Hosted Repl". The keybinding `ctrl-alt-, j` will also work.
+Start the self hosted REPL by triggering the Command Palette and selecting "Proto REPL: Start Self Hosted Repl". The keybinding `ctrl-alt-, j` will also work.
 
 This is a list of the features currently supported in the self hosted REPL.
 
@@ -89,7 +89,7 @@ Proto REPL can still start a REPL outside of a Leiningen project. It still uses 
 
 ### Typing in the REPL
 
-Code to be executed in the REPL can be entered by typing below the dashed line. Code can be executed by pressing `shift+enter`. The REPL maintains a history of executed commands that were entered in the REPL. The history can be navigated by using the up and down arrow keys after placing the cursor in the text entry area.
+Code to be executed in the REPL can be entered by typing in the last entry area. Code can be executed by pressing `shift+enter`. The REPL maintains a history of executed commands that were entered in the REPL. The history can be navigated by using the up and down arrow keys after placing the cursor in the text entry area.
 
 ### Sending Code to the REPL
 
