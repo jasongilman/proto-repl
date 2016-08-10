@@ -369,6 +369,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Fixed #129 - saved values correctly captures the namespace.
 
-# 1.3.5
+# 1.4.0
 
+* Added Ink Console for use as the default REPL output. Thanks to Camilo Roca for the prototyping and initial implementation.
 * Fixed #133 - Namespace changing incorrectly back to user.
