@@ -88,7 +88,7 @@ module.exports = ProtoRepl =
     inkConsole:
       description: "Configure whether to use the Atom Ink console for the REPL output. If set to false a regular text editor is used for output."
       type: "boolean"
-      default: false
+      default: true
 
 
   subscriptions: null

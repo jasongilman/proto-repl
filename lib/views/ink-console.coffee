@@ -2,11 +2,6 @@
 Highlights = require 'highlights'
 CONSOLE_URI = 'atom://proto-repl/console'
 
-# TODOs
-## - test everything with ink console
-## - test everything with text editor
-## - test ink console performance
-
 module.exports =
 
 # Wraps the Atom Ink console to allow it to work with Proto REPL.
