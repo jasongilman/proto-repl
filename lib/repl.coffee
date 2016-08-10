@@ -262,7 +262,7 @@ class Repl
     @process.interrupt()
 
   clear: ->
-    @replTextEditor.clear()
+    @replView.clear()
 
 
   # Helpers for adding text to the REPL.

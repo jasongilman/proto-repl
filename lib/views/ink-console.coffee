@@ -3,15 +3,10 @@ Highlights = require 'highlights'
 CONSOLE_URI = 'atom://proto-repl/console'
 
 # TODOs
-## - clear repl doesn't work.
-
-## - enter in code entry area gets exception
-# Caused by lisp paredit. We need to disable that in the Atom ink console.
-# Paredit adds a newline keybinding for clojure source.
-# editor is null here
-#     editor = atom.workspace.getActiveTextEditor()
-#     cursors = editor.getCursorsOrderedByBufferPosition()
-
+## - Add config to switch between ink console and the text editor
+## - test everything with ink console
+## - test everything with text editor
+## - test ink console performance
 
 module.exports =
 
