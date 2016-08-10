@@ -97,3 +97,9 @@
   'alt-shift-i': 'proto-repl:insert-save-value-call'
   'alt-shift-d': 'proto-repl:display-saved-values'
   'alt-shift-c': 'proto-repl:clear-saved-values'
+
+# Fixes enter in the atom ink console
+'.platform-win32 ink-console atom-text-editor[data-grammar~="clojure"],
+ .platform-linux ink-console atom-text-editor[data-grammar~="clojure"],
+ .platform-darwin ink-console atom-text-editor[data-grammar~="clojure"]':
+  'enter': 'proto-repl:execute-text-entered-in-repl'
