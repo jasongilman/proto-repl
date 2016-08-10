@@ -234,8 +234,6 @@ module.exports = ProtoRepl =
       unless @repl
         @repl = new Repl(@extensionsFeature)
         @prepareRepl(@repl)
-        @repl.onDidStart =>
-          @appendText(";; Repl successfuly started")
       @repl.startRemoteReplConnection({port, host})
 
     @connectionView ?= new NReplConnectionView(confirmCallback)

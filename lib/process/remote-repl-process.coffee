@@ -6,14 +6,14 @@ module.exports=
 class RemoteReplProcess
 
   # A function that can be used to write back messages to the REPL.
-  appendText: null
+  replView: null
 
   # The nREPL connection
   conn: new NReplConnection()
 
   stopCallback: null
 
-  constructor: (@appendText)->
+  constructor: (@replView)->
     null
 
   getType: ->
@@ -31,7 +31,7 @@ class RemoteReplProcess
 
   interrupt: ->
     @conn.interrupt()
-    @appendText("Interrupting")
+    @replView.info("Interrupting")
 
   running: ()->
     @conn.connected()
