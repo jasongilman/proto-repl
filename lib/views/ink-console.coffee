@@ -3,14 +3,14 @@ Highlights = require 'highlights'
 CONSOLE_URI = 'atom://proto-repl/console'
 
 # TODOs
-## - executed code should not be printed with "ns => <result>"
 ## - clear repl doesn't work.
 
 ## - enter in code entry area gets exception
 # Caused by lisp paredit. We need to disable that in the Atom ink console.
-
-## - Need to tweak some info and stdout calls. Stdout should go to real stdout
-# info type stuff explicitly from proto repl should be info
+# Paredit adds a newline keybinding for clojure source.
+# editor is null here
+#     editor = atom.workspace.getActiveTextEditor()
+#     cursors = editor.getCursorsOrderedByBufferPosition()
 
 
 module.exports =
@@ -29,7 +29,6 @@ class InkConsole
     # Register console opener
     @subscriptions.add(atom.workspace.addOpener((uri) =>
       if (uri == CONSOLE_URI)
-        console.log("Console open")
         @emitter.emit 'proto-repl-ink-console:open'
         return @console
     ))
@@ -50,13 +49,16 @@ class InkConsole
     @console.setModes([
       {name: 'proto-repl', default: true, grammar: 'source.clojure'}
     ])
+    @console.destroy = =>
+      @emitter.emit 'proto-repl-ink-console:close'
+      @console = null
+
     atom.workspace.open(CONSOLE_URI,
       {
         split: 'right',
         searchAllPanes: true
       })
 
-  # TODO this may not be needed or make sense the current way. The console is already open
   # Calls the callback after the text editor has been opened.
   onDidOpen: (callback)->
     # Already open
@@ -64,7 +66,6 @@ class InkConsole
 
   # Calls the callback after the text editor window has been closed.
   onDidClose: (callback)->
-    #TODO figure out how to detect close happened and to emit it.
     @emitter.on 'proto-repl-ink-console:close', callback
 
   # Clears all output and text entry in the REPL.
@@ -74,13 +75,13 @@ class InkConsole
   # TODO add comments for these methods
 
   info: (text)->
-    @console.info(text)
+    @console?.info(text)
 
   stderr: (text)->
-    @console.stderr(text)
+    @console?.stderr(text)
 
   stdout: (text)->
-    @console.stdout(text)
+    @console?.stdout(text)
 
   result: (text)->
     html = @highlighter.highlightSync

@@ -9,12 +9,12 @@ module.exports=
 # code is in edn-reader.self-hosted.
 class SelfHostedProcess
 
-  # A function that can be used to write back messages to the REPL.
-  appendText: null
+  # A set of functions for writing text to the REPL.
+  replView: null
 
   currentNs: DEFAULT_NS
 
-  constructor: (@appendText)->
+  constructor: (@replView)->
     null
 
   getType: ->
@@ -92,7 +92,7 @@ class SelfHostedProcess
   stop: (session)->
     return unless @running()
     @stopRedirectingConsoleOutput()
-    @appendText("Self hosted REPL stopped")
+    @replView.info("Self hosted REPL stopped")
 
   # Redirects console.log and friends to the Proto REPL repl.
   startRedirectingConsoleOutput: ->
@@ -107,7 +107,9 @@ class SelfHostedProcess
       originalError = console.error
       @originalError = originalError
 
-      protoLog = @appendText
+      protoLog = (text)=> @replView.info(text)
+      protoWarn = (text)=> @replView.stderr(text)
+      protoError = (text)=> @replView.stderr(text)
 
       console.log = ->
         args = Array.prototype.slice.call(arguments)
@@ -115,11 +117,11 @@ class SelfHostedProcess
         originalLog.apply console, arguments
       console.warn = ->
         args = Array.prototype.slice.call(arguments)
-        protoLog(args.join(" "))
+        protoWarn(args.join(" "))
         originalWarn.apply console, arguments
       console.error = ->
         args = Array.prototype.slice.call(arguments)
-        protoLog(args.join(" "))
+        protoError(args.join(" "))
         originalError.apply console, arguments
 
   # Stops redirecting console.log and friends to the Proto REPL repl.

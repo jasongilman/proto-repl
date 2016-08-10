@@ -94,9 +94,7 @@ class Repl
     if @running()
       @stderr("REPL already running")
     else
-      # TODO it would be better to just pass the repl view around
-      @process = new LocalReplProcess(
-        (text, waitUntilOpen=false)=>@info(text))
+      @process = new LocalReplProcess(@replView)
       @process.start projectPath,
         messageHandler: (msg)=> @handleConnectionMessage(msg)
         startCallback: => @handleReplStarted()
@@ -110,9 +108,7 @@ class Repl
     if @running()
       @stderr("REPL already running")
     else
-      # TODO it would be better to just pass the repl view around
-      @process = new RemoteReplProcess(
-        (text, waitUntilOpen=false)=>@info(text))
+      @process = new RemoteReplProcess(@replView)
       @info("Starting remote REPL connection on #{host}:#{port}")
       connOptions =
         host: host,
@@ -126,9 +122,7 @@ class Repl
     if @running()
       @stderr("REPL already running")
     else
-      # TODO it would be better to just pass the repl view around
-      @process = new SelfHostedProcess(
-        (text, waitUntilOpen=false)=>@info(text))
+      @process = new SelfHostedProcess(@replView)
       connOptions=
         messageHandler: ((msg)=> @handleConnectionMessage(msg)),
         startCallback: =>

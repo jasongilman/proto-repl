@@ -12,8 +12,8 @@ module.exports=
 # Represents a locally running REPL process.
 class LocalReplProcess
 
-  # A function that can be used to write back messages to the REPL.
-  appendText: null
+  # A set of functions for writing text to the REPL.
+  replView: null
 
   # The nREPL connection
   conn: new NReplConnection()
@@ -21,13 +21,13 @@ class LocalReplProcess
   # reference to a running process
   process: null
 
-  constructor: (@appendText)->
+  constructor: (@replView)->
     null
 
   getType: ->
     "Local"
 
-  # Searches upwords to find the root project if proto repl was opened in a
+  # Searches upwords to find the root dTproject if proto repl was opened in a
   # subdirectory of the project.
   getRootProject: (currentPath, limit=0) ->
     # Avoid errors if the Atom config directory is open. We can't treat this like
@@ -98,7 +98,7 @@ class LocalReplProcess
       replType = "lein"
       projectPath = @getDefaultProjectPath()
 
-    @appendText("Starting REPL with #{replType} in #{projectPath}\n", true)
+    @replView.info("Starting REPL with #{replType} in #{projectPath}\n", true)
 
     # Start the repl process as a background task
     switch replType
@@ -117,7 +117,7 @@ class LocalReplProcess
 
     # The process sends stdout
     @process.on 'proto-repl-process:data', (data) =>
-      @appendText(data)
+      @replView.stdout(data)
 
     # The nREPL port was captured from output
     @process.on 'proto-repl-process:nrepl-port', (port) =>
@@ -132,7 +132,7 @@ class LocalReplProcess
       connOptions?.stopCallback()
       @process = null
       @conn.close()
-      @appendText("\nREPL Closed\n")
+      @replView.info("\nREPL Closed\n")
 
   running: ()->
     @process != null && @conn.connected()
@@ -145,7 +145,7 @@ class LocalReplProcess
 
   interrupt: ->
     @conn.interrupt()
-    @appendText("Interrupting")
+    @replView.info("Interrupting")
 
   # Stops the running process
   stop: ()->
