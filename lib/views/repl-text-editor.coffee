@@ -232,7 +232,7 @@ class ReplTextEditor
     @appendText(text)
 
   displayExecutedCode: (code)->
-    @appendText(text)
+    @appendText(code)
 
   # Executes the text that was entered in the entry area
   executeEnteredText: ->
