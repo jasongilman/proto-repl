@@ -45,10 +45,10 @@ class Repl
   consumeInk: (ink)->
     @ink = ink
 
-    if false
-      @replView = new ReplTextEditor()
-    else
+    if atom.config.get("proto-repl.inkConsole")
       @replView = new InkConsole(@ink)
+    else
+      @replView = new ReplTextEditor()
 
     @replView.onDidOpen =>
       # Display the help text when the repl opens.

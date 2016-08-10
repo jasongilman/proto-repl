@@ -98,8 +98,8 @@
   'alt-shift-d': 'proto-repl:display-saved-values'
   'alt-shift-c': 'proto-repl:clear-saved-values'
 
-# Fixes enter in the atom ink console
+# Fixes enter in the atom ink console. Lisp Paredit can cause problems
 '.platform-win32 ink-console atom-text-editor[data-grammar~="clojure"],
  .platform-linux ink-console atom-text-editor[data-grammar~="clojure"],
  .platform-darwin ink-console atom-text-editor[data-grammar~="clojure"]':
-  'enter': 'proto-repl:execute-text-entered-in-repl'
+  'enter': 'editor:newline'

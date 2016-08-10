@@ -85,6 +85,11 @@ module.exports = ProtoRepl =
       description: "Configure whether the REPL should open in a pane to the right or the current pane."
       type: "boolean"
       default: true
+    inkConsole:
+      description: "Configure whether to use the Atom Ink console for the REPL output. If set to false a regular text editor is used for output."
+      type: "boolean"
+      default: false
+
 
   subscriptions: null
   repl: null
