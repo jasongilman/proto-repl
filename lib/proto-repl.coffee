@@ -217,8 +217,7 @@ module.exports = ProtoRepl =
       @repl.startProcessIfNotRunning(projectPath)
 
   prepareRepl: (repl)->
-    if @ink
-      repl.consumeInk(@ink)
+    repl.consumeInk(@ink)
     repl.onDidClose =>
       @repl = null
     repl.onDidStart =>
