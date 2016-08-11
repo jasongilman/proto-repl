@@ -1,12 +1,8 @@
-# fs = require 'fs'
-# path = require 'path'
-
 # Creates a decoration handler for a loading spinner using
 # https://github.com/tobiasahlin/SpinKit/ templates
-
 module.exports =
 class Spinner
-  # TODO: transform this into a singleton pattern
+
   constructor: () ->
     # only one loading decorator per editor is allowed
     @decorationsByEditorId = {}
@@ -51,3 +47,9 @@ class Spinner
       id = Math.min.apply(null, timestamps)
     decorations.get(id).destroy()
     decorations.delete(id)
+
+  clearAll: ()->
+    for editorId,decorations of @decorationsByEditorId
+      decorations.forEach (decoration, id) =>
+        decoration.destroy()
+    @decorationsByEditorId = {}

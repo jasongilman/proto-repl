@@ -41,7 +41,7 @@ class Repl
 
   constructor: (@extensionsFeature)->
     @emitter = new Emitter
-    @loading = new Spinner()
+    @loadingIndicator = new Spinner()
 
   consumeInk: (ink)->
     @ink = ink
@@ -236,14 +236,16 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @replView.displayExecutedCode(options.displayCode)
 
+    # Display a loading indicator
     if options.inlineOptions?
       editor = options.inlineOptions.editor
       range = options.inlineOptions.range
       # use the id for asynchronous eval/result
-      spinid = @loading.startAt(editor, range)
+      spinid = @loadingIndicator.startAt(editor, range)
 
     @process.sendCommand code, options, (result)=>
-      @loading.stop(options?.inlineOptions?.editor, spinid)
+      # Stop the loading indicator
+      @loadingIndicator.stop(options?.inlineOptions?.editor, spinid)
       if result.value
         unless @extensionsFeature.handleReplResult(result.value)
           handler(result)
@@ -262,6 +264,7 @@ class Repl
     @process = null
 
   interrupt: ->
+    @loadingIndicator.clearAll()
     @process.interrupt()
 
   clear: ->
