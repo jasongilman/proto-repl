@@ -84,7 +84,10 @@ class InkConsole
     div = document.createElement('div')
     div.innerHTML = html
     el = div.firstChild
+
     el.classList.add("proto-repl-console")
+    el.style.fontSize = atom.config.get('editor.fontSize') + "px"
+    el.style.lineHeight = atom.config.get('editor.lineHeight')
 
     @console.result(el, {error: false})
 
@@ -93,6 +96,7 @@ class InkConsole
     inputCell = @console.getInput()
     if not (inputCell.editor.getText())
       inputCell.editor.setText(code)
+    @console.logInput()
     @console.done()
     @console.input()
 
