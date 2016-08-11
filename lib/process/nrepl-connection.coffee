@@ -149,7 +149,15 @@ class NReplConnection
       wrappedCode = @wrapCodeInReadEval(code)
       ns = options.ns || @currentNs
 
-      @conn.eval wrappedCode, ns, session, (err, messages)=>
+      evalOptions = {op: "eval", code: wrappedCode, ns: ns, session: session}
+      if options?.inlineOptions?.range?
+        evalOptions.line = options.inlineOptions.range.start.row + 1
+        evalOptions.column = options.inlineOptions.range.start.col + 1
+
+      if options?.editor
+        evalOptions.file = options.editor.getPath()
+
+      @conn.send evalOptions, (err, messages)=>
         try
           # If the namespace hasn't been defined this will fail. We redefine the Namespace
           # and retry.
