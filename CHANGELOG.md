@@ -373,3 +373,10 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Added Ink Console for use as the default REPL output. Thanks to Camilo Roca for the prototyping and initial implementation.
 * Fixed #133 - Namespace changing incorrectly back to user.
+
+# 1.4.1
+
+* Fixing several problems with the new Atom Ink Console usage.
+  * Updating REPL instructions.
+  * Fixing sizing of result output.
+  * Fixing REPL history.

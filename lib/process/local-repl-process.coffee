@@ -132,7 +132,7 @@ class LocalReplProcess
       connOptions?.stopCallback()
       @process = null
       @conn.close()
-      @replView.info("\nREPL Closed\n")
+      @replView.info("REPL Closed")
 
   running: ()->
     @process != null && @conn.connected()
