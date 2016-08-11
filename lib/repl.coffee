@@ -47,7 +47,7 @@ class Repl
   consumeInk: (ink)->
     @ink = ink
 
-    if atom.config.get("proto-repl.inkConsole")
+    if @ink && atom.config.get("proto-repl.inkConsole")
       @replView = new InkConsole(@ink)
     else
       @replView = new ReplTextEditor()
@@ -56,6 +56,10 @@ class Repl
       # Display the help text when the repl opens.
       if atom.config.get("proto-repl.displayHelpText")
         @info(replHelpText)
+      # Warn if Atom Ink is not installed.
+      if !@ink && atom.config.get("proto-repl.inkConsole")
+        @info("Atom Ink does not appear to be installed. Install it to get a better REPL experience.")
+
 
     # The window was closed
     @replView.onDidClose =>
