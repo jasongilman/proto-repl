@@ -45,7 +45,7 @@ class Spinner
     if not id?
       timestamps = Array.from(decorations.keys())
       id = Math.min.apply(null, timestamps)
-    decorations.get(id).destroy()
+    decorations.get(id)?.destroy()
     decorations.delete(id)
 
   clearAll: ()->
