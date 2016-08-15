@@ -1,5 +1,6 @@
 {Task, Emitter} = require 'atom'
 
+Spinner = require './load-widget'
 ReplTextEditor = require './views/repl-text-editor'
 InkConsole = require './views/ink-console'
 LocalReplProcess = require './process/local-repl-process'
@@ -40,7 +41,7 @@ class Repl
 
   constructor: (@extensionsFeature)->
     @emitter = new Emitter
-
+    @loadingIndicator = new Spinner()
 
   consumeInk: (ink)->
     @ink = ink
@@ -235,7 +236,16 @@ class Repl
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @replView.displayExecutedCode(options.displayCode)
 
+    # Display a loading indicator
+    if options.inlineOptions?
+      editor = options.inlineOptions.editor
+      range = options.inlineOptions.range
+      # use the id for asynchronous eval/result
+      spinid = @loadingIndicator.startAt(editor, range)
+
     @process.sendCommand code, options, (result)=>
+      # Stop the loading indicator
+      @loadingIndicator.stop(options?.inlineOptions?.editor, spinid)
       if result.value
         unless @extensionsFeature.handleReplResult(result.value)
           handler(result)
@@ -254,6 +264,7 @@ class Repl
     @process = null
 
   interrupt: ->
+    @loadingIndicator.clearAll()
     @process.interrupt()
 
   clear: ->
