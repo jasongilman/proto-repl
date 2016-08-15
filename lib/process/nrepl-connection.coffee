@@ -172,8 +172,8 @@ class NReplConnection
             for msg in messages
               if msg.value
                 resultHandler(value: msg.value)
-              else if msg.err
-                resultHandler(error: msg.err)
+              else if msg.ex
+                resultHandler(exception: msg.ex)
         catch error
           console.error error
           atom.notifications.addError "Error in handler: " + error,
