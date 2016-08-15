@@ -570,7 +570,15 @@ module.exports = ProtoRepl =
       else
         @refreshNamespaces =>
           # Tests are only run if the refresh is successful.
-          @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
+          @executeCode("(do (require '[clojure.tools.namespace.dir :refer [scan-all]]
+                                     '[clojure.test :refer [run-tests]])
+                            (->> (scan-all {})
+                                 :clojure.tools.namespace.track/deps
+                                 :dependencies
+                                 (keys)
+                                 (apply run-tests)
+                                 (time)
+                                 (future)))")
 
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
