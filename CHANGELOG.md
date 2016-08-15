@@ -385,6 +385,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Fixed #137 - REPL was not working if Atom Ink wasn't installed.
 
-# 1.5.0
+# 1.4.3
 
 * Adding loading indicator. Thanks to Camilo Roca.
+* Fixed #142 - Run all tests doesn't work when Ink Console is selected.

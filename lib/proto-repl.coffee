@@ -564,13 +564,12 @@ module.exports = ProtoRepl =
             @executeCodeInNs(code)
 
   runAllTests: ->
-    if editor = atom.workspace.getActiveTextEditor()
-      if @isSelfHosted()
-        @stderr("Running tests is not supported yet in self hosted REPL.")
-      else
-        @refreshNamespaces =>
-          # Tests are only run if the refresh is successful.
-          @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
+    if @isSelfHosted()
+      @stderr("Running tests is not supported yet in self hosted REPL.")
+    else
+      @refreshNamespaces =>
+        # Tests are only run if the refresh is successful.
+        @executeCode("(def all-tests-future (future (time (clojure.test/run-all-tests))))")
 
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
