@@ -146,7 +146,14 @@ class NReplConnection
               options.ns = @currentNs # Retry with current namespace.
               @sendCommand(code, options, resultHandler)
           else
-            for msg in messages
+            # fetch all messages that were sent to stderr for the user
+            isStdErr = (msg) => msg.session == @session and msg.err?
+            errors = messages.filter(isStdErr) # join all err lines
+            stderr = errors.map((msg)-> msg.err).join('')
+            @replMsgHandler(err: stderr) if errors.length > 0
+
+            # avoid re-sending messages from stderr
+            for msg in messages.filter((msg) -> not isStdErr(msg))
               # Set the current ns, but only if the message is in response
               # to something sent by the user through the REPL
               if msg.ns && msg.session == @session
