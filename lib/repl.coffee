@@ -101,7 +101,7 @@ class Repl
     else
       @process = new LocalReplProcess(@replView)
       @process.start projectPath,
-        messageHandler: (msg)=> @handleConnectionMessage(msg)
+        replMsgHandler: (msg)=> @handleConnectionMessage(msg)
         startCallback: => @handleReplStarted()
         stopCallback: => @handleReplStopped()
 
@@ -118,7 +118,7 @@ class Repl
       connOptions =
         host: host,
         port: port,
-        messageHandler: ((msg)=> @handleConnectionMessage(msg)),
+        replMsgHandler: ((msg)=> @handleConnectionMessage(msg)),
         startCallback: => @handleReplStarted()
         stopCallback: => @handleReplStopped()
       @process.start(connOptions)
@@ -139,16 +139,15 @@ class Repl
   handleConnectionMessage: (msg)->
     if msg.out
       @stdout(msg.out)
-    else
-      # Only print values from the regular session.
-      if msg.err
-        @stderr(msg.err)
-      else if msg.value
-        @info(@process.getCurrentNs() + "=>")
-        if atom.config.get("proto-repl.autoPrettyPrint")
-          @replView.result(window.protoRepl.prettyEdn(msg.value))
-        else
-          @replView.result(msg.value)
+    # Only print values from the regular session.
+    else if msg.err
+      @stderr(msg.err)
+    else if msg.value
+      @info(@process.getCurrentNs() + "=>")
+      if atom.config.get("proto-repl.autoPrettyPrint")
+        @replView.result(window.protoRepl.prettyEdn(msg.value))
+      else
+        @replView.result(msg.value)
 
   # Invoked when the REPL window is closed.
   onDidClose: (callback)->
