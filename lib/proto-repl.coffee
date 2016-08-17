@@ -395,18 +395,6 @@ module.exports = ProtoRepl =
       # like #'user/reset. We'll just return the original string in that case.
       return ednString
 
-  # Parses the edn string and returns a displayable tree.  A tree is an array
-  # whose first element is a string of the root of the tree. The rest of the
-  # elements are branches off the root. Each branch is another tree. A leaf is
-  # represented by a vector of one element.
-  ednToDisplayTree: (ednString)->
-    try
-      edn_reader.to_display_tree(ednString)
-    catch error
-      # Some responses from the REPL may be unparseable as in the case of var refs
-      # like #'user/reset. We'll just return the original string in that case.
-      return [ednString]
-
   ednSavedValuesToDisplayTrees: (ednString)->
     try
       edn_reader.saved_values_to_display_trees(ednString)

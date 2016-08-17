@@ -1,6 +1,7 @@
 {Task, Emitter} = require 'atom'
 
 Spinner = require './load-widget'
+ValueRenderer = require './views/value'
 ReplTextEditor = require './views/repl-text-editor'
 InkConsole = require './views/ink-console'
 LocalReplProcess = require './process/local-repl-process'
@@ -153,63 +154,18 @@ class Repl
   onDidClose: (callback)->
     @emitter.on 'proto-repl-repl:close', callback
 
-  # Displays some result data inline. tree is a recursive structure expected to
-  # be of the shape like the following.
-  # ["text for display", {button options}, [childtree1, childtree2, ...]]
-  displayInline: (editor, range, tree, error=false)->
-    end = range.end.row
-
-    # Remove the existing view if there is one
-    @ink.Result.removeLines(editor, end, end)
-
-    # Defines a recursive function that can convert the tree of values to
-    # display into an Atom Ink tree view. Sub-branches are expandable.
-    recurseTree = ([head, button_options, children...])=>
-      if children && children.length > 0
-        childViews = children.map  (x)=>
-          if x instanceof Array
-            recurseTree(x)
-          else
-            # The button options here are for the head not the child
-            TreeView.leafView(x,{})
-        TreeView.treeView(head, childViews, button_options)
-      else
-        TreeView.leafView(head, button_options || {})
-    view = recurseTree(tree)
-
-    # Add new inline view
-    r = new @ink.Result editor, [end, end], content: view, error: error
-
-    # Adding the class here lets us apply proto repl specific styles to the display.
-    r.view.classList.add 'proto-repl'
-
-
-  # Makes an inline displaying result handler
-  # * editor - the text editor to show the inline display in
-  # * range - the range of code to display the inline result next to
-  # * valueToTreeFn - a function that can convert the result value into the tree
-  # of content for inline display.
-  makeInlineHandler: (editor, range, valueToTreeFn)->
-    (result) =>
-      isError = false
-      if result.value
-        tree = valueToTreeFn(result.value)
-      else if result.exception
-        tree = [result.exception]
-        isError = true
-      @displayInline(editor, range, tree, isError)
-
   inlineResultHandler: (result, options)->
     # Alpha support of inline results using Atom Ink.
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
       io = options.inlineOptions
-      handler = @makeInlineHandler io.editor, io.range, (value)->
-        window.protoRepl.ednToDisplayTree(value)
+      editor = io.editor # the text editor to show the inline display in
+      row = io.range.end.row # the row where to display the result
 
-      handler(result)
-
-  normalResultHandler: (result, options)->
-    @inlineResultHandler(result, options)
+      inkOpts = ValueRenderer.inkResult(result)
+      # Add new inline view
+      result = new @ink.Result editor, [row, row], inkOpts
+      # Adding the class here lets us apply proto repl specific styles to the display.
+      result.view.classList.add 'proto-repl'
 
   # Executes the given code string.
   # Valid options:
@@ -229,7 +185,7 @@ class Repl
       if resultHandler
         resultHandler(result, options)
       else
-        @normalResultHandler(result, options)
+        @inlineResultHandler(result, options)
 
     if options.displayCode && atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @replView.displayExecutedCode(options.displayCode)

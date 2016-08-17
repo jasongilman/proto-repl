@@ -146,9 +146,10 @@ class NReplConnection
               options.ns = @currentNs # Retry with current namespace.
               @sendCommand(code, options, resultHandler)
           else
-            # fetch all messages that were sent to stderr for the user
             isStdErr = (msg) => msg.session == @session and msg.err?
-            errors = messages.filter(isStdErr) # join all err lines
+            # fetch all messages that were sent to stderr for the user
+            errors = messages.filter(isStdErr)
+            # join all err lines
             stderr = errors.map((msg)-> msg.err).join('')
             @replMsgHandler(err: stderr) if errors.length > 0
 
@@ -159,18 +160,14 @@ class NReplConnection
               if msg.ns && msg.session == @session
                 @currentNs = msg.ns
 
-              if msg.session == @session
-                @replMsgHandler(msg)
-              else if msg.session == @cmdSession && msg.out
                 # I don't like that we have to have this much logic here about
-                # what messages to send to the handler or not. We have to allow output
-                # for the cmdSession though.
+                # what messages to send to the handler or not. We have to allow
+                # output for the cmdSession though.
+              if msg.session == @session or (msg.session == @cmdSession && msg.out)
                 @replMsgHandler(msg)
 
-              if msg.value
-                resultHandler(value: msg.value)
-              else if msg.ex
-                resultHandler(exception: msg.ex)
+              if msg.value or msg.ex
+                resultHandler(msg)
         catch error
           console.error error
           atom.notifications.addError "Error in handler: " + error,
