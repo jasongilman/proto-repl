@@ -189,7 +189,6 @@ class NReplConnection
     exception.ex = stderr # fake exception
     modMsgs = messages.filter((msg)-> not isStderr(msg))
                       .filter((msg)-> not isVal(msg))
-                      .concat(exception)
     return modMsgs
 
   interrupt: ->
