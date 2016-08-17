@@ -507,8 +507,8 @@ module.exports = ProtoRepl =
       # have stopped itself.
       @extensionsFeature.startExtensionRequestProcessing()
       callback() if callback
-    else if result.error
-      @stderr("Refresh Warning: " + result.error)
+    else if result.err
+      @stderr("Refresh Warning: " + result.err)
 
   # Refreshes any changed code in the project since the last refresh. Presumes
   # clojure.tools.namespace is a dependency and setup with standard user/reset
@@ -605,7 +605,6 @@ module.exports = ProtoRepl =
             options.inlineOptions = {}
             options.inlineOptions.editor = editor
             options.inlineOptions.range = range
-            console.log 'inlineHandler'
             @repl.inlineResultHandler(result, options)
           @executeCodeInNs code,
                           displayInRepl: false
@@ -743,5 +742,5 @@ module.exports = ProtoRepl =
                 [file, line] = @parseEdn(result.value)
                 file = file.replace(/%20/g, " ")
                 atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
-              else
-                @stderr("Error trying to open: #{result.error}")
+              else if result.err
+                @stderr("Error trying to open: #{result.err}")

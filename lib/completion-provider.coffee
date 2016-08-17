@@ -82,10 +82,10 @@ module.exports =
           window.protoRepl.executeCode code,
             displayInRepl: false
             resultHandler: (result)->
-              if result.error
-                console.log result.error
+              if result.err
+                console.log result.err
                 resolve []
-              else
+              else if result.value
                 completions = window.protoRepl.parseEdn(result.value)
                 suggestions = (completionToSuggestion(prefix, c) for c in completions)
                 resolve suggestions

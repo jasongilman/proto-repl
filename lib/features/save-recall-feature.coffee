@@ -59,8 +59,8 @@ class SaveRecallFeature
    @protoRepl.executeCode "(proto-repl.saved-values/saved-values)",
       displayInRepl: false
       resultHandler: (result, options)=>
-        if result.error
-          @protoRepl.stderr("Error polling for saved values #{result.error}")
+        if result.err
+          @protoRepl.stderr("Error polling for saved values #{result.err}")
           return
 
         console.log result.value

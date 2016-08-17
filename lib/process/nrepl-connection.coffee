@@ -164,7 +164,7 @@ class NReplConnection
               if msg.session == @session or (msg.session == @cmdSession && msg.out)
                 @replMsgHandler(msg)
 
-              if msg.value or msg.ex
+              if msg.value or msg.err or msg.ex
                 resultHandler(msg)
         catch error
           console.error error

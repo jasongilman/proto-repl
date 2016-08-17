@@ -70,8 +70,8 @@ class ExtensionsFeature
       displayInRepl: false,
       session: NREPL_SESSION,
       resultHandler: (result, options)=>
-        if result.error
-          console.log "Error responding: #{result.error}"
+        if result.err
+          console.log "Error responding: #{result.err}"
 
   # Reads the next request and processes it. Calls it self when it's done as long
   # as the running flag is true.
@@ -90,7 +90,7 @@ class ExtensionsFeature
         else if result.value
           @handleRequests(result.value)
           @readNextRequest()
-        else
+        else if result.err
           @numErrors = @numErrors + 1
           if @numErrors < 10
             # Wait a second after an error before trying again.
@@ -98,7 +98,7 @@ class ExtensionsFeature
               @readNextRequest()
             , 1000)
           else
-            console.log "Repeated errors trying to execute request #{result.error}. Stopping automatic extensions feature"
+            console.log "Repeated errors trying to execute request #{result.err}. Stopping automatic extensions feature"
             @stopExtensionRequestProcessing()
 
   # Starts processing requests to send commands from the Clojure side of an

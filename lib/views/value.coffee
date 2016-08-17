@@ -37,7 +37,7 @@ render = (result) ->
     pre.style.whiteSpace = 'pre'
     pre.innerHTML = result.ex
     return pre
-  else if result.doc
+  else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
 # takes a msg from the nrepl and returns an object with all necessary options
