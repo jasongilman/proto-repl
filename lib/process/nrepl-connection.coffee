@@ -146,15 +146,13 @@ class NReplConnection
               options.ns = @currentNs # Retry with current namespace.
               @sendCommand(code, options, resultHandler)
           else
-            isStdErr = (msg) => msg.session == @session and msg.err?
-            # fetch all messages that were sent to stderr for the user
-            errors = messages.filter(isStdErr)
-            # join all err lines
-            stderr = errors.map((msg)-> msg.err).join('')
-            @replMsgHandler(err: stderr) if errors.length > 0
+            # check if something like clojure.repl/pst was called
+            pstCalled = messages.some((msg)=> msg.err? and msg.session == @session) and
+              messages.some((msg)-> msg.value? and msg.value == 'nil')
+            if pstCalled and options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
+              messages = @makeException(messages)
 
-            # avoid re-sending messages from stderr
-            for msg in messages.filter((msg) -> not isStdErr(msg))
+            for msg in messages
               # Set the current ns, but only if the message is in response
               # to something sent by the user through the REPL
               if msg.ns && msg.session == @session
@@ -173,6 +171,26 @@ class NReplConnection
           atom.notifications.addError "Error in handler: " + error,
             detail: error, dismissable: true
 
+  # this is a HACK: there be dragons !
+  # we take a set of messages from the nrepl and rewrite them to make them look
+  # like an exception. We only do this if there is a single return value, and
+  # there are messages to stderr to the user session. NOTE: should we check if
+  # they all have the same id?
+  makeException: (messages) ->
+    isStderr = (msg) => msg.session == @session and msg.err?
+    isVal = (msg) => msg.session == @session and msg.value?
+    vals = messages.filter(isVal)
+    return messages unless vals.length is 1 # not sure if this is needed
+    # fetch all messages that were sent to stderr for the user
+    errors = messages.filter(isStderr)
+    stderr = errors.map((msg)-> msg.err).join('') # join all err lines
+    exception = vals[0]
+    exception.value = null # overwrite original 'nil'
+    exception.ex = stderr # fake exception
+    modMsgs = messages.filter((msg)-> not isStderr(msg))
+                      .filter((msg)-> not isVal(msg))
+                      .concat(exception)
+    return modMsgs
 
   interrupt: ->
     return null unless @connected()
