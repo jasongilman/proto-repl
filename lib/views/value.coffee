@@ -33,10 +33,17 @@ render = (result) ->
     tree = ednToDisplayTree(result.value)
     return recurseTree(tree)
   else if result.ex
-    pre = document.createElement("div")
-    pre.style.whiteSpace = 'pre'
-    pre.innerHTML = result.ex
-    return pre
+    if result.ex.indexOf('\n') == -1
+      pre = document.createElement("div")
+      pre.style.whiteSpace = 'pre'
+      pre.innerHTML = result.ex
+      return pre
+    else
+      lines = result.ex.split('\n')
+      tree = [lines[0],
+              {},
+              lines.slice(1)]
+      return recurseTree(tree)
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
