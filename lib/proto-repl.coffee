@@ -598,8 +598,15 @@ module.exports = ProtoRepl =
 
           range = editor.getSelectedBufferRange()
           range.end.column = Infinity
-          inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
-            [varName, {}, [parser(value)]])
+          inlineHandler = (msg) =>
+            result = {}
+            result.doc = [varName, {}, [parser(msg.value)]]
+            options = {}
+            options.inlineOptions = {}
+            options.inlineOptions.editor = editor
+            options.inlineOptions.range = range
+            console.log 'inlineHandler'
+            @repl.inlineResultHandler(result, options)
           @executeCodeInNs code,
                           displayInRepl: false
                           resultHandler: inlineHandler
