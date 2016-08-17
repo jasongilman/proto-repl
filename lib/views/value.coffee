@@ -39,11 +39,7 @@ render = (result) ->
       pre.innerHTML = result.ex
       return pre
     else
-      lines = result.ex.split('\n')
-      tree = [lines[0],
-              {},
-              lines.slice(1)]
-      return recurseTree(tree)
+      return recurseTree(result.ex.split('\n'))
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
@@ -57,7 +53,8 @@ inkResult = (result) ->
   }
 
 # we export this way to avoid having to use 'this/@' on the functions calls
-# thus, we can have pure functions which don't care about the current scope
+# thus, we can have namespaced pure functions which don't care about the
+# current scope
 module.exports = {
   ednToDisplayTree: ednToDisplayTree,
   recurseTree: recurseTree,
