@@ -572,9 +572,7 @@ module.exports = ProtoRepl =
         @executeCode("(do (require '[clojure.tools.namespace.dir :refer [scan-all]]
                                    '[clojure.test :refer [run-tests]])
                           (->> (scan-all {})
-                               :clojure.tools.namespace.track/deps
-                               :dependencies
-                               (keys)
+                               :clojure.tools.namespace.track/load
                                (apply run-tests)
                                (time)
                                (future)))")
