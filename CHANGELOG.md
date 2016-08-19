@@ -389,3 +389,4 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Adding loading indicator. Thanks to Camilo Roca.
 * Fixed #142 - Run all tests doesn't work when Ink Console is selected.
+* Added callbacks for some Proto REPL events.
