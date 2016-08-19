@@ -5,7 +5,7 @@ require './proto_repl/goog/bootstrap/nodejs.js'
 require './proto_repl/main.js'
 edn_reader = require './proto_repl/proto_repl/edn_reader.js'
 
-{CompositeDisposable, Range, Point} = require 'atom'
+{CompositeDisposable, Range, Point, Emitter} = require 'atom'
 NReplConnectionView = require './views/nrepl-connection-view'
 Repl = require './repl'
 url = require 'url'
@@ -105,6 +105,7 @@ module.exports = ProtoRepl =
     window.protoRepl.edn_reader = edn_reader
     # Events subscribed to in atom's system can be easily cleaned up with a CompositeDisposable
     @subscriptions = new CompositeDisposable
+    @emitter = new Emitter
 
     @saveRecallFeature = new SaveRecallFeature(this)
     @extensionsFeature = new ExtensionsFeature(this)
@@ -220,11 +221,23 @@ module.exports = ProtoRepl =
     repl.consumeInk(@ink)
     repl.onDidClose =>
       @repl = null
+      @emitter.emit('proto-repl:closed')
     repl.onDidStart =>
+      @emitter.emit('proto-repl:connected')
       if atom.config.get("proto-repl.refreshOnReplStart")
         @refreshNamespaces()
     repl.onDidStop =>
       @extensionsFeature.stopExtensionRequestProcessing()
+      @emitter.emit('proto-repl:stopped')
+
+  onDidConnect: (callback) ->
+    @emitter.on('proto-repl:connected', callback)
+
+  onDidClose: (callback) ->
+    @emitter.on('proto-repl:closed', callback)
+
+  onDidStop: (callback) ->
+    @emitter.on('proto-repl:stopped', callback)
 
   # Starts the REPL in the directory of the file in the current editor.
   toggleCurrentEditorDir: ->

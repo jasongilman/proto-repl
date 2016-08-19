@@ -2,6 +2,20 @@
 
 Proto REPL can be programmatically extended. The global `protoRepl` object can be used to send code to the REPL and perform other actions.
 
+## Subscribing to events
+Proto REPL supports a bunch of callbacks to detect when the REPL was connected, closed, or stopped. To subscribe to these events, you can use `onDidConnect`, `onDidClose` and `onDidStop`:
+
+```CoffeeScript
+protoRepl.onDidConnect ->
+  console.log("REPL was started and we're connected to it!")
+
+protoRepl.onDidClose ->
+  console.log("REPL's window was closed!")
+
+protoRepl.onDidStop ->
+  console.log("REPL was stopped.")
+```
+
 ## Defining a new REPL Command
 
 You can define a new Atom command and keyboard shortcut to send code to the REPL. Open your Atom [init](https://atom.io/docs/latest/hacking-atom-the-init-file) file and add the following code.
