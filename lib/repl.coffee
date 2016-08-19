@@ -238,7 +238,7 @@ class Repl
       editor = options.inlineOptions.editor
       range = options.inlineOptions.range
       # Remove the existing view if there is one
-      @ink.Result.removeLines(editor, range.row.end, range.row.end)
+      @ink.Result.removeLines(editor, range.end.row, range.end.row)
       # use the id for asynchronous eval/result
       spinid = @loadingIndicator.startAt(editor, range)
 
