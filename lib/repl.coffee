@@ -158,6 +158,10 @@ class Repl
   # be of the shape like the following.
   # ["text for display", {button options}, [childtree1, childtree2, ...]]
   displayInline: (editor, range, tree, error=false)->
+    end = range.end.row
+
+    # Remove the existing view if there is one
+    @ink.Result.removeLines(editor, end, end)
 
     # Defines a recursive function that can convert the tree of values to
     # display into an Atom Ink tree view. Sub-branches are expandable.
@@ -175,7 +179,6 @@ class Repl
     view = recurseTree(tree)
 
     # Add new inline view
-    end = range.end.row
     r = new @ink.Result editor, [end, end],
           content: view, error: error, type: if error then 'block' else 'inline'
 
@@ -237,8 +240,6 @@ class Repl
     if options.inlineOptions?
       editor = options.inlineOptions.editor
       range = options.inlineOptions.range
-      # Remove the existing view if there is one
-      @ink.Result.removeLines(editor, range.row.end, range.row.end)
       # use the id for asynchronous eval/result
       spinid = @loadingIndicator.startAt(editor, range)
 
