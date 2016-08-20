@@ -1,5 +1,5 @@
 {CompositeDisposable, Range, Point, Emitter} = require 'atom'
-Highlights = require 'highlights'
+Highlights = require '../highlights.js'
 CONSOLE_URI = 'atom://proto-repl/console'
 
 module.exports =

@@ -390,3 +390,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 * Adding loading indicator. Thanks to Camilo Roca.
 * Fixed #142 - Run all tests doesn't work when Ink Console is selected.
 * Added callbacks for some Proto REPL events.
+
+# 1.4.4
+
+* Fixed #136 - Moved highlights from external node dependency to explicitly bundled dependency skipping some of the unused dependencies. This fixes a problem with using oniguruma on windows.
