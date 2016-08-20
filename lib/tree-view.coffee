@@ -35,7 +35,7 @@ module.exports =
 
   treeView: (head, children, btnOptions) ->
     view = $$ ->
-      @div class: 'ink tree', =>
+      @div class: 'ink proto-tree', =>
         @span class: 'expandable icon icon-chevron-right'
         @div class: 'header gutted', =>
           if btnOptions.button_text
