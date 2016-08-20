@@ -17,6 +17,7 @@
   "dependencies": {
     "atom-space-pen-views": "2.1.1",
     "underscore": "^1.8.3",
+    "underscore-plus": "^1.5.1",
     "jg-nrepl-client": "0.2.3",
     "loophole": "1.1.0"
   },

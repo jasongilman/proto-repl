@@ -394,3 +394,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.4.4
 
 * Fixed #136 - Moved highlights from external node dependency to explicitly bundled dependency skipping some of the unused dependencies. This fixes a problem with using oniguruma on windows.
+
+# 1.4.5
+
+* Fixed #154 - missing dependency
