@@ -399,3 +399,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Fixed #154 - missing dependency
 * Partial fix for inline views with the latest ink.
+
+# 1.4.7
+
+* Fixed #155 - Correcting issues with inline display after Atom update.
