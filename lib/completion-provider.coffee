@@ -57,10 +57,13 @@ getPrefix = (editor, bufferPosition) ->
   line.match(regex)?[0] or ''
 
 module.exports =
-  selector: '.source.clojure'
-  disableForSelector: '.source.clojure .comment, .source.clojure .string'
+  scopeSelector: '.source.clojure'
+  textEditorSelectors: 'atom-text-editor'
+  disableForScopeSelector: '.source.clojure .comment, .source.clojure .string'
   inclusionPriority: 100
   excludeLowerPriority: false
+
+  getTextEditorSelector: -> 'atom-text-editor'
 
   getSuggestions: ({editor, bufferPosition, scopeDescriptor}) ->
     prefix = getPrefix(editor, bufferPosition)

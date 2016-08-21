@@ -403,3 +403,4 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 # 1.4.7
 
 * Fixed #155 - Correcting issues with inline display after Atom update.
+* Fixed #148 - Updating completions provider so it will work with Atom Ink Console.
