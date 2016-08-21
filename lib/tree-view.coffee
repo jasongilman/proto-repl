@@ -1,10 +1,49 @@
 # This is a modification of the tree view from Atom Ink. It adds the ability to
 # add buttons to the tree view lines.
 
-{$, $$} = require 'atom-space-pen-views'
+views =
+  dom: ({tag, attrs, contents}) ->
+    view = document.createElement tag
+    for k, v of attrs
+      view.setAttribute k, v
+    if contents?
+      if contents.constructor isnt Array
+        contents = [contents]
+      for child in contents
+        view.appendChild @render child
+    view
+
+  views:
+    dom: (a...) -> views.dom  a...
+
+  render: (data) ->
+    if @views.hasOwnProperty(data.type)
+      @views[data.type](data)
+    else if data?.constructor is String
+      new Text data
+    else
+      data
+
+  tag: (tag, attrs, contents) ->
+    if attrs?.constructor is String
+      attrs = class: attrs
+    if attrs?.constructor isnt Object
+      [contents, attrs] = [attrs, undefined]
+    type: 'dom'
+    tag: tag
+    attrs: attrs
+    contents: contents
+
+  tags: {}
+
+['div', 'span', 'a', 'strong', 'table', 'tr', 'td', 'button'].forEach (tag) ->
+  views.tags[tag] = (attrs, contents) ->
+    views.tag tag, attrs, contents
+
+{div, span, button} = views.tags
 
 treeButtonClasses = ({button_class})->
-  'btn btn-xs inline-block-tight ' + button_class
+  'btn btn-xs ' + button_class
 
 treeButtonClicked = ({button_fn}, textDiv)->
   textDiv.classList.add('clicking-btn')
@@ -17,65 +56,46 @@ treeButtonClicked = ({button_fn}, textDiv)->
 module.exports =
 
   leafView: (leaf, btnOptions) ->
-      view = $$ ->
-        @div class: 'ink leaf', =>
-          if btnOptions.button_text
-            @button class: treeButtonClasses(btnOptions), btnOptions.button_text
-          @span class: 'text'
-      # Setup the header
-      header = view.find('.text')
-      header.append leaf
-
-      if btnOptions.button_fn
-        btn = view.find('.btn')
-        window.sampleBtn = btn
-        btn.click => treeButtonClicked(btnOptions, view[0])
-
-      view[0]
+    textSpan = span('text', leaf)
+    if btnOptions.button_text
+      btn = button(treeButtonClasses(btnOptions), btnOptions.button_text)
+      view = views.render(div('ink leaf', [btn, textSpan]))
+      # Add the click handler
+      view.querySelector('button').onclick = => treeButtonClicked(btnOptions, view)
+    else
+      view = views.render(div('ink leaf', [textSpan]))
+    view
 
   treeView: (head, children, btnOptions) ->
-    view = $$ ->
-      @div class: 'ink proto-tree', =>
-        @span class: 'expandable icon icon-chevron-right'
-        @div class: 'header gutted', =>
-          if btnOptions.button_text
-            @button class: treeButtonClasses(btnOptions), btnOptions.button_text
-          @span class: 'text'
-        @div class: 'body gutted'
 
-    # Setup the header
-    header = view.find('.text')
-    header.append head
-    header.click => @toggle view
+    if btnOptions.button_text
+      btn = button(treeButtonClasses(btnOptions), btnOptions.button_text)
+      header = div('header gutted', [head, btn])
+    else
+      header = div('header gutted', [head])
 
-    if btnOptions.button_fn
-      btn = view.find('.btn')
-      btn.click => treeButtonClicked(btnOptions, view[0])
+    view = views.render(div('ink proto-tree', [
+      span('icon icon-chevron-right open'),
+      header,
+      div('body gutted', children)
+    ]))
+    if btnOptions.button_text
+      view.querySelector('button').onclick = => treeButtonClicked(btnOptions, view)
 
-    # Setup the body
-    body = view.find('> .body')
-    body.hide()
-    # Add the children to the body. Using direct dom manipulation instead of
-    # jQuery to improve performance in the presence of many children.
-    realBody = body[0]
-    for child in children
-      realBody.appendChild child
+    for sel in [':scope > .header', ':scope > .icon']
+      view.querySelector(sel).onclick = =>
+        setTimeout (=> @toggle view), 0
+    @toggle view
+    view
 
-    view.find('> .expandable').click => @toggle view
-
-    view[0]
 
   toggle: (view) ->
-    view = $(view)
-    body = view.find('> .body')
-    icon = view.find('> .expandable')
-    return unless body[0]?
-    body.toggle()
-    if body.isVisible()
-      view.visible = true
-      icon.removeClass 'icon-chevron-right'
-      icon.addClass 'icon-chevron-down'
+    body = view.querySelector ':scope > .body'
+    icon = view.querySelector ':scope > .icon'
+    return unless body?
+    if body.style.display == ''
+      body.style.display = 'none'
+      icon.classList.remove 'open'
     else
-      view.visible = false
-      icon.removeClass 'icon-chevron-down'
-      icon.addClass 'icon-chevron-right'
+      body.style.display = ''
+      icon.classList.add 'open'

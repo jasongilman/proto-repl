@@ -26,79 +26,79 @@ pre.proto-repl-console {
 }
 
 .proto-repl {
-  // Configures inline results using mono-space fonts and sets the width to a bit
-  // wider than atom ink specifies
-  .ink.inline.result {
-    font-family: Menlo, Consolas, 'DejaVu Sans Mono', monospace;
-    max-width: 700px;
-
-    .header.gutted{
-      .text {
-        margin-right: 50px;
+  .ink.proto-tree {
+    clear: both;
+    > .icon {
+      float: left;
+      width: 1em;
+    }
+    .gutted {
+      margin-left: 1.2em;
+    }
+    .icon {
+      text-align: center;
+      transition: all 0.1s ease-out;
+      &.open {
+        transform: rotate(0.25turn);
       }
     }
+  }
+}
 
-    .header.gutted:hover {
-      background: rgba(134, 128, 36, 0.2);
-    }
+.ink.result.inline.proto-repl {
+  max-width: 700px;
 
-    .ink.proto-tree {
-      > .icon {
-        position: relative;
-        float: left;
-        width: 15px;
-      }
-      .gutted {
-        margin-left: 15px;
-      }
+  .header.gutted{
+    .text {
+      margin-right: 50px;
     }
+  }
 
-    ink-console .ink.tree > .icon {
-      position: absolute;
-    }
+  .header.gutted:hover {
+    background: rgba(134, 128, 36, 0.2);
+  }
 
-    .leaf{
-      .text{
-        margin-right: 50px;
-      }
+  .leaf{
+    .text{
+      margin-right: 50px;
     }
+  }
 
-    .leaf:hover {
-      background: rgba(134, 128, 36, 0.2);
-    }
+  .leaf:hover {
+    background: rgba(134, 128, 36, 0.2);
+  }
 
-    // Def button that sets multiple vars.
-    .def-saved-vars {
-      line-height: 1.4em;
-      margin-top: 2px;
-      float: right;
-      z-index: 10;
-      position: relative;
-    }
+  // Def button that sets multiple vars.
+  .def-saved-vars {
+    line-height: 1.4em;
+    margin-top: 2px;
+    float: right;
+    z-index: 10;
+    position: relative;
+  }
 
-    .def-saved-vars:hover {
-      background-image: linear-gradient(#4278E4, #365DAB);
-    }
+  .def-saved-vars:hover {
+    background-image: linear-gradient(#4278E4, #365DAB);
+  }
 
-    // highlight color when a def button is clicked
-    .clicking-btn {
-      background: #FFFF0A;
-    }
-    .clicking-btn:hover {
-      background: #FFFF0A;
-    }
+  // highlight color when a def button is clicked
+  .clicking-btn {
+    background: #FFFF0A;
+  }
+  .clicking-btn:hover {
+    background: #FFFF0A;
+  }
 
-    // Def button that setsjust one var.
-    .def-saved-var{
-      line-height: 1.4em;
-      margin-top: 2px;
-      float: right;
-      z-index: 10;
-      position: relative;
-    }
+  // Def button that sets just one var.
+  .def-saved-var{
+    line-height: 1.4em;
+    margin-top: 2px;
+    float: right;
+    z-index: 10;
+    position: relative;
+  }
 
-    .def-saved-var:hover {
-      background-image: linear-gradient(#4278E4, #365DAB);
-    }
+  .def-saved-var:hover {
+    background-image: linear-gradient(#4278E4, #365DAB);
   }
 }
