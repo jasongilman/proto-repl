@@ -20,9 +20,18 @@
   }
 }
 
-pre.proto-repl-console {
-  padding: 1px;
-  background-color: rgba(0, 0, 0, 0);
+// Style the ink console. Reduce padding and change background color.
+ink-console {
+  .items {
+    > .cell {
+      .result {
+        > .editor.editor-colors.proto-repl-console {
+          padding: 1px;
+          background-color: rgba(0, 0, 0, 0);
+        }
+      }
+    }
+  }
 }
 
 .proto-repl {
