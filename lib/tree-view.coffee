@@ -67,22 +67,22 @@ module.exports =
     view
 
   treeView: (head, children, btnOptions) ->
+    icon = span('icon icon-chevron-right open')
+    body = div('body gutted', children)
 
     if btnOptions.button_text
       btn = button(treeButtonClasses(btnOptions), btnOptions.button_text)
-      header = div('header gutted', [head, btn])
+      header = div("header gutted", [span('header-text', [head]), btn])
+      children = [icon, header, body]
     else
-      header = div('header gutted', [head])
+      header = div("header gutted", [span('header-text', [head])])
+      children = [icon, header, body]
 
-    view = views.render(div('ink proto-tree', [
-      span('icon icon-chevron-right open'),
-      header,
-      div('body gutted', children)
-    ]))
+    view = views.render(div('ink proto-tree', children))
     if btnOptions.button_text
       view.querySelector('button').onclick = => treeButtonClicked(btnOptions, view)
 
-    for sel in [':scope > .header', ':scope > .icon']
+    for sel in [':scope > .header > .header-text', ':scope > .icon']
       view.querySelector(sel).onclick = =>
         setTimeout (=> @toggle view), 0
     @toggle view
