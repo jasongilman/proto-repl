@@ -34,12 +34,13 @@ render = (result) ->
     return recurseTree(tree)
   else if result.ex
     if result.ex.indexOf('\n') == -1
-      pre = document.createElement("div")
-      pre.style.whiteSpace = 'pre'
-      pre.innerHTML = result.ex
-      return pre
+      div = document.createElement("div")
+      div.style.whiteSpace = 'pre'
+      div.innerHTML = result.ex
+      return div
     else
-      return recurseTree(result.ex.split('\n'))
+      lines = result.ex.split('\n')
+      return recurseTree(lines, {}, lines)
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
