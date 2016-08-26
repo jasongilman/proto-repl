@@ -27,6 +27,51 @@ recurseTree = ([head, button_options, children...]) ->
   else
     TreeView.leafView(head, button_options || {})
 
+# Modify an existing ink-result (widget) to display a customized exception with
+# highlighting and hyperlinks
+prettyException = (result, widget, ink) ->
+  lines = result.ex.split('\n')
+  stackFrame = /(\S+)\/([\w\*\+\!-_\'\?]+).*?\.clj:(\d+)/ # (ns | .)* / fn
+  evalfn = /eval\d+/ # anonymous function created by clojure
+  stack = []
+  highlighters = []
+  for line in lines
+    frame = stackFrame.exec(line)
+    if frame is null # not a stacktrace frame
+      stack.push(line)
+      continue
+
+    [_, ns, fn, lineno] = frame
+    if ns.startsWith('clojure') # ignore clojure internal calls
+      stack.push(line)          # we cannot get its filepath anyway
+      continue
+    if evalfn.exec(fn) isnt null # ignore clojure anonymous eval calls created
+      stack.push(line)           # by the repl
+      continue
+
+    symbol = "\#\'#{ns}/#{fn}" # rebuild clojure symbol
+    stack.push(line)
+    # TODO: create an <a> and link it to the file
+    # use (.*?)(\(\S+:\d+\)) regex to insert hyperlinks to the exception
+    do (symbol, lineno) -> # avoid losing bindings
+      protoRepl.executeCode "(:file (meta #{symbol}))",
+      displayInRepl: false
+      resultHandler: (res, opts) ->
+        if res.value
+          filepath = protoRepl.parseEdn(res.value)
+          light = ink.highlights.errorLines [file: filepath, line: +lineno - 1]
+          console.log filepath, lineno, light
+          highlighters.push(light)
+  # yet another HACK !!
+  # we could change this after ink is updated see:
+  # github.com/JunoLab/atom-ink/commit/095fb1d73907c562f462b8d66e846cfd17a72ea3
+  destroyResult = widget.destroy.bind widget
+  widget.destroy = () ->
+    highlight.destroy() for highlight in highlighters
+    destroyResult()
+  # finally let's build the tree
+  return recurseTree(stack, {}, stack)
+
 # Takes a value from the nrepl and returns an HTML/js object to display
 render = (result) ->
   if result.value
@@ -34,13 +79,12 @@ render = (result) ->
     return recurseTree(tree)
   else if result.ex
     if result.ex.indexOf('\n') == -1
-      div = document.createElement("div")
-      div.style.whiteSpace = 'pre'
-      div.innerHTML = result.ex
-      return div
+      return recurseTree([result.ex])
     else
-      lines = result.ex.split('\n')
-      return recurseTree(lines, {}, lines)
+      return null
+      # this is a HACK !!
+      # we return null and wait for an ink-result. We then call prettyException
+      # and set its content with (highlights + hyperlinks)
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
@@ -61,4 +105,5 @@ module.exports = {
   recurseTree: recurseTree,
   render: render,
   inkResult: inkResult
+  prettyException: prettyException
 }

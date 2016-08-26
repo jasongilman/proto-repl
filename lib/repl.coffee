@@ -160,12 +160,18 @@ class Repl
       io = options.inlineOptions
       editor = io.editor # the text editor to show the inline display in
       row = io.range.end.row # the row where to display the result
-      if not (result.err or result.out) # avoid msgs to the console
-        inkOpts = ValueRenderer.inkResult(result)
-        # Add new inline view
-        result = new @ink.Result editor, [row, row], inkOpts
-        # Adding the class here lets us apply proto repl specific styles to the display.
-        result.view.classList.add 'proto-repl'
+      return null if (result.err or result.out) # avoid msgs to the console
+
+      inkOpts = ValueRenderer.inkResult(result)
+      # Add new inline view
+      widget = new @ink.Result editor, [row, row], inkOpts
+      # Adding the class here lets us apply proto repl specific styles to the
+      # display
+      widget.view.classList.add 'proto-repl'
+
+      if result.ex? and result.ex.length > 100
+        content = ValueRenderer.prettyException(result, widget, @ink)
+        widget.setContent(content, error: true)
 
   # Executes the given code string.
   # Valid options:
