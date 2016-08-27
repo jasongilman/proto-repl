@@ -31,7 +31,7 @@ recurseTree = ([head, button_options, children...]) ->
 # highlighting and hyperlinks
 prettyException = (result, widget, ink) ->
   lines = result.ex.split('\n')
-  stackFrame = /(\S+)\/([\w\*\+\!-_\'\?]+).*?\.clj:(\d+)/ # (ns | .)* / fn
+  stackFrame = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/ # (ns | .)* / fn
   evalfn = /eval\d+/ # anonymous function created by clojure
   stack = []
   highlighters = []
@@ -54,13 +54,15 @@ prettyException = (result, widget, ink) ->
     # TODO: create an <a> and link it to the file
     # use (.*?)(\(\S+:\d+\)) regex to insert hyperlinks to the exception
     do (symbol, lineno) -> # avoid losing bindings
-      protoRepl.executeCode "(:file (meta #{symbol}))",
+      protoRepl.executeCode "(let [path (:file (meta #{symbol}))]
+                              (if (.startsWith path (System/getProperty \"user.dir\"))
+                                path
+                                (.getPath (clojure.java.io/resource path))))",
       displayInRepl: false
       resultHandler: (res, opts) ->
         if res.value
           filepath = protoRepl.parseEdn(res.value)
           light = ink.highlights.errorLines [file: filepath, line: +lineno - 1]
-          console.log filepath, lineno, light
           highlighters.push(light)
   # yet another HACK !!
   # we could change this after ink is updated see:
