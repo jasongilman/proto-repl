@@ -31,8 +31,11 @@ recurseTree = ([head, button_options, children...]) ->
 # highlighting and hyperlinks
 prettyException = (result, widget, ink) ->
   lines = result.ex.split('\n')
-  stackFrame = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/ # (ns | .)* / fn
+  # extract ns, fn and line number
+  stackFrame = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/
   evalfn = /eval\d+/ # anonymous function created by clojure
+  # extract file:number and the text to the left
+  link = /(.*?)(\(\S+:\d+\))/
   stack = []
   highlighters = []
   for line in lines
@@ -50,10 +53,20 @@ prettyException = (result, widget, ink) ->
       continue
 
     symbol = "\#\'#{ns}/#{fn}" # rebuild clojure symbol
-    stack.push(line)
-    # TODO: create an <a> and link it to the file
-    # use (.*?)(\(\S+:\d+\)) regex to insert hyperlinks to the exception
-    do (symbol, lineno) -> # avoid losing bindings
+    [match, text, fileNum] = link.exec(line)
+    frameText = document.createElement('span')
+    frameText.innerHTML = text
+    frameLink = document.createElement('a')
+    frameLink.style.color = "#ED4337"
+    frameLink.style.fontStyle = "italic"
+    frameLink.innerHTML = fileNum
+    frameLink.href = '#'
+    frame = document.createElement('div')
+    frame.appendChild(frameText)
+    frame.appendChild(frameLink)
+    console.log text, fileNum
+    stack.push(frame)
+    do (symbol, lineno, frameLink) -> # avoid losing bindings
       protoRepl.executeCode "(let [path (:file (meta #{symbol}))]
                               (if (.startsWith path (System/getProperty \"user.dir\"))
                                 path
@@ -64,6 +77,10 @@ prettyException = (result, widget, ink) ->
           filepath = protoRepl.parseEdn(res.value)
           light = ink.highlights.errorLines [file: filepath, line: +lineno - 1]
           highlighters.push(light)
+          frameLink.onclick = ->
+            atom.workspace.open filepath,
+              initialLine: +lineno - 1
+              searchAllPanes: true
   # yet another HACK !!
   # we could change this after ink is updated see:
   # github.com/JunoLab/atom-ink/commit/095fb1d73907c562f462b8d66e846cfd17a72ea3
