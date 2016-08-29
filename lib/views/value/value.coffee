@@ -1,5 +1,5 @@
 
-TreeView = require '../tree-view'# temporary usage of copy of Atom Ink Tree view
+TreeView = require './tree-view'# temporary usage of copy of Atom Ink Tree view
 
 # A recursive function that can convert a tree of values to
 # display into an Atom Ink tree view. Sub-branches are expandable.
