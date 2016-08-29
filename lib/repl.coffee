@@ -1,7 +1,7 @@
 {Task, Emitter} = require 'atom'
 
 Spinner = require './load-widget'
-ValueRenderer = require './views/value'
+Renderer = require './views/value'
 ReplTextEditor = require './views/repl-text-editor'
 InkConsole = require './views/ink-console'
 LocalReplProcess = require './process/local-repl-process'
@@ -162,16 +162,14 @@ class Repl
       row = io.range.end.row # the row where to display the result
       return null if (result.err or result.out) # avoid msgs to the console
 
-      inkOpts = ValueRenderer.inkResult(result)
+      opts = Renderer.options(result)
       # Add new inline view
-      widget = new @ink.Result editor, [row, row], inkOpts
+      widget = new @ink.Result editor, [row, row], opts
       # Adding the class here lets us apply proto repl specific styles to the
       # display
       widget.view.classList.add 'proto-repl'
-
-      if result.ex? and result.ex.length > 100
-        content = ValueRenderer.prettyException(result, widget, @ink)
-        widget.setContent(content, error: true)
+      view = Renderer.render(result, widget, @ink)
+      widget.setContent(view, opts)
 
   # Executes the given code string.
   # Valid options:

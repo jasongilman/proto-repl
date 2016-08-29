@@ -1,18 +1,5 @@
 
-edn_reader = require '../proto_repl/proto_repl/edn_reader.js'
 TreeView = require '../tree-view'# temporary usage of copy of Atom Ink Tree view
-
-# Parses the edn string and returns a displayable tree.  A tree is an array
-# whose first element is a string of the root of the tree. The rest of the
-# elements are branches off the root. Each branch is another tree. A leaf is
-# represented by a vector of one element.
-ednToDisplayTree = (ednString) ->
-  try
-    edn_reader.to_display_tree(ednString)
-  catch error
-    # Some responses from the REPL may be unparseable as in the case of var refs
-    # like #'user/reset. We'll just return the original string in that case.
-    return [ednString]
 
 # A recursive function that can convert a tree of values to
 # display into an Atom Ink tree view. Sub-branches are expandable.
@@ -29,8 +16,8 @@ recurseTree = ([head, button_options, children...]) ->
 
 # Modify an existing ink-result (widget) to display a customized exception with
 # highlighting and hyperlinks
-prettyException = (result, widget, ink) ->
-  lines = result.ex.split('\n')
+stacktrace = (rawText, widget, ink) ->
+  lines = rawText.split('\n')
   # extract ns, fn and line number
   stackFrame = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/
   evalfn = /eval\d+/ # anonymous function created by clojure
@@ -64,8 +51,7 @@ prettyException = (result, widget, ink) ->
     frame = document.createElement('div')
     frame.appendChild(frameText)
     frame.appendChild(frameLink)
-    console.log text, fileNum
-    stack.push(frame)
+    stack.push(frame) # make the hyperlink and text part of the stacktrace
     do (symbol, lineno, frameLink) -> # avoid losing bindings
       protoRepl.executeCode "(let [path (:file (meta #{symbol}))]
                               (if (.startsWith path (System/getProperty \"user.dir\"))
@@ -88,41 +74,38 @@ prettyException = (result, widget, ink) ->
   widget.destroy = () ->
     highlight.destroy() for highlight in highlighters
     destroyResult()
-  # finally let's build the tree
-  return recurseTree(stack, {}, stack)
+  # finally return a renderable tree struct
+  return stack
 
 # Takes a value from the nrepl and returns an HTML/js object to display
-render = (result) ->
+render = (result, widget, ink) ->
   if result.value
-    tree = ednToDisplayTree(result.value)
+    tree = protoRepl.ednToDisplayTree(result.value)
     return recurseTree(tree)
   else if result.ex
     if result.ex.indexOf('\n') == -1
       return recurseTree([result.ex])
     else
-      return null
-      # this is a HACK !!
-      # we return null and wait for an ink-result. We then call prettyException
-      # and set its content with (highlights + hyperlinks)
+      return recurseTree(stacktrace(result.ex, widget, ink))
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
 # takes a msg from the nrepl and returns an object with all necessary options
 # to display it as an ink-inline-result
-inkResult = (result) ->
-  return { # use a block result if the exception has more than 100 characters
+options = (result) ->
+  return {
+    # use a block result if the exception has more than 100 characters
     type: if result.ex? and result.ex.length > 100 then 'block' else 'inline',
-    error: result.ex?
-    content: render(result)
+    error: result.ex?,
+    loading: false
   }
 
 # we export this way to avoid having to use 'this/@' on the functions calls
 # thus, we can have namespaced pure functions which don't care about the
 # current scope
 module.exports = {
-  ednToDisplayTree: ednToDisplayTree,
   recurseTree: recurseTree,
   render: render,
-  inkResult: inkResult
-  prettyException: prettyException
+  options: options,
+  stacktrace: stacktrace
 }
