@@ -1,5 +1,6 @@
 
-TreeView = require './tree-view'# temporary usage of copy of Atom Ink Tree view
+TreeView = require './tree-view' # temporary usage of copy of Atom Ink Tree view
+Stacktrace = require './stacktrace'
 
 # A recursive function that can convert a tree of values to
 # display into an Atom Ink tree view. Sub-branches are expandable.
@@ -16,43 +17,35 @@ recurseTree = ([head, button_options, children...]) ->
 
 # Modify an existing ink-result (widget) to display a customized exception with
 # highlighting and hyperlinks
-stacktrace = (rawText, widget, ink) ->
+exception = (rawText, widget, ink) ->
   lines = rawText.split('\n')
   # extract ns, fn and line number
-  stackFrame = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/
-  evalfn = /eval\d+/ # anonymous function created by clojure
+  stackInfo = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/
+  # anonymous function created by clojure
+  evalfn = /eval\d+/
   # extract file:number and the text to the left
-  link = /(.*?)(\(\S+:\d+\))/
+  lineRegex = /(.*?)(\(\S+:\d+\))/
   stack = []
   highlighters = []
   for line in lines
-    frame = stackFrame.exec(line)
+    frame = stackInfo.exec(line)
     if frame is null # not a stacktrace frame
-      stack.push(line)
+      stack.push(Stacktrace.frame(line, '','')[0])
       continue
 
     [_, ns, fn, lineno] = frame
-    if ns.startsWith('clojure') # ignore clojure internal calls
-      stack.push(line)          # we cannot get its filepath anyway
-      continue
-    if evalfn.exec(fn) isnt null # ignore clojure anonymous eval calls created
-      stack.push(line)           # by the repl
+    # ignore clojure internal calls
+    if ns.startsWith('clojure') or evalfn.exec(fn) isnt null
+      stack.push(Stacktrace.frame(line, '','')[0])
       continue
 
     symbol = "\#\'#{ns}/#{fn}" # rebuild clojure symbol
-    [match, text, fileNum] = link.exec(line)
-    frameText = document.createElement('span')
-    frameText.innerHTML = text
-    frameLink = document.createElement('a')
-    frameLink.style.color = "#ED4337"
-    frameLink.style.fontStyle = "italic"
-    frameLink.innerHTML = fileNum
-    frameLink.href = '#'
-    frame = document.createElement('div')
-    frame.appendChild(frameText)
-    frame.appendChild(frameLink)
-    stack.push(frame) # make the hyperlink and text part of the stacktrace
-    do (symbol, lineno, frameLink) -> # avoid losing bindings
+    [_, text, fileNum] = lineRegex.exec(line)
+
+    view = Stacktrace.frame(text, fileNum, '')
+    stack.push(view[0])
+    anchor = view.find('a')
+    do (symbol, lineno, anchor) -> # avoid losing bindings
       protoRepl.executeCode "(let [path (:file (meta #{symbol}))]
                               (if (.startsWith path (System/getProperty \"user.dir\"))
                                 path
@@ -63,7 +56,7 @@ stacktrace = (rawText, widget, ink) ->
           filepath = protoRepl.parseEdn(res.value)
           light = ink.highlights.errorLines [file: filepath, line: +lineno - 1]
           highlighters.push(light)
-          frameLink.onclick = ->
+          anchor.onclick = ->
             atom.workspace.open filepath,
               initialLine: +lineno - 1
               searchAllPanes: true
@@ -75,7 +68,7 @@ stacktrace = (rawText, widget, ink) ->
     highlight.destroy() for highlight in highlighters
     destroyResult()
   # finally return a renderable tree struct
-  return stack
+  return [stack[0], stack.slice(1)]
 
 # Takes a value from the nrepl and returns an HTML/js object to display
 render = (result, widget, ink) ->
@@ -84,9 +77,11 @@ render = (result, widget, ink) ->
     return recurseTree(tree)
   else if result.ex
     if result.ex.indexOf('\n') == -1
-      return recurseTree([result.ex])
+      view = Stacktrace.summary(result.ex)
+      return view[0]
     else
-      return recurseTree(stacktrace(result.ex, widget, ink))
+      [summary, content] = exception(result.ex, widget, ink)
+      return ink.tree.treeView(summary, content, expand: false)
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
@@ -104,8 +99,6 @@ options = (result) ->
 # thus, we can have namespaced pure functions which don't care about the
 # current scope
 module.exports = {
-  recurseTree: recurseTree,
   render: render,
   options: options,
-  stacktrace: stacktrace
 }
