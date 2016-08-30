@@ -1,4 +1,8 @@
 
+# inline results related functionality
+# All necessary pieces to display values, docs and exceptions as html/js objects
+# is done here
+
 TreeView = require './tree-view' # temporary usage of copy of Atom Ink Tree view
 Stacktrace = require './stacktrace'
 
@@ -18,31 +22,25 @@ recurseTree = ([head, button_options, children...]) ->
 # Modify an existing ink-result (widget) to display a customized exception with
 # highlighting and hyperlinks
 exception = (rawText, widget, ink) ->
-  lines = rawText.split('\n')
-  # extract ns, fn and line number
-  stackInfo = /(\S+?)\/([^\s\/]+).*?\.clj:(\d+)/
-  # anonymous function created by clojure
-  evalfn = /eval\d+/
-  # extract file:number and the text to the left
-  lineRegex = /(.*?)(\(\S+:\d+\))/
+  parser = Stacktrace.getParser(rawText)
+  if parser is null # unsupported stacktrace
+    view = Stacktrace.summary(rawText)
+    return [view[0], null] # return preformated text
+
+  [cause, lines] = Stacktrace.splitContent(parser, rawText)
   stack = []
   highlighters = []
   for line in lines
-    frame = stackInfo.exec(line)
+    frame = Stacktrace.parseLine(parser, line)
     if frame is null # not a stacktrace frame
-      stack.push(Stacktrace.frame(line, '','')[0])
+      view = Stacktrace.frame(line, '','')
+      stack.push(view[0])
       continue
 
-    [_, ns, fn, lineno] = frame
-    # ignore clojure internal calls
-    if ns.startsWith('clojure') or evalfn.exec(fn) isnt null
-      stack.push(Stacktrace.frame(line, '','')[0])
-      continue
-
+    [ns, fn, lineno] = frame
     symbol = "\#\'#{ns}/#{fn}" # rebuild clojure symbol
-    [_, text, fileNum] = lineRegex.exec(line)
-
-    view = Stacktrace.frame(text, fileNum, '')
+    [left, hyperlink, right] = Stacktrace.divideLine(parser, line)
+    view = Stacktrace.frame(left, hyperlink, right)
     stack.push(view[0])
     anchor = view.find('a')
     do (symbol, lineno, anchor) -> # avoid losing bindings
@@ -67,8 +65,8 @@ exception = (rawText, widget, ink) ->
   widget.destroy = () ->
     highlight.destroy() for highlight in highlighters
     destroyResult()
-  # finally return a renderable tree struct
-  return [stack[0], stack.slice(1)]
+  # finally return a renderable tree struct (head, body)
+  return [Stacktrace.summary(cause)[0], stack]
 
 # Takes a value from the nrepl and returns an HTML/js object to display
 render = (result, widget, ink) ->
@@ -76,12 +74,9 @@ render = (result, widget, ink) ->
     tree = protoRepl.ednToDisplayTree(result.value)
     return recurseTree(tree)
   else if result.ex
-    if result.ex.indexOf('\n') == -1
-      view = Stacktrace.summary(result.ex)
-      return view[0]
-    else
-      [summary, content] = exception(result.ex, widget, ink)
-      return ink.tree.treeView(summary, content, expand: false)
+    [summary, content] = exception(result.ex, widget, ink)
+    return summary unless content
+    return ink.tree.treeView(summary, content, expand: false)
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
 
