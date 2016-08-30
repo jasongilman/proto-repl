@@ -404,3 +404,7 @@ Accidentally published as major instead of minor but oh well! Now is as good a t
 
 * Fixed #155 - Correcting issues with inline display after Atom update.
 * Fixed #148 - Updating completions provider so it will work with Atom Ink Console.
+
+# 1.5.0
+
+* Defaulting nREPL remote connection port to port number specified in .nrepl-port file. Thanks to @mauricioszabo
