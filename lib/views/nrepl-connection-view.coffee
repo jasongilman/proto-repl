@@ -1,6 +1,8 @@
 {$, View, TextEditorView} = require 'atom-space-pen-views'
+fs = require 'fs'
 
 defaultHost = "localhost"
+defaultPort = ""
 
 module.exports =
   class NReplConnectionView extends View
@@ -12,7 +14,7 @@ module.exports =
           @subview "hostEditor", new TextEditorView(mini: true, placeholderText: defaultHost, attributes: tabindex: 1)
         @div class: "block", =>
           @label "Port"
-          @subview "portEditor", new TextEditorView(mini: true, attributes: tabindex: 2)
+          @subview "portEditor", new TextEditorView(mini: true, placeholderText: defaultPort, attributes: tabindex: 2)
 
     # * `confirmCallback` The {Function} execute on confirm. An {Object} will
     #   be passed to callback function with following keys:
@@ -33,8 +35,17 @@ module.exports =
       @panel.show()
       @hostEditor.focus()
 
+      nreplPortPath = atom.project.getPaths().find (path) -> fs.existsSync("#{path}/.nrepl-port")
+      defaultPort = if nreplPortPath
+        fs.readFileSync("#{nreplPortPath}/.nrepl-port").toString()
+      else
+        ""
+      @portEditor.getModel().setPlaceholderText(defaultPort)
+
     onConfirm: ->
-      @confirmCallback? port: parseInt(@portEditor.getText()), host: @hostEditor.getText() || defaultHost
+      host = @hostEditor.getText() || defaultHost
+      port = @portEditor.getText() || defaultPort
+      @confirmCallback? port: parseInt(port), host: host
       @panel?.hide()
 
     onCancel: ->
