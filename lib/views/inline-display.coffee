@@ -54,7 +54,7 @@ exception = (rawText, widget, ink) ->
           filepath = protoRepl.parseEdn(res.value)
           light = ink.highlights.errorLines [file: filepath, line: +lineno - 1]
           highlighters.push(light)
-          anchor.onclick = ->
+          anchor.on 'click', ->
             atom.workspace.open filepath,
               initialLine: +lineno - 1
               searchAllPanes: true
