@@ -143,6 +143,8 @@ class Repl
     # Only print values from the regular session.
     else if msg.err
       @stderr(msg.err)
+    else if msg.ex
+      @replView.result(msg.ex, true)
     else if msg.value
       @info(@process.getCurrentNs() + "=>")
       if atom.config.get("proto-repl.autoPrettyPrint")
