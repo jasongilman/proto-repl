@@ -228,7 +228,7 @@ class ReplTextEditor
   stdout: (text)->
     @appendText(text)
 
-  result: (text)->
+  result: (text, ex)->
     @appendText(text)
 
   displayExecutedCode: (code)->

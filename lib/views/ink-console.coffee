@@ -76,23 +76,27 @@ class InkConsole
 
   # Writes results from Clojure execution to the REPL. The results are syntactically
   # highlighted as Clojure code.
-  result: (text)->
-    html = @highlighter.highlightSync
-      fileContents: text
-      scopeName: 'source.clojure'
+  result: (text, exception=false)->
+    if exception is false
+      html = @highlighter.highlightSync
+        fileContents: text
+        scopeName: 'source.clojure'
 
-    # Replace non-breaking spaces so that code can be correctly copied and pasted.
-    html = html.replace(/&nbsp;/g, " ")
+      # Replace non-breaking spaces so that code can be correctly copied and pasted.
+      html = html.replace(/&nbsp;/g, " ")
+      div = document.createElement('div')
+      div.innerHTML = html
+      el = div.firstChild
 
-    div = document.createElement('div')
-    div.innerHTML = html
-    el = div.firstChild
+      el.classList.add("proto-repl-console")
+      el.style.fontSize = atom.config.get('editor.fontSize') + "px"
+      el.style.lineHeight = atom.config.get('editor.lineHeight')
+    else
+      el = document.createElement('div')
+      el.style = 'white-space:pre;'
+      el.innerHTML = text
 
-    el.classList.add("proto-repl-console")
-    el.style.fontSize = atom.config.get('editor.fontSize') + "px"
-    el.style.lineHeight = atom.config.get('editor.lineHeight')
-
-    @console.result(el, {error: false})
+    @console.result(el, error: exception)
 
   # Displays code that was executed in the REPL adding it to the history.
   displayExecutedCode: (code)->
