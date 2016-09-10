@@ -17,11 +17,11 @@ module.exports =
   #       text to the right of the hyperlink
   frame: (startText, hyperlink, endText) ->
     view = $$ ->
-      @div =>
-        @span startText
+      @div => #TODO: put all this inline style into a class
+        @span startText, style: 'white-space:pre;'
         @a href: '#', style: 'color: #ED4337; fontStyle: italic',
           hyperlink # NOTE: add a class
-        @span endText
+        @span endText, style: 'white-space:pre;'
     return view
 
   # render an html/jquery object for a stacktrace summary
