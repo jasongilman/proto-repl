@@ -145,51 +145,53 @@ class NReplConnection
               options.retrying = true # Must set this to prevent a double retry.
               options.ns = @currentNs # Retry with current namespace.
               @sendCommand(code, options, resultHandler)
+          else if messages.length == 1 and messages[0].ex?
+            # ignore messages that only contain an exception
+            # see: https://github.com/rksm/node-nrepl-client/pull/7
+            return null
+          else if messages[0].status?[0] is 'eval-error'
+            # detect if the command sent resulted in an exception
+            if options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
+              @redirectHandler(options, resultHandler)
           else
-            # check if something like clojure.repl/pst was called
-            pstCalled = messages.some((msg)=> msg.err? and msg.session == @session) and
-              messages.some((msg)-> msg.value? and msg.value == 'nil')
-            if pstCalled and options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
-              messages = @makeException(messages)
-
             for msg in messages
               # Set the current ns, but only if the message is in response
               # to something sent by the user through the REPL
               if msg.ns && msg.session == @session
                 @currentNs = msg.ns
 
-                # I don't like that we have to have this much logic here about
-                # what messages to send to the handler or not. We have to allow
-                # output for the cmdSession though.
+              # WARNING: If the command resulted in an error, we rely on
+              # @redirectHandler to overwrite the msg before replMsgHandler
+              # receives it
+              if msg.value or msg.err or msg.ex
+                resultHandler(msg)
+              # I don't like that we have to have this much logic here about
+              # what messages to send to the handler or not. We have to allow
+              # output for the cmdSession though.
               if msg.session == @session or (msg.session == @cmdSession && msg.out)
                 @replMsgHandler(msg)
 
-              if msg.value or msg.err or msg.ex
-                resultHandler(msg)
         catch error
           console.error error
           atom.notifications.addError "Error in handler: " + error,
             detail: error, dismissable: true
 
   # this is a HACK: there be dragons !
-  # we take a set of messages from the nrepl and rewrite them to make them look
-  # like an exception. We only do this if there is a single return value, and
-  # there are messages to stderr to the user session. NOTE: should we check if
-  # they all have the same id?
-  makeException: (messages) ->
-    isStderr = (msg) => msg.session == @session and msg.err?
-    isVal = (msg) => msg.session == @session and msg.value?
-    vals = messages.filter(isVal)
-    return messages unless vals.length is 1 # not sure if this is needed
-    # fetch all messages that were sent to stderr for the user
-    errors = messages.filter(isStderr)
-    stderr = errors.map((msg)-> msg.err).join('') # join all err lines
-    exception = vals[0]
-    exception.value = null # overwrite original 'nil'
-    exception.ex = stderr # fake exception
-    modMsgs = messages.filter((msg)-> not isStderr(msg))
-                      .filter((msg)-> not isVal(msg))
-    return modMsgs
+  # we wrap the passed resultHandler with our own code to request the last
+  # exception and return it as if that was the result of the command
+  redirectHandler: (options, resultHandler) ->
+    code = '(do (require \'[clojure.repl :as proto-repl-stack])
+                (let [buff (new java.io.StringWriter)]
+                  (binding [*err* buff]
+                    (proto-repl-stack/pst))
+                  (str buff)))'
+    wrappedHandler = (msg) ->
+      if msg.value?
+        msg.ex = protoRepl.parseEdn(msg.value)
+        msg.value = null
+        resultHandler(msg)
+
+    @sendCommand(code, options, wrappedHandler)
 
   interrupt: ->
     return null unless @connected()
