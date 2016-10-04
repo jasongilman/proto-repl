@@ -1,3 +1,7 @@
+# 1.5.1
+
+* Fixing #166 - Moving definition of `processData`
+
 # 1.5.0
 
 * Defaulting nREPL remote connection port to port number specified in .nrepl-port file. Thanks to @mauricioszabo

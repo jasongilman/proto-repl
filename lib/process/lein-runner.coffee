@@ -25,10 +25,6 @@ module.exports = (currentWorkingDir, leinPath, args) ->
 
     replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
 
-    replProcess.on 'error', (error)->
-      processData("Error starting repl: " + error +
-      "\nYou may need to configure the lein path in proto-repl settings\n")
-
     # The nREPL port is extracted from the output of the REPL process. We could
     # look on the file system for the .nrepl-port file which is more standard
     # but there are issues if you want to start multiple REPLs in the same project.
@@ -48,6 +44,10 @@ module.exports = (currentWorkingDir, leinPath, args) ->
 
     replProcess.stdout.on 'data', processData
     replProcess.stderr.on 'data', processData
+
+    replProcess.on 'error', (error)->
+      processData("Error starting repl: " + error +
+      "\nYou may need to configure the lein path in proto-repl settings\n")
 
     replProcess.on 'close', (code)->
       emit('proto-repl-process:exit')
