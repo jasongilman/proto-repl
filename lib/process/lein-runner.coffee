@@ -17,13 +17,13 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         leinExec = path.join(leinPath, "lein.bat")
       envPath = filteredEnv["Path"] || ""
       filteredEnv["Path"] = envPath + path.delimiter + leinPath
+      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true
     else
       # Mac/Linux
       leinExec = "lein"
       envPath = filteredEnv["PATH"] || ""
       filteredEnv["PATH"] = envPath + path.delimiter + leinPath
-
-    replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
+      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
 
     # The nREPL port is extracted from the output of the REPL process. We could
     # look on the file system for the .nrepl-port file which is more standard

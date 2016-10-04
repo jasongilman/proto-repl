@@ -1,6 +1,7 @@
 # 1.5.1
 
 * Fixing #166 - Moving definition of `processData`
+* Fixing #167 - Changing node.js call to allow startup on windows.
 
 # 1.5.0
 
