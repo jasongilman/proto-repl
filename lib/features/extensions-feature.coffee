@@ -65,7 +65,7 @@ class ExtensionsFeature
              (require '[proto-repl.extension-comm])
              (proto-repl.extension-comm/respond-to
                proto-repl.extension-comm/global-ext-state
-               \"#{id}\" \"#{protoRepl.jsToEdn(response)}\"))"
+               \"#{id}\" \"#{window.protoRepl.jsToEdn(response)}\"))"
     window.protoRepl.executeCode code,
       displayInRepl: false,
       session: NREPL_SESSION,

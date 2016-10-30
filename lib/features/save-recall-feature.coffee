@@ -69,7 +69,7 @@ class SaveRecallFeature
 
         for [uniq, tree] in uniqsToTrees
           # find the unique form in an editor
-          if foundRange = protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
+          if foundRange = @protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
             [editor, range] = foundRange
             # Display the saved values inline next to the call to save them.
             @protoRepl.repl.displayInline(editor, range, tree)

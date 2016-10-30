@@ -146,7 +146,7 @@ class Repl
       else if msg.value
         @info(@process.getCurrentNs() + "=>")
         if atom.config.get("proto-repl.autoPrettyPrint")
-          @replView.result(protoRepl.prettyEdn(msg.value))
+          @replView.result(window.protoRepl.prettyEdn(msg.value))
         else
           @replView.result(msg.value)
 
@@ -206,7 +206,7 @@ class Repl
     if @ink && options.inlineOptions && atom.config.get('proto-repl.showInlineResults')
       io = options.inlineOptions
       handler = @makeInlineHandler io.editor, io.range, (value)->
-        protoRepl.ednToDisplayTree(value)
+        window.protoRepl.ednToDisplayTree(value)
 
       handler(result)
 

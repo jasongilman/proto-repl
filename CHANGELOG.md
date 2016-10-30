@@ -2,6 +2,7 @@
 
 * Fixing #166 - Moving definition of `processData`
 * Fixing #167 - Changing node.js call to allow startup on windows.
+* Fixing #171 - Updating proto repl to work with Atom 1.12.
 
 # 1.5.0
 

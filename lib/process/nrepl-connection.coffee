@@ -68,7 +68,7 @@ class NReplConnection
   determineClojureVersion: (callback)->
     @conn.eval "*clojure-version*", "user", @session, (err, messages)=>
       value = (msg.value for msg in messages)[0]
-      @clojureVersion = new ClojureVersion(protoRepl.parseEdn(value))
+      @clojureVersion = new ClojureVersion(window.protoRepl.parseEdn(value))
       unless @clojureVersion.isSupportedVersion()
         atom.notifications.addWarning "WARNING: This version of Clojure is not supported by Proto REPL. You may experience issues.",
           dismissable: true
