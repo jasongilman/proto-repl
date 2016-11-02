@@ -90,6 +90,7 @@ module.exports = ProtoRepl =
       type: "boolean"
       default: true
 
+  EXTRA_DEPENDENCIES: [['proto-repl', '0.3.1']]
 
   subscriptions: null
   repl: null

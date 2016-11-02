@@ -7,6 +7,12 @@ NReplConnection = require './nrepl-connection'
 
 # The code to send to the repl to exit.
 EXIT_CMD="(System/exit 0)"
+# Windows uses different quoting to other platforms when starting
+# an external task.
+if process.platform is 'win32'
+  mod_quoter = ([mod, version]) -> "\"[#{mod} \"\"#{version}\"\"]\""
+else
+  mod_quoter = ([mod, version]) -> "[#{mod} \"#{version}\"]"
 
 module.exports=
 # Represents a locally running REPL process.
@@ -109,10 +115,17 @@ class LocalReplProcess
                              atom.config.get('proto-repl.bootArgs').split(" ")
       # when "lein" then
       else
+        leinArgs = [].concat(
+          'update-in',
+          ':dependencies',
+          'conj',
+          protoRepl.EXTRA_DEPENDENCIES.map(mod_quoter),
+          '--',
+          atom.config.get('proto-repl.leinArgs').split(" "))
         @process = Task.once LeinRunner,
                              path.resolve(projectPath),
                              atom.config.get('proto-repl.leinPath').replace("/lein",""),
-                             atom.config.get('proto-repl.leinArgs').split(" ")
+                             leinArgs
 
 
     # The process sends stdout
