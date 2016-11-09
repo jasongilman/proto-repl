@@ -1,3 +1,7 @@
+# 1.5.0
+
+* Added ability to execute the var under cursor using the execute-selected-text event. If nothing is selected it will look for a Clojure var under the cursor to evaluate and display the value of.
+
 # 1.4.8
 
 * Fixing #166 - Moving definition of `processData`

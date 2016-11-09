@@ -51,7 +51,7 @@ A local Proto REPL primarily works with projects using [Leiningen](http://leinin
 
 1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project)
 or [the Boot tutorial](https://github.com/boot-clj/boot#install) for help creating a new project.)
-2. Start the REPL by bring up the Command Palette (cmd-alt-p) and select "Proto REPL: Toggle"
+2. Start the REPL by bring up the Command Palette (cmd-shift-p) and select "Proto REPL: Toggle"
   * The REPL can also be started by using the [keyboard shortcuts documented below](#keybindings-and-events).
 
 ### Connecting to a Remote REPL

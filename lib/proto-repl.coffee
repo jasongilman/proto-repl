@@ -339,12 +339,21 @@ module.exports = ProtoRepl =
   #   If this is passed in then the value will not be displayed in the REPL.
   executeSelectedText: (options={})->
     if editor = atom.workspace.getActiveTextEditor()
+      selectedText = editor.getSelectedText()
+      range = editor.getSelectedBufferRange()
+
+      if selectedText == ""
+        # Nothing selected. See if they're over a var.
+        if varName = @getClojureVarUnderCursor(editor)
+          selectedText = varName
+          range.end.column = Infinity
+
       options.inlineOptions =
         editor: editor
-        range: editor.getSelectedBufferRange()
-      options.displayCode = editor.getSelectedText()
+        range: range
+      options.displayCode = selectedText
       # Selected code is executed in a do block so only a single value is returned.
-      @executeCodeInNs("(do #{editor.getSelectedText()})", options)
+      @executeCodeInNs("(do #{selectedText})", options)
 
   # Executes the block of code near the cursor.
   # Valid options:
