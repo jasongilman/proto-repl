@@ -132,3 +132,11 @@
          _ (a/>!! request-chan msg)]
      (when wait-for-response?
        (wait-for-response ext-state msg timeout-ms)))))
+
+(comment
+ (send-command
+  :proto-repl-built-in
+  {:command :display-at-line
+   :file "/Users/jason/work/github_workspace/proto-repl/proto-repl-lib/src/proto_repl/extension_comm.clj"
+   :line 112
+   :data (pr-str [1 2 3])}))

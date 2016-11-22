@@ -109,6 +109,8 @@ module.exports = ProtoRepl =
 
     @saveRecallFeature = new SaveRecallFeature(this)
     @extensionsFeature = new ExtensionsFeature(this)
+    @extensionsFeature.registerCodeExecutionExtension "proto-repl-built-in",
+    (data)=> @handleBuiltInRequest(data)
 
     # Register commands
     @subscriptions.add atom.commands.add 'atom-workspace',
@@ -319,6 +321,24 @@ module.exports = ProtoRepl =
   # the vector will be passed to the callback function.
   registerCodeExecutionExtension: (name, callback)->
     @extensionsFeature.registerCodeExecutionExtension(name, callback)
+
+  # Handles built in code execution extension requests
+  handleBuiltInRequest: (data)->
+    console.log("data", data)
+    if data.command = "display-at-line"
+      line = data.line - 1
+      textEditorPromise = atom.workspace.open(data.file, {initialLine: line, searchAllPanes: true})
+      textEditorPromise.then (editor)=>
+        tree = @ednToDisplayTree(data.data)
+        start = new Point(line)
+        end = new Point(line,Infinity)
+        range = new Range(start, end)
+        console.log "Range", range
+        @repl.displayInline(editor, range, tree)
+    else
+      console.error("Unknown proto repl built in command", data)
+
+
 
   # Executes the given code string in the REPL. See Repl.executeCode for supported
   # options.
