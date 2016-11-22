@@ -84,6 +84,7 @@ module.exports =
             resultHandler: (result)->
               if result.error
                 console.log result.error
+                resolve []
               else
                 completions = window.protoRepl.parseEdn(result.value)
                 suggestions = (completionToSuggestion(prefix, c) for c in completions)
