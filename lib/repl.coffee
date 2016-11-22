@@ -41,7 +41,8 @@ class Repl
 
   constructor: (@extensionsFeature)->
     @emitter = new Emitter
-    @loadingIndicator = new Spinner()
+    # TODO Temporarily disabling loading indicator
+    # @loadingIndicator = new Spinner()
 
   consumeInk: (ink)->
     @ink = ink
@@ -240,12 +241,14 @@ class Repl
     if options.inlineOptions?
       editor = options.inlineOptions.editor
       range = options.inlineOptions.range
+      # TODO Temporarily disabling loading indicator
       # use the id for asynchronous eval/result
-      spinid = @loadingIndicator.startAt(editor, range)
+      # spinid = @loadingIndicator.startAt(editor, range)
 
     @process.sendCommand code, options, (result)=>
+      # TODO Temporarily disabling loading indicator
       # Stop the loading indicator
-      @loadingIndicator.stop(options?.inlineOptions?.editor, spinid)
+      # @loadingIndicator.stop(options?.inlineOptions?.editor, spinid)
       if result.value
         unless @extensionsFeature.handleReplResult(result.value)
           handler(result)
@@ -264,7 +267,8 @@ class Repl
     @process = null
 
   interrupt: ->
-    @loadingIndicator.clearAll()
+    # TODO Temporarily disabling loading indicator
+    # @loadingIndicator.clearAll()
     @process.interrupt()
 
   clear: ->
