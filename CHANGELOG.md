@@ -1,3 +1,7 @@
+# 1.4.10
+
+* Fixed #169 - Adding check when receiving a connection error if we're still connected. 
+
 # 1.4.9
 
 * Added ability to execute the var under cursor using the execute-selected-text event. If nothing is selected it will look for a Clojure var under the cursor to evaluate and display the value of.
