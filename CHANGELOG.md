@@ -1,6 +1,8 @@
-# 1.5.0
+# 1.4.9
 
 * Added ability to execute the var under cursor using the execute-selected-text event. If nothing is selected it will look for a Clojure var under the cursor to evaluate and display the value of.
+* Fixed #163 - REPL results can be selected and copied.
+* Default Atom auto completion will still work even if REPL not running or compliment not present
 
 # 1.4.8
 
