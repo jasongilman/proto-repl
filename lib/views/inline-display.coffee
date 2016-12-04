@@ -69,7 +69,7 @@ exception = (rawText, widget, ink) ->
   return [Stacktrace.summary(cause)[0], stack]
 
 # Takes a value from the nrepl and returns an HTML/js object to display
-render = (result, widget, ink) ->
+module.exports.render = (result, widget, ink) ->
   if result.value
     tree = protoRepl.ednToDisplayTree(result.value)
     return recurseTree(tree)
@@ -82,18 +82,10 @@ render = (result, widget, ink) ->
 
 # takes a msg from the nrepl and returns an object with all necessary options
 # to display it as an ink-inline-result
-options = (result) ->
+module.exports.options = (result) ->
   return {
     # use a block result if the exception has more than 100 characters
     type: if result.ex? and result.ex.length > 100 then 'block' else 'inline',
     error: result.ex?,
     loading: false
   }
-
-# we export this way to avoid having to use 'this/@' on the functions calls
-# thus, we can have namespaced pure functions which don't care about the
-# current scope
-module.exports = {
-  render: render,
-  options: options,
-}
