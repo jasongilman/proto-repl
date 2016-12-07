@@ -1,6 +1,7 @@
 # 1.4.10
 
-* Fixed #169 - Adding check when receiving a connection error if we're still connected. 
+* Fixed #169 - Adding check when receiving a connection error if we're still connected.
+* Fixed #195 - Code entered at REPL is not left in if displayExecutedCodeInRepl is disabled.
 
 # 1.4.9
 

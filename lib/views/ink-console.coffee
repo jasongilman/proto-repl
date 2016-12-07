@@ -105,9 +105,13 @@ class InkConsole
     editor = @console.getInput().editor
     return null unless editor.getText().trim()
     code = editor.getText()
-    # log the input and create a new ink-editor cell for new input
+
+    # This manually adds the executed code to the REPL if it's code that was
+    # entered there. Even if the setting is disabled it still behaves like
+    # you expect a REPL to behave.
     if not atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @displayExecutedCode(code)
+
     # Wrap code in do block so that multiple statements entered at the REPL
     # will execute all of them
     window.protoRepl.executeCode("(do #{code})", displayCode: code)
