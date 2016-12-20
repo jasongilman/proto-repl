@@ -79,13 +79,15 @@ module.exports.render = (result, widget, ink) ->
     return ink.tree.treeView(summary, content, expand: false)
   else if result.doc # fake result but custom display ;)
     return recurseTree(result.doc)
+  else if result.saved
+    return recurseTree(result.saved)
 
 # takes a msg from the nrepl and returns an object with all necessary options
 # to display it as an ink-inline-result
 module.exports.options = (result) ->
   return {
     # use a block result if the exception has more than 100 characters
-    type: if result.ex? and result.ex.length > 100 then 'block' else 'inline',
+    type: if result.ex?.length > 100 then 'block' else 'inline',
     error: result.ex?,
     loading: false
   }

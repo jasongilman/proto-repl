@@ -63,7 +63,7 @@ class SaveRecallFeature
           @protoRepl.stderr("Error polling for saved values #{result.err}")
           return
 
-        console.log result.value
+        # console.log result.value
         # Convert the saved values into a map of uniq forms to the display trees
         uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
 
@@ -72,7 +72,11 @@ class SaveRecallFeature
           if foundRange = @protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
             [editor, range] = foundRange
             # Display the saved values inline next to the call to save them.
-            @protoRepl.repl.displayInline(editor, range, tree)
+            console.log tree
+            @protoRepl.repl.inlineResultHandler saved: tree,
+                inlineOptions:
+                  editor: editor,
+                  range: range
 
   # Polling is currently not used. There's an issue in that if you have a view
   # open it will overwrite the current inline display and collapse it. I need to
