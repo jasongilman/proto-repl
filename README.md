@@ -24,6 +24,7 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 * [Blog Post Announcing Proto REPL Charts](http://blog.element84.com/proto-repl-update.html)
 * [Original Blog Post Announcement](http://blog.element84.com/introducing-proto-repl.html)
 
+
 ## Getting Started
 
 ### Option 1. Quick Start
