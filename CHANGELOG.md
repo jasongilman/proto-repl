@@ -1,3 +1,7 @@
+# 1.4.11
+
+* Fixed #214 - Code copied from the REPL no longer has non-breaking spaces. 
+
 # 1.4.10
 
 * Fixed #169 - Adding check when receiving a connection error if we're still connected.

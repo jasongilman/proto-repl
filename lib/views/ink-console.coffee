@@ -81,6 +81,9 @@ class InkConsole
       fileContents: text
       scopeName: 'source.clojure'
 
+    # Replace non-breaking spaces so that code can be correctly copied and pasted.
+    html = html.replace(/&nbsp;/g, " ")
+
     div = document.createElement('div')
     div.innerHTML = html
     el = div.firstChild
