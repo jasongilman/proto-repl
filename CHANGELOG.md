@@ -1,6 +1,7 @@
 # 1.4.11
 
-* Fixed #214 - Code copied from the REPL no longer has non-breaking spaces. 
+* Fixed #214 - Code copied from the REPL no longer has non-breaking spaces.
+* Fixed #203 - Opening a var in a directory containing a space now works.
 
 # 1.4.10
 
