@@ -1,3 +1,7 @@
+# 1.4.12
+
+* Fixed #217 - Open var on windows does not work.
+
 # 1.4.11
 
 * Fixed #214 - Code copied from the REPL no longer has non-breaking spaces.
