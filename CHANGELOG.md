@@ -1,3 +1,7 @@
+# 1.4.13
+
+* Fixed #220 - Updating package.json to handle newer tool bar versions.
+
 # 1.4.12
 
 * Fixed #217 - Open var on windows does not work.
