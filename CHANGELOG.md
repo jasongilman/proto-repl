@@ -1,3 +1,7 @@
+# 1.4.14
+
+* Fixed issue with loading vars with _ and = in their name.
+
 # 1.4.13
 
 * Fixed #220 - Updating package.json to handle newer tool bar versions.
