@@ -202,4 +202,4 @@ module.exports = EditorUtils =
 
   # Determines if a cursor is within a range of text of a var and returns the text
   getClojureVarUnderCursor: (editor)->
-    editor.getWordUnderCursor wordRegex: /[a-zA-Z0-9\-.$!?\/><*]+/
+    editor.getWordUnderCursor wordRegex: /[a-zA-Z0-9\-.$!?\/><*=_]+/
