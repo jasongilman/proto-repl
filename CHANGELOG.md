@@ -1,3 +1,7 @@
+# 1.4.15
+
+* Fixes #152 - Namespaces with metadata can be successfully parsed.
+
 # 1.4.14
 
 * Fixed issue with loading vars with _ and = in their name.
