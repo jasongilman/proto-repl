@@ -151,6 +151,8 @@ class ReplTextEditor
     @textEditor.buffer.applyChange = (change) ->
       {newStart, oldExtent, newExtent} = change
       start = Point.fromObject(newStart)
+      newExtent = newExtent or
+        Range.fromText(newStart, change.newText).getExtent()
       changeForCompare =
         oldRange: Range(start, start.traverse(oldExtent))
         newRange: Range(start, start.traverse(newExtent))
