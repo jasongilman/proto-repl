@@ -1,9 +1,6 @@
-# 1.4.16
-
-* Fixes #229 - Basic REPL works with the latest version of Atom.
-
 # 1.4.15
 
+* Fixes #229 - Basic REPL works with the latest version of Atom.
 * Fixes #152 - Namespaces with metadata can be successfully parsed.
 
 # 1.4.14
