@@ -1,4 +1,4 @@
-self_hosted_clj = require '../proto_repl/proto_repl/self_hosted.js'
+self_hosted_clj = require '../proto_repl/self_hosted.js'
 {allowUnsafeEval, allowUnsafeNewFunction} = require 'loophole'
 
 DEFAULT_NS = "cljs.user"

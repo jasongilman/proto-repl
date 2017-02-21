@@ -3,7 +3,7 @@
 
 {Range, Point} = require 'atom'
 EditorUtils = require './editor-utils'
-self_hosted_clj = require './proto_repl/proto_repl/self_hosted.js'
+self_hosted_clj = require './proto_repl/self_hosted.js'
 
 # Converts a completion result into a suggestion for Autocomplete
 completionToSuggestion = (prefix, {candidate, docs, type})->
