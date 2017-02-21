@@ -4,14 +4,20 @@
                  [org.clojure/clojurescript "1.7.228"]
                  [fipp "0.6.4"]
                  [replumb "0.1.5-3"]
-                 [proto-repl-charts "0.2.1"]]
+                 [proto-repl-charts "0.3.2"]]
   :plugins [[lein-cljsbuild "1.1.2"]]
   :cljsbuild {:builds [{:source-paths ["src-cljs" "src"]
-                        :compiler {:output-to "../lib/proto_repl/main.js"
-                                   :output-dir "../lib/proto_repl"
-                                   :optimizations :none
-                                   :target :nodejs
-                                   :pretty-print true}}]}
+                        :compiler {:output-to "../lib/proto_repl/edn_reader.js"
+                                   :main proto-repl.edn-reader
+                                   :optimizations :simple
+                                   :output-wrapper true
+                                   :target :nodejs}}
+                       {:source-paths ["src-cljs" "src"]
+                        :compiler {:output-to "../lib/proto_repl/self_hosted.js"
+                                   :main proto-repl.self-hosted
+                                   :optimizations :simple
+                                   :output-wrapper true
+                                   :target :nodejs}}]}
 
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
