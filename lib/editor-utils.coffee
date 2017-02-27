@@ -1,5 +1,5 @@
 {CompositeDisposable, Range, Point} = require 'atom'
-edn_reader = require './proto_repl/proto_repl/edn_reader.js'
+edn_reader = require './proto_repl/edn_reader.js'
 
 module.exports = EditorUtils =
 

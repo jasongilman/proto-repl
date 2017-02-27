@@ -1,9 +1,6 @@
 # Load the ClojureScript code
 # Rebuild it with lein cljsbuild once.
-# edn_reader = require './edn-reader'
-require './proto_repl/goog/bootstrap/nodejs.js'
-require './proto_repl/main.js'
-edn_reader = require './proto_repl/proto_repl/edn_reader.js'
+edn_reader = require './proto_repl/edn_reader.js'
 
 {CompositeDisposable, Range, Point, Emitter} = require 'atom'
 NReplConnectionView = require './views/nrepl-connection-view'

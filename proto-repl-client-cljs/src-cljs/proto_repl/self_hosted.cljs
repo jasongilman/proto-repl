@@ -59,6 +59,9 @@
             callback-fn)
        (callback-fn (clj->js result))))))
 
+(defn -main [& args])
+(set! *main-cli-fn* -main)
+
 (set! (.-exports js/module)
       #js
       {:eval_str eval-for-js
