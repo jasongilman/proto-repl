@@ -1,3 +1,7 @@
+# 1.4.16
+
+* Fixes #231 - Removed global goog namespace 
+
 # 1.4.15
 
 * Fixes #229 - Basic REPL works with the latest version of Atom.
