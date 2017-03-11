@@ -1,6 +1,10 @@
+# 1.4.17
+
+* Fixed #236 - Fixing decompressing of Jar files when opening var definitions in libraries.
+
 # 1.4.16
 
-* Fixes #231 - Removed global goog namespace 
+* Fixes #231 - Removed global goog namespace
 
 # 1.4.15
 

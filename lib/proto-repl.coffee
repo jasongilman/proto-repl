@@ -698,7 +698,10 @@ module.exports = ProtoRepl =
                                          (str (name var-sym) \"/\")
                                          symbol)
                                 var-sym)
-                    {:keys [file line]} (meta (eval `(var ~the-var)))
+                    {:keys [file line protocol]} (meta (eval `(var ~the-var)))
+                    _ (when (and (nil? file) protocol)
+                        (throw (Exception. (format \"The var %s is part of a protocol which Proto REPL is currently unable to open.\"
+                                                   var-sym))))
                     file-path (loop [paths (remove empty? (clojure.string/split (.getPath (.toURI (java.io.File. file)))
                                                                                 #\"/\"))]
                                 (when-not (empty? paths)
@@ -730,10 +733,10 @@ module.exports = ProtoRepl =
                       (let [jar-file (JarFile. jar-path)]
                         (run! (fn [jar-entry]
                                 (let [file (File. decompressed-path (.getName jar-entry))]
-                                  (if (.isDirectory jar-entry)
-                                    (.mkdir file)
+                                  (when-not (.isDirectory jar-entry)
+                                    (.mkdirs (.getParentFile file))
                                     (with-open [is (.getInputStream jar-file jar-entry)]
-                                               (clojure.java.io/copy is file)))))
+                                      (clojure.java.io/copy is file)))))
                               (seq (.toArray (.stream jar-file))))))
                     [decompressed-file-path line])
                   [file-path line])))"
