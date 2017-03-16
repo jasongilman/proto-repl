@@ -1,3 +1,7 @@
+# 1.4.18
+
+* Fixed #221 - Removed use of deprecated shadow selector.
+
 # 1.4.17
 
 * Fixed #236 - Fixing decompressing of Jar files when opening var definitions in libraries.

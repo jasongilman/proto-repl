@@ -6,7 +6,7 @@
 
 // Hightlights blocks that are executed.
 // Based on https://github.com/richrace/highlight-selected
-:host, atom-text-editor, atom-text-editor::shadow {
+:host, atom-text-editor {
   atom-text-editor .highlight.block-execution .region {
     position: absolute;
     pointer-events: none;
@@ -27,7 +27,7 @@ ink-console {
       .result {
         -webkit-user-select: text;
         cursor: text;
-        
+
         > .editor.editor-colors.proto-repl-console {
           padding: 1px;
           background-color: rgba(0, 0, 0, 0);
