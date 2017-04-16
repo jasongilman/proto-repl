@@ -1,3 +1,7 @@
+# 1.4.19
+
+* Partial fix to #243 - Display of results from REPL will use the value string from the REPL instead of re-parsing and printing it.
+
 # 1.4.18
 
 * Fixed #221 - Removed use of deprecated shadow selector.
