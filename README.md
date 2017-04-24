@@ -131,7 +131,7 @@ An arbitrary set of selected Clojure code can be sent to the REPL by selecting t
 
 ### Autocompletion
 
-Proto REPL supports completing of namespaces, vars, functions, local bindings, and Java methods using the [Compliment](https://github.com/alexander-yakushev/compliment) library. Make sure your project includes [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl) as a dependency.
+Proto REPL supports completing of namespaces, vars, functions, local bindings, and Java methods using the [Compliment](https://github.com/alexander-yakushev/compliment) library. Make sure your project includes [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](https://clojars.org/proto-repl) and [![Clojars Project](https://img.shields.io/clojars/v/compliment.svg)](https://clojars.org/compliment) as dependencies.
 
 Tips
 
