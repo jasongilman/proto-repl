@@ -37,7 +37,7 @@ class ReplTextEditor
     else
       options = {}
       # Opens the text editor that will represent the REPL.
-    atom.workspace.open(TAB_TITLE, options).done (textEditor) =>
+    atom.workspace.open(TAB_TITLE, options).then((textEditor) =>
       window.textEditor = textEditor
       @configureNewTextEditor(textEditor)
       @emitter.emit 'proto-repl-text-editor:open'
@@ -51,6 +51,7 @@ class ReplTextEditor
       @onHistoryForward =>
         @replHistory.setCurrentText(@enteredText())
         @setEnteredText(@replHistory.forward())
+    ).catch((err) => console.error(err))
 
 
   # Calls the callback after the text editor has been opened.
