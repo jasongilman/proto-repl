@@ -169,6 +169,9 @@ module.exports = EditorUtils =
         c = ""+result.match[0]
         if ["(","{","["].indexOf(c) >= 0
           if braceOpened == 0
+            # Start the range at the beginning of the line
+            # Accounts for clojure special chars like # and ' etc
+            result.range.start.column = 0;
             ranges.push([result.range.start])
           braceOpened++
         else if [")","}","]"].indexOf(c) >= 0
@@ -184,7 +187,17 @@ module.exports = EditorUtils =
   getCursorInClojureTopBlockRange: (editor)->
     pos = editor.getCursorBufferPosition()
     topLevelRanges = @getTopLevelRanges(editor)
-    topLevelRanges.find (range) -> range.containsPoint(pos)
+    range = topLevelRanges.find (range) -> range.containsPoint(pos)
+
+    # If no range was found but the char under the cursor isn't whitespace,
+    # send the current row to the repl
+    if !range
+      charUnderCursor = editor.getTextInBufferRange([pos, [pos.row, pos.column + 1]])
+      if /\S/.test(charUnderCursor)
+        txt = editor.lineTextForBufferRow(pos.row)
+        range = [[pos.row, 0], [pos.row, txt.length]]
+
+    range
 
   # Searches all open text editors for the given string. Returns a tuple of the
   # editor found and the range within the editor for the first location that
