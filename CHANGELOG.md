@@ -1,6 +1,51 @@
-# 1.5.0
+# 1.4.19
+
+* Partial fix to #243 - Display of results from REPL will use the value string from the REPL instead of re-parsing and printing it.
+
+# 1.4.18
+
+* Fixed #221 - Removed use of deprecated shadow selector.
+
+# 1.4.17
+
+* Fixed #236 - Fixing decompressing of Jar files when opening var definitions in libraries.
+
+# 1.4.16
+
+* Fixes #231 - Removed global goog namespace
+
+# 1.4.15
+
+* Fixes #229 - Basic REPL works with the latest version of Atom.
+* Fixes #152 - Namespaces with metadata can be successfully parsed.
+
+# 1.4.14
+
+* Fixed issue with loading vars with _ and = in their name.
+
+# 1.4.13
+
+* Fixed #220 - Updating package.json to handle newer tool bar versions.
+
+# 1.4.12
+
+* Fixed #217 - Open var on windows does not work.
+
+# 1.4.11
+
+* Fixed #214 - Code copied from the REPL no longer has non-breaking spaces.
+* Fixed #203 - Opening a var in a directory containing a space now works.
+
+# 1.4.10
+
+* Fixed #169 - Adding check when receiving a connection error if we're still connected.
+* Fixed #195 - Code entered at REPL is not left in if displayExecutedCodeInRepl is disabled.
+
+# 1.4.9
 
 * Added ability to execute the var under cursor using the execute-selected-text event. If nothing is selected it will look for a Clojure var under the cursor to evaluate and display the value of.
+* Fixed #163 - REPL results can be selected and copied.
+* Default Atom auto completion will still work even if REPL not running or compliment not present
 
 # 1.4.8
 

@@ -1,9 +1,6 @@
 # Load the ClojureScript code
 # Rebuild it with lein cljsbuild once.
-# edn_reader = require './edn-reader'
-require './proto_repl/goog/bootstrap/nodejs.js'
-require './proto_repl/main.js'
-edn_reader = require './proto_repl/proto_repl/edn_reader.js'
+edn_reader = require './proto_repl/edn_reader.js'
 
 {CompositeDisposable, Range, Point, Emitter} = require 'atom'
 NReplConnectionView = require './views/nrepl-connection-view'
@@ -690,39 +687,67 @@ module.exports = ProtoRepl =
       if editor = atom.workspace.getActiveTextEditor()
         if selected = @getClojureVarUnderCursor(editor)
           text = "(do (require 'clojure.repl)
-                      (require 'clojure.java.shell)
-                      (require 'clojure.java.io)
-                      (let [var-sym '#{selected}
-                            the-var (or (some->> (or (get (ns-aliases *ns*) var-sym) (find-ns var-sym))
-                                                 clojure.repl/dir-fn
-                                                 first
-                                                 name
-                                                 (str (name var-sym) \"/\")
-                                                 symbol)
-                                        var-sym)
-                            {:keys [file line]} (meta (eval `(var ~the-var)))
-                            file-path (.getPath (.getResource (clojure.lang.RT/baseLoader) file))]
-                        (if-let [[_
-                                  jar-path
-                                  partial-jar-path
-                                  within-file-path] (re-find #\"file:(.+/\\.m2/repository/(.+\\.jar))!/(.+)\" file-path)]
-                          (let [decompressed-path (str (System/getProperty \"user.home\")
-                                                       \"/.lein/tmp-atom-jars/\"
-                                                       partial-jar-path)
-                                decompressed-file-path (str decompressed-path \"/\" within-file-path)
-                                decompressed-path-dir (clojure.java.io/file decompressed-path)]
-                            (when-not (.exists decompressed-path-dir)
-                              (println \"decompressing\" jar-path \"to\" decompressed-path)
-                              (.mkdirs decompressed-path-dir)
-                              (clojure.java.shell/sh \"unzip\" jar-path \"-d\" decompressed-path))
-                            [decompressed-file-path line])
-                          [file-path line])))"
+              (require 'clojure.java.shell)
+              (require 'clojure.java.io)
+              (import [java.io File])
+              (import [java.util.jar JarFile])
+              (let [var-sym '#{selected}
+                    the-var (or (some->> (or (get (ns-aliases *ns*) var-sym) (find-ns var-sym))
+                                         clojure.repl/dir-fn
+                                         first
+                                         name
+                                         (str (name var-sym) \"/\")
+                                         symbol)
+                                var-sym)
+                    {:keys [file line protocol]} (meta (eval `(var ~the-var)))
+                    _ (when (and (nil? file) protocol)
+                        (throw (Exception. (format \"The var %s is part of a protocol which Proto REPL is currently unable to open.\"
+                                                   var-sym))))
+                    file-path (loop [paths (remove empty? (clojure.string/split (.getPath (.toURI (java.io.File. file)))
+                                                                                #\"/\"))]
+                                (when-not (empty? paths)
+                                  (let [path (clojure.string/join \"/\" paths)
+                                        res (.getResource (clojure.lang.RT/baseLoader) path)]
+                                    (if-not (nil? res)
+                                            (let [uri (.normalize (.toURI (.getResource (clojure.lang.RT/baseLoader) path)))]
+                                              (if (.isOpaque uri)
+                                                (let [url (.toURL uri)
+                                                      conn (.openConnection url)
+                                                      file (java.io.File. (.. conn getJarFileURL toURI))]
+                                                  (str (.getAbsolutePath file) \"!\" (second (clojure.string/split (.getPath url) #\"!\"))))
+                                                (.getAbsolutePath (java.io.File. uri))))
+                                            (recur (rest paths))))))]
+                (if-let [[_
+                          jar-path
+                          partial-jar-path
+                          within-file-path] (re-find #\"(.+\\.m2.repository.(.+\\.jar))!/(.+)\" file-path)]
+                  (let [decompressed-path (.getAbsolutePath
+                                           (File. (.getAbsolutePath (File.
+                                                                     (System/getProperty \"user.home\")
+                                                                     \"/.lein/tmp-atom-jars/\"))
+                                                  partial-jar-path))
+                        decompressed-file-path (.getAbsolutePath (File. decompressed-path within-file-path))
+                        decompressed-path-dir (clojure.java.io/file decompressed-path)]
+                    (when-not (.exists decompressed-path-dir)
+                      (println \"decompressing\" jar-path \"to\" decompressed-path)
+                      (.mkdirs decompressed-path-dir)
+                      (let [jar-file (JarFile. jar-path)]
+                        (run! (fn [jar-entry]
+                                (let [file (File. decompressed-path (.getName jar-entry))]
+                                  (when-not (.isDirectory jar-entry)
+                                    (.mkdirs (.getParentFile file))
+                                    (with-open [is (.getInputStream jar-file jar-entry)]
+                                      (clojure.java.io/copy is file)))))
+                              (seq (.toArray (.stream jar-file))))))
+                    [decompressed-file-path line])
+                  [file-path line])))"
           @executeCodeInNs text,
             displayInRepl: false
             resultHandler: (result)=>
               if result.value
                 @info("Opening #{result.value}")
                 [file, line] = @parseEdn(result.value)
+                file = file.replace(/%20/g, " ")
                 atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
               else
                 @stderr("Error trying to open: #{result.error}")

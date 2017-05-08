@@ -39,7 +39,9 @@ class NReplConnection
 
     # Handle and show errors
     @conn.on 'error', (err)=>
-      atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
+      # Don't display the error if we're not connected.
+      if @connected()
+        atom.notifications.addError "proto-repl: connection error", detail: err, dismissable: true
       @conn = null
 
     @conn.once 'connect', =>

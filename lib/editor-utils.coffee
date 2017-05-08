@@ -1,4 +1,5 @@
 {CompositeDisposable, Range, Point} = require 'atom'
+edn_reader = require './proto_repl/edn_reader.js'
 
 module.exports = EditorUtils =
 
@@ -10,11 +11,12 @@ module.exports = EditorUtils =
   # Finds a Clojure Namespace declaration in the editor and returns the name
   # of the namespace.
   findNsDeclaration: (editor)->
-    nsName = null
-    editor.scan /\(ns ([^\s\)]+)/, ({match, stop})->
-      nsName = match[1]
-      stop()
-    nsName
+    for range in @getTopLevelRanges(editor)
+      txt = editor.getTextInBufferRange(range)
+      try
+        return edn_reader.parse(txt)[1] if txt.match(/^\(ns /)
+      catch e
+        return null
 
   # Returns true if the position in the text editor is in a Markdown file in a
   # code block that contains Clojure.
@@ -202,4 +204,4 @@ module.exports = EditorUtils =
 
   # Determines if a cursor is within a range of text of a var and returns the text
   getClojureVarUnderCursor: (editor)->
-    editor.getWordUnderCursor wordRegex: /[a-zA-Z0-9\-.$!?\/><*]+/
+    editor.getWordUnderCursor wordRegex: /[a-zA-Z0-9\-.$!?\/><*=_]+/

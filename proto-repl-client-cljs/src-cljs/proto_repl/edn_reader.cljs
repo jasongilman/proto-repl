@@ -40,7 +40,8 @@
    off the root. Each branch is another tree. A leaf is represented by a vector
    of one element."
   [v]
-  (-> v r/read-string d/to-display-tree* clj->js))
+  (let [parsed (r/read-string v)]
+    (clj->js (d/to-display-tree* v parsed))))
 
 (defn ^:export saved-values-to-display-trees
   "Converts values saved using proto-repl-lib proto-repl/save into a displayable

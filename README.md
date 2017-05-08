@@ -16,6 +16,15 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 * [Atom Tool Bar](https://atom.io/packages/tool-bar) integration that allows controlling the REPL.
 * Extensible with the ability to [add your own commands](#extending-proto-repl) or [create visualizations](https://github.com/jasongilman/proto-repl-charts).
 
+## Videos/Blog Posts
+
+* [Clojure Conj 2016 video](https://youtu.be/buPPGxOnBnk) - Talks about history and reasoning behind Proto REPL. Skip to [11:55](https://youtu.be/buPPGxOnBnk?t=11m55s) for demos including [Proto REPL Charts](https://github.com/jasongilman/proto-repl-charts)
+* [Purely Functional](https://purelyfunctional.tv/speaker-interview/jason-gilman-clojureconj-2016-interview/) interview for Clojure Conj 2016
+* [Data Visualization with Proto REPL Charts video](https://youtu.be/BJUI1ntfPy8)
+* [Blog Post Announcing Proto REPL Charts](http://blog.element84.com/proto-repl-update.html)
+* [Original Blog Post Announcement](http://blog.element84.com/introducing-proto-repl.html)
+
+
 ## Getting Started
 
 ### Option 1. Quick Start
@@ -23,13 +32,13 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 These are the instructions get up and running quickly. Most features will work but for the best results see [Option 2](#option-2-opinionated-complete-best-way-to-setup-atom-for-clojure-development-with-proto-repl).
 
 1. Install [Atom](https://atom.io/).
-2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/)
+2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/) or [Boot](https://github.com/boot-clj/boot)
 3. Go to Atom settings, select "+ Install" and search for "proto-repl".
 5. Install the Atom Ink package.
 6. Go to the Proto REPL Settings (Atom Preferences, then packages, then Proto REPL)
-7. Modify "Lein Path" to the path where Leiningen was installed. Use `which lein` in a terminal to get the path.
+7. Modify "Lein Path" or "Boot Path" to the path where Leiningen/Boot was installed. Use `which lein` in a terminal to get the path.
   * This should be something like `/some/path/bin/lein`
-  * Proto REPL also works with [Boot](https://github.com/boot-clj/boot)
+  * If using Boot deselect the option for Prefer Leiningen.
 8. Restart Atom.
 9. [Start a REPL](#start-a-local-clojure-repl)
 

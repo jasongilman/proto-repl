@@ -39,27 +39,29 @@
 
 (defn to-display-tree*
   "Converts a value into a displayable tree. "
-  [v]
-  (let [; Defines a function that will print the value but not let it exceed
-        ; the max table width. This is used for branch representations
-        trimmed-str #(fit-value-to-width max-table-width (pr-str %) false)]
-   (cond
-     ;; Handles a map.
-     (map? v)
-     (into [(trimmed-str v) {}]
-        ;; Loop over each map entry
-        (map (fn [entry]
-               [(trimmed-str entry)
-                {}
-                (to-display-tree* (second entry))])
-             v))
+  ([v]
+   (to-display-tree* (pr-str v) v))
+  ([value-string v]
+   (let [; Defines a function that will print the value but not let it exceed
+         ; the max table width. This is used for branch representations
+         trimmed-str #(fit-value-to-width max-table-width % false)]
+    (cond
+      ;; Handles a map.
+      (map? v)
+      (into [(trimmed-str value-string) {}]
+         ;; Loop over each map entry
+         (map (fn [entry]
+                [(trimmed-str (pr-str entry))
+                 {}
+                 (to-display-tree* (second entry))])
+              v))
 
-     ;; Handles a sequence
-     (or (sequential? v) (set? v))
-     (into [(trimmed-str v) {}] (map to-display-tree* v))
+      ;; Handles a sequence
+      (or (sequential? v) (set? v))
+      (into [(trimmed-str value-string) {}] (map to-display-tree* v))
 
-     ;; Leaf
-     :else [(pr-str v)])))
+      ;; Leaf
+      :else [value-string]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
