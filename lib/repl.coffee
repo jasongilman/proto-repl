@@ -222,6 +222,8 @@ class Repl
   # user.
   # * displayInRepl - Boolean to indicate if the result value or error should be
   # displayed in the REPL. Defaults to true.
+  # * doBlock - Boolean to indicate if the incoming code should be wrapped in a
+  # do block when it contains multiple statements.
   executeCode: (code, options={})->
     return null unless @running()
 
@@ -243,7 +245,18 @@ class Repl
       # use the id for asynchronous eval/result
       spinid = @loadingIndicator.startAt(editor, range)
 
-    @process.sendCommand code, options, (result)=>
+    # Wrap multiple statements in do block if necessary
+    if options.doBlock?
+      numberOfStatements = @getNumberOfStatements code
+      command =
+        if numberOfStatements == 1 or numberOfStatements == 0
+          code
+        else
+          "(do #{code})"
+    else
+      command = code
+
+    @process.sendCommand command, options, (result)=>
       # Stop the loading indicator
       @loadingIndicator.stop(options?.inlineOptions?.editor, spinid)
       if result.value
@@ -251,6 +264,36 @@ class Repl
           handler(result)
       else
         handler(result)
+
+  # Gets the number of statements in a given code string
+  getNumberOfStatements: do ()->
+    delimiterMatches = (delimiter)->
+      if delimiter == "("
+        ")"
+      else if delimiter == "{"
+        "}"
+      else if delimiter == "["
+        "]"
+
+    (code)->
+      delimiters = code.match(/[\(\)\[\]\{\}]/g) or []
+      stack = []
+      statements = 0
+
+      for delimiter in delimiters
+        if delimiter == "(" or delimiter == "{" or delimiter == "["
+          stack.push delimiter
+        else
+          if delimiter != delimiterMatches stack.pop()
+            return null # malformed code
+
+        if stack.length == 0
+          statements++
+
+      if stack.length > 0
+        null # malformed code
+      else
+        statements
 
   # # Executes the text that was entered in the entry area
   executeEnteredText: ->

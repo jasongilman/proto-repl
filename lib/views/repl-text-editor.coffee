@@ -244,6 +244,4 @@ class ReplTextEditor
         code = @enteredText()
         @clearEnteredText()
         @replHistory.setLastTextAndAddNewEntry(code)
-        # Wrap code in do block so that multiple statements entered at the REPL
-        # will execute all of them
-        window.protoRepl.executeCode("(do #{code})", displayCode: code)
+        window.protoRepl.executeCode(code, displayCode: code, doBlock: true)

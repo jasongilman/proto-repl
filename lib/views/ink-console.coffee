@@ -115,6 +115,4 @@ class InkConsole
     if not atom.config.get('proto-repl.displayExecutedCodeInRepl')
       @displayExecutedCode(code)
 
-    # Wrap code in do block so that multiple statements entered at the REPL
-    # will execute all of them
-    window.protoRepl.executeCode("(do #{code})", displayCode: code)
+    window.protoRepl.executeCode(code, displayCode: code, doBlock: true)
