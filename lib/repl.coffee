@@ -247,12 +247,11 @@ class Repl
 
     # Wrap multiple statements in do block if necessary
     if options.doBlock?
-      numberOfStatements = @getNumberOfStatements code
       command =
-        if numberOfStatements == 1 or numberOfStatements == 0
-          code
-        else
+        if @needsDoBlock code
           "(do #{code})"
+        else
+          code
     else
       command = code
 
@@ -265,35 +264,16 @@ class Repl
       else
         handler(result)
 
-  # Gets the number of statements in a given code string
-  getNumberOfStatements: do ()->
-    delimiterMatches = (delimiter)->
-      if delimiter == "("
-        ")"
-      else if delimiter == "{"
-        "}"
-      else if delimiter == "["
-        "]"
-
-    (code)->
-      delimiters = code.match(/[\(\)\[\]\{\}]/g) or []
-      stack = []
-      statements = 0
-
-      for delimiter in delimiters
-        if delimiter == "(" or delimiter == "{" or delimiter == "["
-          stack.push delimiter
-        else
-          if delimiter != delimiterMatches stack.pop()
-            return null # malformed code
-
-        if stack.length == 0
-          statements++
-
-      if stack.length > 0
-        null # malformed code
-      else
-        statements
+  # Checks if we need to wrap the code in a do block
+  needsDoBlock: (code) ->
+    # currently only white lists for single symbol/keyword, such as :cljs/quit
+    if code.match(/^\s*[A-Za-z0-9\-!?.<>:\/*=+_]+\s*$/g) != null
+      false
+    # or single un-nested call, such as (fig-status)
+    else if code.match(/^\s*\([^\(\)]+\)\s*$/g) != null
+      false
+    else
+      true
 
   # # Executes the text that was entered in the entry area
   executeEnteredText: ->
