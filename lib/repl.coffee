@@ -180,11 +180,8 @@ class Repl
 
     # Add new inline view
     r = new @ink.Result editor, [end, end],
-          content: view, error: error, type: if error then 'block' else 'inline'
-
-    # Adding the class here lets us apply proto repl specific styles to the display.
-    r.view.classList.add 'proto-repl'
-
+          content: view, error: error, {type: if error then 'block' else 'inline',
+                                        scope: 'proto-repl'}
 
   # Makes an inline displaying result handler
   # * editor - the text editor to show the inline display in
