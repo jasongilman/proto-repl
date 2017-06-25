@@ -348,8 +348,8 @@ module.exports = ProtoRepl =
         editor: editor
         range: range
       options.displayCode = selectedText
-      # Selected code is executed in a do block so only a single value is returned.
-      @executeCodeInNs("(do #{selectedText})", options)
+      options.doBlock = true
+      @executeCodeInNs(selectedText, options)
 
   # Executes the block of code near the cursor.
   # Valid options:

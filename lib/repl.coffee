@@ -219,6 +219,8 @@ class Repl
   # user.
   # * displayInRepl - Boolean to indicate if the result value or error should be
   # displayed in the REPL. Defaults to true.
+  # * doBlock - Boolean to indicate if the incoming code should be wrapped in a
+  # do block when it contains multiple statements.
   executeCode: (code, options={})->
     return null unless @running()
 
@@ -240,7 +242,17 @@ class Repl
       # use the id for asynchronous eval/result
       spinid = @loadingIndicator.startAt(editor, range)
 
-    @process.sendCommand code, options, (result)=>
+    # Wrap multiple statements in do block if necessary
+    if options.doBlock?
+      command =
+        if @needsDoBlock code
+          "(do #{code})"
+        else
+          code
+    else
+      command = code
+
+    @process.sendCommand command, options, (result)=>
       # Stop the loading indicator
       @loadingIndicator.stop(options?.inlineOptions?.editor, spinid)
       if result.value
@@ -248,6 +260,17 @@ class Repl
           handler(result)
       else
         handler(result)
+
+  # Checks if we need to wrap the code in a do block
+  needsDoBlock: (code) ->
+    # currently only white lists for single symbol/keyword, such as :cljs/quit
+    if code.match(/^\s*[A-Za-z0-9\-!?.<>:\/*=+_]+\s*$/g) != null
+      false
+    # or single un-nested call, such as (fig-status)
+    else if code.match(/^\s*\([^\(\)]+\)\s*$/g) != null
+      false
+    else
+      true
 
   # # Executes the text that was entered in the entry area
   executeEnteredText: ->
