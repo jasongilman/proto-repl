@@ -1,3 +1,8 @@
+# 1.4.20
+
+* Incorporated pull request #252 for ink updates.
+* Improved support for use with ClojureScript and executing things like `:cljs/quit`.
+
 # 1.4.19
 
 * Partial fix to #243 - Display of results from REPL will use the value string from the REPL instead of re-parsing and printing it.
