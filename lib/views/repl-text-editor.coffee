@@ -111,7 +111,7 @@ class ReplTextEditor
 
   configureTextEditorBasics: ()->
     # Add a class to the text editor so it can be styled
-    @textEditor.editorElement.className += " proto-repl-repl"
+    @textEditor.element.className += " proto-repl-repl"
 
     # Force the tab to have a title
     @textEditor.getTitle = -> TAB_TITLE
