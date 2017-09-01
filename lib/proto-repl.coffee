@@ -753,4 +753,4 @@ module.exports = ProtoRepl =
                 @stderr("Error trying to open: #{result.error}")
 
   remoteNreplFocusNext: ->
-    @connectionView.toggleFocus()
+    @connectionView ? @connectionView.toggleFocus()
