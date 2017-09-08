@@ -1,12 +1,9 @@
-self_hosted_clj = require '../proto_repl/self_hosted.js'
-{allowUnsafeEval, allowUnsafeNewFunction} = require 'loophole'
+childProcess = require 'child_process'
 
 DEFAULT_NS = "cljs.user"
 
 module.exports=
 
-# This is fake process that allows a self hosted ClojureScript REPL. The Related
-# code is in edn-reader.self-hosted.
 class SelfHostedProcess
 
   # A set of functions for writing text to the REPL.
@@ -20,35 +17,84 @@ class SelfHostedProcess
   getType: ->
     "SelfHosted"
 
-  start: ({messageHandler, startCallback})->
+  start: (@replOptions)->
     return if @running()
     @currentNs = DEFAULT_NS
-    @messageHandler = messageHandler
-    @startRedirectingConsoleOutput()
-    startCallback()
+    projectPath = atom.project.getPaths()[0]
+
+    processData = (data) =>
+      lines = data.toString().split('\n')
+      s = lines
+            .map (l) -> l.replace(/^(\s*#_=> )+/, '')
+            .filter (l) => l and not l.startsWith(@currentNs + '=>') and not l.startsWith('cljs.user=>')
+            .join('\n')
+
+      # Defer processing so that finishing prompt does not front-run error stream
+      setTimeout (() =>
+        if @responseBuffer
+          @responseBuffer.push s
+
+          # Command finishes when we get next prompt
+          if lines.length > 0 and lines[lines.length - 1].startsWith(@currentNs + '=>')
+            if @errorBuffer.length > 0
+              result = @errorBuffer.join('')
+              cb = @errorCb
+            else
+              result = @responseBuffer.join('')
+              cb = @successCb
+            @successCb = null
+            @errorCb = null
+            @responseBuffer = null
+            @errorBuffer = null
+
+            cb(result)
+        else if s
+          @replView.stdout s
+      ), 0
+
+    processDataErr = (data) =>
+      if @errorBuffer
+        @errorBuffer.push data.toString()
+      else
+        @replView.stderr data.toString()
+
+    # Will this work on Windows?
+    @replProcess = childProcess.spawn "lumo", ['-d'], cwd: projectPath, shell: true
+
+    @replProcess.stderr.on 'data', processDataErr
+    @replProcess.stdout.on 'data', processData
+
+    @replProcess.on 'error', (error) ->
+      @replProcess = null
+      @replView.stderr("Error starting repl: " + error +
+      "\nYou may need to configure the lein path in proto-repl settings\n")
+
+    @replProcess.on 'close', (code) =>
+      @replProcess = null
+      @replView.stderr "Lumo repl stopped running (exit code #{code})\n"
+      @replOptions.stopCallback()
+
+    @replOptions.startCallback()
 
   # Evaluates the clojure code invoking successCb on success and errorCb on failure.
   eval: (code, successCb, errorCb)->
-    allowUnsafeEval =>
-      allowUnsafeNewFunction =>
-        # console.debug("Evaling", code)
-        self_hosted_clj.eval_str code, (result)=>
-          # console.debug("Result:", result)
-          if result["success?"]
-            successCb(result.value)
-          else
-            error = result.error.cause?.toString() ||
-              result.error.toString()
-            errorCb(error)
+    if not @replProcess
+      errorCb("Lumo repl is not running\n")
+      return
+
+    # Maybe we should use queueing to prevent evaling when a command is still running?
+    @successCb = successCb
+    @errorCb = errorCb
+    @responseBuffer = []
+    @errorBuffer = []
+
+    @replProcess.stdin.write code + '\n'
 
   # Switches to the specified namespace. Calls successCb if successful and
   # errorCb if there was a problem.
   switchNs: (ns, successCb, errorCb)->
-    @eval "(in-ns '#{ns})",
-      (()=>
-        @currentNs = ns
-        successCb()),
-      ((error)-> errorCb(error))
+    @currentNs = ns
+    @eval "(in-ns '#{ns})", successCb, errorCb
 
   getCurrentNs: ->
     @currentNs
@@ -60,20 +106,14 @@ class SelfHostedProcess
   #   * ns - the namespace to execute the code in.
   # * resultHandler - The result handler to handle the resulting value.
   sendCommand: (code, options, resultHandler)->
-    # beef up error responses. It currently returns
-    # TypeError: Cannot read property 'call' of undefined at eval
-    # if somewhere within the code you refer to a function that's not defined.
-
-    # another problem is with defining functions that refer to vars that don't exists
-    # There's no error until runtime. But with another user or replumb reepl they get compilation errors.
     successCb = (value)=>
       if options.displayInRepl != false
-        @messageHandler value: value
+        @replOptions.messageHandler value: value
       resultHandler value: value
 
     errorHandler = (error)=>
       if options.displayInRepl != false
-        @messageHandler err: error
+        @replOptions.messageHandler err: error
       resultHandler error: error
 
     if options.ns
@@ -86,47 +126,12 @@ class SelfHostedProcess
     return null
 
   running: ()->
-    @messageHandler?
+    @replProcess?
 
   # Closes the remote connection.
   stop: (session)->
     return unless @running()
-    @stopRedirectingConsoleOutput()
+    @replProcess.kill("SIGKILL")
+    @replProcess = null
+    @replOptions = null
     @replView.info("Self hosted REPL stopped")
-
-  # Redirects console.log and friends to the Proto REPL repl.
-  startRedirectingConsoleOutput: ->
-    if @originalLog
-      console.log("Already redirecting logging")
-      return
-    else
-      originalLog = console.log
-      @originalLog = originalLog
-      originalWarn = console.warn
-      @originalWarn = originalWarn
-      originalError = console.error
-      @originalError = originalError
-
-      protoLog = (text)=> @replView.info(text)
-      protoWarn = (text)=> @replView.stderr(text)
-      protoError = (text)=> @replView.stderr(text)
-
-      console.log = ->
-        args = Array.prototype.slice.call(arguments)
-        protoLog(args.join(" "))
-        originalLog.apply console, arguments
-      console.warn = ->
-        args = Array.prototype.slice.call(arguments)
-        protoWarn(args.join(" "))
-        originalWarn.apply console, arguments
-      console.error = ->
-        args = Array.prototype.slice.call(arguments)
-        protoError(args.join(" "))
-        originalError.apply console, arguments
-
-  # Stops redirecting console.log and friends to the Proto REPL repl.
-  stopRedirectingConsoleOutput: ->
-    return unless @originalLog
-    console.log = @originalLog
-    console.warn = @originalWarn
-    console.error = @originalError
