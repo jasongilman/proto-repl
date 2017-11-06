@@ -1,6 +1,7 @@
 {Task} = require 'atom'
 LeinRunner = require.resolve './lein-runner'
 BootRunner = require.resolve './boot-runner'
+GradleRunner = require.resolve './gradle-runner'
 path = require 'path'
 fs = require('fs')
 NReplConnection = require './nrepl-connection'
@@ -38,12 +39,14 @@ class LocalReplProcess
     # Try to find the root of the current project by searching
     # for one of the configuration files
     # build.boot (Boot) or
-    # project.clj (Leiningen)
+    # project.clj (Leiningen) or
+    # gradlew or gradlew.bat (Gradle)
     parentDirectory = path.resolve(currentPath, "..")
 
     if currentPath != parentDirectory and limit < 100
       matches = fs.readdirSync(currentPath).filter (f) ->
-        f == "project.clj" or f == "build.boot"
+        f == "project.clj" or f == "build.boot" or
+        f == "gradlew" or f == "gradlew.bat"
 
       if currentPath and matches.length == 0
         @getRootProject(parentDirectory, limit + 1)
@@ -73,24 +76,24 @@ class LocalReplProcess
     unless projectPath?
       projectPath = atom.project.getPaths()[0]
 
-    # Search for a project.clj or build.boot file.
-    # The if must be used in case of no directory open in Atom.
+    # Search for a project.clj or build.boot or gradle wrapper
+    # file. The if must be used in case of no directory open in Atom.
     projectPath = @getRootProject(projectPath) if projectPath
 
-    bootFound = fs.existsSync(projectPath + "/build.boot")
-    leinFound = fs.existsSync(projectPath + "/project.clj")
+    replsFound = []
+    replsFound.push "boot" if fs.existsSync(projectPath + "/build.boot")
+    replsFound.push "lein" if fs.existsSync(projectPath + "/project.clj")
+    replsFound.push "gradle" if fs.existsSync(projectPath + "/gradlew") or
+      fs.existsSync(projectPath + "/gradlew.bat")
+
     # If we're not in a project or there isn't a
     # project file use the default leiningen project
     if (projectPath?)
-      if bootFound && leinFound
-        if atom.config.get("proto-repl.preferLein")
-          replType = "lein"
-        else
-          replType = "boot"
-      else if bootFound
-        replType = "boot"
-      else if leinFound
-        replType = "lein"
+      if replsFound.length
+        for repl in atom.config.get("proto-repl.preferredRepl")
+          if repl in replsFound
+            replType = repl
+            break
       else
         replType = "lein"
         projectPath = @getDefaultProjectPath()
@@ -102,6 +105,10 @@ class LocalReplProcess
 
     # Start the repl process as a background task
     switch replType
+      when "gradle"
+        @process = Task.once GradleRunner,
+                             path.resolve(projectPath),
+                             atom.config.get('proto-repl.gradleArgs').split(" ")
       when "boot"
         @process = Task.once BootRunner,
                              path.resolve(projectPath),

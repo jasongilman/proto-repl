@@ -32,13 +32,14 @@ Proto REPL is a Clojure development environment and REPL for [Atom](https://atom
 These are the instructions get up and running quickly. Most features will work but for the best results see [Option 2](#option-2-opinionated-complete-best-way-to-setup-atom-for-clojure-development-with-proto-repl).
 
 1. Install [Atom](https://atom.io/).
-2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/) or [Boot](https://github.com/boot-clj/boot)
+2. Install [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html) and [Leiningen](http://leiningen.org/) or [Boot](https://github.com/boot-clj/boot) or have a project with a [Gradle](https://gradle.org) wrapper.
 3. Go to Atom settings, select "+ Install" and search for "proto-repl".
 5. Install the Atom Ink package.
 6. Go to the Proto REPL Settings (Atom Preferences, then packages, then Proto REPL)
 7. Modify "Lein Path" or "Boot Path" to the path where Leiningen/Boot was installed. Use `which lein` in a terminal to get the path.
   * This should be something like `/some/path/bin/lein`
-  * If using Boot deselect the option for Prefer Leiningen.
+  * Gradle projects will always look for the wrapper (standalone Gradle installs are not supported).
+  * If your project has multiple build configurations, use the Preferred Repl option to choose which of lein, boot, or gradle should be preferred.
 8. Restart Atom.
 9. [Start a REPL](#start-a-local-clojure-repl)
 
@@ -56,10 +57,10 @@ Add the [![Clojars Project](https://img.shields.io/clojars/v/proto-repl.svg)](ht
 
 ### Start a Local Clojure REPL
 
-A local Proto REPL primarily works with projects using [Leiningen](http://leiningen.org) or [Boot](http://boot-clj.com/).
+A local Proto REPL primarily works with projects using [Leiningen](http://leiningen.org), [Boot](http://boot-clj.com/), or [Gradle](https://gradle.org) (with [gradle-clojure](https://github.com/gradle-clojure/gradle-clojure)).
 
-1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project)
-or [the Boot tutorial](https://github.com/boot-clj/boot#install) for help creating a new project.)
+1. Open your Clojure project in Atom. (See [the Leiningen tutorial](https://github.com/technomancy/leiningen/blob/stable/doc/TUTORIAL.md#creating-a-project),
+ [the Boot tutorial](https://github.com/boot-clj/boot#install), or [the gradle-clojure documentation](https://github.com/gradle-clojure/gradle-clojure/blob/master/README.md) for help creating a new project.)
 2. Start the REPL by bring up the Command Palette (cmd-shift-p) and select "Proto REPL: Toggle"
   * The REPL can also be started by using the [keyboard shortcuts documented below](#keybindings-and-events).
 
@@ -220,7 +221,7 @@ There's currently a limit of 20 saved values in proto-repl-lib. After debugging 
 
 * [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
   * Not required for self hosted REPL.
-* [Leiningen](http://leiningen.org) or [Boot](https://github.com/boot-clj/boot)
+* [Leiningen](http://leiningen.org), [Boot](https://github.com/boot-clj/boot), or [Gradle](https://gradle.org) (requires use of Gradle wrapper)
   * Not required for self hosted REPL.
 * [Atom Ink](https://atom.io/packages/ink)
   * This is an optional feature but many of Proto REPL's advanced features won't work without it.
