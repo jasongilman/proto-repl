@@ -155,7 +155,7 @@ class ReplTextEditor
       newExtent = newExtent or
         Range.fromText(newStart, change.newText).getExtent()
       changeForCompare =
-        oldRange: Range(start, start.traverse(oldExtent))
+        oldRange: Range(start, start.traverse(oldExtent || start))
         newRange: Range(start, start.traverse(newExtent))
 
       if shouldAllowChange(changeForCompare)
