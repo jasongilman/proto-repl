@@ -53,6 +53,9 @@ module.exports = (currentWorkingDir, args) ->
         when 'input'
           replProcess.stdin.write(text)
         when 'kill'
-          replProcess.kill("SIGKILL")
+          # Send CTRL+D to Gradle to tell it to stop the NREPL gracefully
+          replProcess.stdin.write("\x04")
+          run = () -> replProcess.kill("SIGKILL")
+          setTimeout run, 2500
     catch error
       console.error error

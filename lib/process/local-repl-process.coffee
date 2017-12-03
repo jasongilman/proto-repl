@@ -156,12 +156,6 @@ class LocalReplProcess
 
   # Stops the running process
   stop: ()->
-    try
-      # Tell the process to shutdown
-      @conn.sendCommand EXIT_CMD,true, => return
-      @conn.close()
-    catch error
-      console.log("Error trying to send exit command to REPL.", error)
-    # Kill the process to make sure.
+    @conn.close()
     @process?.send event: 'kill'
     @process = null
