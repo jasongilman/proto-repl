@@ -61,3 +61,9 @@ module.exports =
     resetEditors: ->
       @hostEditor.setText('')
       @portEditor.setText('')
+
+    toggleFocus: ->
+      if @hostEditor.element.hasFocus()
+        @portEditor.element.focus()
+      else
+        @hostEditor.element.focus()

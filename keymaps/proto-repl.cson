@@ -103,3 +103,7 @@
  .platform-linux ink-console atom-text-editor[data-grammar~="clojure"],
  .platform-darwin ink-console atom-text-editor[data-grammar~="clojure"]':
   'enter': 'editor:newline'
+
+# Nrepl connection dialog keybindings
+'atom-workspace .proto-repl.proto-repl-nrepl-connection-dialog':
+  'tab': 'proto-repl:remote-nrepl-focus-next'

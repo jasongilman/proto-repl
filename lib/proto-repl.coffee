@@ -142,6 +142,7 @@ module.exports = ProtoRepl =
       'proto-repl:interrupt': => @interrupt()
       'proto-repl:autoeval-file': => @autoEvalCurrent()
       'proto-repl:stop-autoeval-file': => @stopAutoEvalCurrent()
+      'proto-repl:remote-nrepl-focus-next': => @remoteNreplFocusNext()
 
   # Called by autocomplete-plus to return our Clojure provider
   provide: ->
@@ -757,3 +758,6 @@ module.exports = ProtoRepl =
                 atom.workspace.open(file, {initialLine: line-1, searchAllPanes: true})
               else
                 @stderr("Error trying to open: #{result.error}")
+
+  remoteNreplFocusNext: ->
+    @connectionView ? @connectionView.toggleFocus()
