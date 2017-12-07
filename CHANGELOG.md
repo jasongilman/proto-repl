@@ -1,3 +1,8 @@
+# 1.4.22
+
+* Added Gradle Support
+* Fixed #229
+
 # 1.4.21
 
 * Incorporated pull request #252 for ink updates.
