@@ -42,10 +42,17 @@ module.exports = ProtoRepl =
       description: 'The arguments to be passed to boot. For advanced users only.'
       type: 'string'
       default: "--no-colors dev repl --server wait"
-    preferLein:
-      description: "Sets whether to prefer Leiningen if a boot and lein build file is found."
-      type: 'boolean'
-      default: true
+    gradleArgs:
+      description: 'The arguments to be passed to gradle. For advanced users only.'
+      type: 'string'
+      default: ":clojureRepl --console=plain --quiet"
+    preferredRepl:
+      description: "Sets the order of preference for REPLs, if your project has multiple build files."
+      type: 'array'
+      default: ['lein', 'boot', 'gradle']
+      items:
+          type: 'string'
+          enum: ['lein', 'boot', 'gradle']
     showInlineResults:
       description: "Shows inline results of code execution. Install Atom Ink package to use this."
       type: 'boolean'
