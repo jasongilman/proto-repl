@@ -26,6 +26,10 @@ module.exports = ProtoRepl =
       description: 'The path to the lein executable.'
       type: 'string'
       default: 'lein'
+    clojurePath:
+      description: 'The path to the clojure executable.'
+      type: 'string'
+      default: 'clojure'
     bootPath:
       description: 'The path to the boot executable.'
       type: 'string'
@@ -38,6 +42,10 @@ module.exports = ProtoRepl =
       description: 'The arguments to be passed to leiningen. For advanced users only.'
       type: 'string'
       default: "repl :headless"
+    clojureArgs:
+      description: 'The arguments to be passed to clojure. For advanced users only.'
+      type: 'string'
+      default: "-r"
     bootArgs:
       description: 'The arguments to be passed to boot. For advanced users only.'
       type: 'string'
@@ -49,10 +57,10 @@ module.exports = ProtoRepl =
     preferredRepl:
       description: "Sets the order of preference for REPLs, if your project has multiple build files."
       type: 'array'
-      default: ['lein', 'boot', 'gradle']
+      default: ['lein', 'boot', 'gradle', 'clojure']
       items:
           type: 'string'
-          enum: ['lein', 'boot', 'gradle']
+          enum: ['lein', 'boot', 'gradle', 'clojure']
     showInlineResults:
       description: "Shows inline results of code execution. Install Atom Ink package to use this."
       type: 'boolean'
