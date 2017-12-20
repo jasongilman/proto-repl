@@ -29,7 +29,7 @@ module.exports = ProtoRepl =
     clojurePath:
       description: 'The path to the clojure executable.'
       type: 'string'
-      default: 'clojure'
+      default: 'clj'
     bootPath:
       description: 'The path to the boot executable.'
       type: 'string'
@@ -42,10 +42,6 @@ module.exports = ProtoRepl =
       description: 'The arguments to be passed to leiningen. For advanced users only.'
       type: 'string'
       default: "repl :headless"
-    clojureArgs:
-      description: 'The arguments to be passed to clojure. For advanced users only.'
-      type: 'string'
-      default: "-r"
     bootArgs:
       description: 'The arguments to be passed to boot. For advanced users only.'
       type: 'string'

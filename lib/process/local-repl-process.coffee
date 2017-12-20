@@ -120,8 +120,7 @@ class LocalReplProcess
       when "clojure"
         @process = Task.once ClojureRunner,
                              path.resolve(projectPath),
-                             atom.config.get('proto-repl.clojurePath').replace("/clojure",""),
-                             atom.config.get('proto-repl.clojureArgs').split(" ")
+                             atom.config.get('proto-repl.clojurePath').replace("/clj","")
       # when "lein" then
       else
         @process = Task.once LeinRunner,
