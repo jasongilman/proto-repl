@@ -153,7 +153,7 @@ module.exports = EditorUtils =
   # braces) or next to one returns the text of that block. Also works with
   # Markdown blocks of code starting with  ```clojure  and ending with ```.
   getCursorInBlockRange: (editor, {topLevel} = {topLevel: false})->
-    if topLevel and range = @getCursorInClojureTopBlockRange(editor)
+    if topLevel and range = @getCursorInClojureTopBlockRange(editor,{lookInComments: true})
       range
     else if range = @getCursorInClojureBlockRange(editor)
       range
@@ -161,29 +161,41 @@ module.exports = EditorUtils =
       @getCursorInMarkdownBlockRange(editor)
 
   # Constructs a list of `Range`s, one for each top level form.
-  getTopLevelRanges:  (editor) ->
+  getTopLevelRanges:  (editor, {lookInComments}={lookInComments: false}) ->
     ranges = []
     braceOpened = 0
-    editor.scan /[\{\}\[\]\(\)]/g, (result) =>
+    inTopLevelComment = false
+    if lookInComments
+      rex = /(\(comment\s|[\{\}\[\]\(\)])/g
+    else
+      rex = /[\{\}\[\]\(\)]/g
+    editor.scan rex, (result) =>
       if !(@isIgnorableBrace(editor, result.range.start))
+        matchesComment = result.matchText.match(/^\(comment\s/)
+        if matchesComment and braceOpened == 0
+          inTopLevelComment = true
         c = ""+result.match[0]
-        if ["(","{","["].indexOf(c) >= 0
-          if braceOpened == 0
+        if ["(","{","["].indexOf(c) >= 0 or matchesComment
+          if (braceOpened == 1 and inTopLevelComment == true) or
+             (braceOpened == 0 and inTopLevelComment == false)
             ranges.push([result.range.start])
           braceOpened++
         else if [")","}","]"].indexOf(c) >= 0
           braceOpened--
-          if braceOpened == 0
+          if (braceOpened == 1 and inTopLevelComment == true) or
+             (braceOpened == 0 and inTopLevelComment == false)
             ranges[ranges.length - 1].push(result.range.end)
+          if braceOpened == 0 and inTopLevelComment == true
+            inTopLevelComment = false
     ranges
       .filter((range) -> range.length == 2)
       .map((range) -> Range.fromObject(range))
 
   # Returns the `Range` that corresponds to the top level form that contains the current cursor position.
   # Doesn't work in Markdown blocks of code.
-  getCursorInClojureTopBlockRange: (editor)->
+  getCursorInClojureTopBlockRange: (editor,options={})->
     pos = editor.getCursorBufferPosition()
-    topLevelRanges = @getTopLevelRanges(editor)
+    topLevelRanges = @getTopLevelRanges(editor,options)
     topLevelRanges.find (range) -> range.containsPoint(pos)
 
   # Searches all open text editors for the given string. Returns a tuple of the
