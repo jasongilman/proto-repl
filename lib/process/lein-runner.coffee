@@ -2,6 +2,7 @@ childProcess = require 'child_process'
 path = require 'path'
 fs = require 'fs'
 _ = require 'underscore'
+util = require 'util'
 
 filteredEnv = _.omit process.env, 'ATOM_HOME', 'ATOM_SHELL_INTERNAL_RUN_AS_NODE', 'GOOGLE_API_KEY', 'NODE_ENV', 'NODE_PATH', 'userAgent', 'taskPath'
 
@@ -62,6 +63,12 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         when 'input'
           replProcess.stdin.write(text)
         when 'kill'
-          replProcess.kill("SIGKILL")
+          if process.platform == 'darwin'
+            childProcess.exec util.format("pkill -P %s", replProcess.pid)
+          else
+            if process.platform == 'win32'
+              childProcess.exec util.format("taskkill /pid %s /T /F", replProcess.pid)
+            else
+              replProcess.kill("SIGKILL")
     catch error
       console.error error
