@@ -2,6 +2,7 @@
 LeinRunner = require.resolve './lein-runner'
 BootRunner = require.resolve './boot-runner'
 GradleRunner = require.resolve './gradle-runner'
+ClojureRunner = require.resolve './clojure-runner'
 path = require 'path'
 fs = require('fs')
 NReplConnection = require './nrepl-connection'
@@ -46,7 +47,8 @@ class LocalReplProcess
     if currentPath != parentDirectory and limit < 100
       matches = fs.readdirSync(currentPath).filter (f) ->
         f == "project.clj" or f == "build.boot" or
-        f == "gradlew" or f == "gradlew.bat"
+        f == "gradlew" or f == "gradlew.bat" or
+        f == "deps.edn"
 
       if currentPath and matches.length == 0
         @getRootProject(parentDirectory, limit + 1)
@@ -83,6 +85,7 @@ class LocalReplProcess
     replsFound = []
     replsFound.push "boot" if fs.existsSync(projectPath + "/build.boot")
     replsFound.push "lein" if fs.existsSync(projectPath + "/project.clj")
+    replsFound.push "clojure" if fs.existsSync(projectPath + "/deps.edn")
     replsFound.push "gradle" if fs.existsSync(projectPath + "/gradlew") or
       fs.existsSync(projectPath + "/gradlew.bat")
 
@@ -114,6 +117,10 @@ class LocalReplProcess
                              path.resolve(projectPath),
                              atom.config.get('proto-repl.bootPath').replace("/boot",""),
                              atom.config.get('proto-repl.bootArgs').split(" ")
+      when "clojure"
+        @process = Task.once ClojureRunner,
+                             path.resolve(projectPath),
+                             atom.config.get('proto-repl.clojurePath').replace("/clj","")
       # when "lein" then
       else
         @process = Task.once LeinRunner,
