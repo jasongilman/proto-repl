@@ -2,6 +2,7 @@
 
 * Added Clojure 1.9 CLI Support (https://clojure.org/guides/deps_and_cli)
 * Fixed #275
+* Fixed #291
 
 # 1.4.22
 
