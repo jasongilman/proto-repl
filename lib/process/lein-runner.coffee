@@ -35,13 +35,13 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         leinExec = path.join(leinPath, "lein.bat")
       envPath = filteredEnv["Path"] || ""
       filteredEnv["Path"] = envPath + path.delimiter + leinPath
-      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true
+      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true, detached: true
     else
       # Mac/Linux
       leinExec = "lein"
       envPath = filteredEnv["PATH"] || ""
       filteredEnv["PATH"] = envPath + path.delimiter + leinPath
-      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv
+      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, detached: true
 
     replProcess.stdout.on 'data', processData
     replProcess.stderr.on 'data', processData
@@ -62,6 +62,6 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         when 'input'
           replProcess.stdin.write(text)
         when 'kill'
-          replProcess.kill("SIGKILL")
+          process.kill(-replProcess.pid, 'SIGKILL')
     catch error
       console.error error
