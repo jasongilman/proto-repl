@@ -116,6 +116,7 @@ module.exports = ProtoRepl =
     @emitter = new Emitter
 
     @saveRecallFeature = new SaveRecallFeature(this)
+    @saveRecallFeature.startSavedInlineDisplayPolling()
     @extensionsFeature = new ExtensionsFeature(this)
 
     # Register commands
@@ -202,6 +203,7 @@ module.exports = ProtoRepl =
 
   deactivate: ->
     @subscriptions.dispose()
+    @saveRecallFeature.stopSavedInlineDisplayPolling()
     @saveRecallFeature.deactivate()
     @saveRecallFeature = null
     @toolbar?.removeItems()

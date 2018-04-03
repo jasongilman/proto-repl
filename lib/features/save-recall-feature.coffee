@@ -28,6 +28,7 @@ class SaveRecallFeature
   # Instance of the repl
   protoRepl: null
   subscriptions: null
+  lastDisplayedData: {}
 
   constructor: (@protoRepl)->
     @subscriptions = new CompositeDisposable
@@ -38,6 +39,7 @@ class SaveRecallFeature
 
   deactivate: ->
     @subscriptions.dispose()
+    @lastDisplayedData = {}
 
   # Inserts a call to save some data with a uniquely generated id
   insertSaveValueCall: ->
@@ -49,6 +51,7 @@ class SaveRecallFeature
   # Clears any displayed saved values and any values saved in the proto namespace.
   clearSavedValues: ->
     @protoRepl.executeCode "(proto-repl.saved-values/clear-saved-values!)", displayInRepl: false
+    @lastDisplayedData = {}
     if editor = atom.workspace.getActiveTextEditor()
       atom.commands.dispatch(atom.views.getView(editor), 'inline-results:clear-all')
 
@@ -63,21 +66,20 @@ class SaveRecallFeature
           @protoRepl.stderr("Error polling for saved values #{result.error}")
           return
 
-        console.log result.value
         # Convert the saved values into a map of uniq forms to the display trees
+        jsEdn = @protoRepl.parseEdn(result.value)
         uniqsToTrees = @protoRepl.ednSavedValuesToDisplayTrees(result.value)
 
         for [uniq, tree] in uniqsToTrees
-          # find the unique form in an editor
-          if foundRange = @protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
-            [editor, range] = foundRange
-            # Display the saved values inline next to the call to save them.
-            @protoRepl.repl.displayInline(editor, range, tree)
-
-  # Polling is currently not used. There's an issue in that if you have a view
-  # open it will overwrite the current inline display and collapse it. I need to
-  # implement some kind of versioning so that it won't do that if there hasn't been
-  # any change in value.
+          displayData = jsEdn[uniq]
+          dataVersion = displayData[displayData.length - 1].version
+          if @lastDisplayedData[uniq] != dataVersion
+            @lastDisplayedData[uniq] = dataVersion
+            # find the unique form in an editor
+            if foundRange = @protoRepl.EditorUtils.findEditorRangeContainingString(uniq)
+              [editor, range] = foundRange
+              # Display the saved values inline next to the call to save them.
+              @protoRepl.repl.displayInline(editor, range, tree)
 
   # Starts polling for updated saved values
   startSavedInlineDisplayPolling: ->
