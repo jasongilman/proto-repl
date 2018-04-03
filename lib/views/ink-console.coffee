@@ -1,6 +1,8 @@
 {CompositeDisposable, Range, Point, Emitter} = require 'atom'
 Highlights = require '../highlights.js'
 CONSOLE_URI = 'atom://proto-repl/console'
+packageJson = require '../../package.json'
+version = packageJson.version
 
 module.exports =
 
@@ -28,7 +30,7 @@ class InkConsole
     # create the console object
     @console = @ink.Console.fromId('proto-repl')
     # overwrite ink's Console title
-    TAB_TITLE = 'Proto-REPL'
+    TAB_TITLE = 'Proto-REPL v' + version
     @console.getTitle = () -> TAB_TITLE
     @console.emitter.emit('did-change-title', TAB_TITLE)
     # activate and open the console
