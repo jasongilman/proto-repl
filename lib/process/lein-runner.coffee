@@ -35,7 +35,7 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         leinExec = path.join(leinPath, "lein.bat")
       envPath = filteredEnv["Path"] || ""
       filteredEnv["Path"] = envPath + path.delimiter + leinPath
-      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true, detached: true
+      replProcess = childProcess.spawn leinExec, args, cwd: currentWorkingDir, env: filteredEnv, shell: true
     else
       # Mac/Linux
       leinExec = "lein"
@@ -62,6 +62,11 @@ module.exports = (currentWorkingDir, leinPath, args) ->
         when 'input'
           replProcess.stdin.write(text)
         when 'kill'
-          process.kill(-replProcess.pid, 'SIGKILL')
+          if process.platform == "win32"
+            # Windows, doesn't appear to handle SIGKILL and running detached, so use native taskkill instead
+            childProcess.spawn("taskkill", ["/pid", replProcess.pid, '/f', '/t']);
+          else
+            # Mac/Linux
+            process.kill(-replProcess.pid, 'SIGKILL')
     catch error
       console.error error
