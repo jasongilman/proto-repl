@@ -1,3 +1,7 @@
+# 1.4.24
+
+* Fixed #300 - Fixes starting REPL in windows.
+
 # 1.4.23
 
 * Added Clojure 1.9 CLI Support (https://clojure.org/guides/deps_and_cli)
