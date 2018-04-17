@@ -10,6 +10,8 @@ module.exports = (currentWorkingDir, clojurePath) ->
   callback = @async()
 
   args = [
+    "-Sdeps",
+    "{:deps {proto-repl {:mvn/version \"0.3.1\"} org.clojure/tools.nrepl {:mvn/version \"0.2.12\"}}}",
     "-e",
     "(do
       (require '[clojure.tools.nrepl.server :refer [start-server]])
