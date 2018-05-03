@@ -30,7 +30,8 @@
   [uniq-id current-ns var-values-map]
   (let [saved-values {:id (guid)
                       :the-ns current-ns
-                      :values var-values-map}]
+                      :values var-values-map
+                      :version (gensym)}]
     (swap! saved-values-atom update uniq-id
            (fn [cur-values]
              (let [new-values (conj (or cur-values []) saved-values)]
