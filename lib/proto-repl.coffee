@@ -265,6 +265,12 @@ module.exports = ProtoRepl =
     @connectionView ?= new NReplConnectionView(confirmCallback)
     @connectionView.show()
 
+  remoteNReplHook: ({port, host}) ->
+    unless @repl
+      @repl = new Repl(@extensionsFeature)
+      @prepareRepl(@repl)
+    @repl.startRemoteReplConnection({port, host})
+
   selfHostedRepl: ->
     if @repl == null
       @repl = new Repl(@extensionsFeature)
