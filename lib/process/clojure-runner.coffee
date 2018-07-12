@@ -6,10 +6,10 @@ _ = require 'underscore'
 filteredEnv = _.omit process.env, 'ATOM_HOME', 'ATOM_SHELL_INTERNAL_RUN_AS_NODE', 'GOOGLE_API_KEY', 'NODE_ENV', 'NODE_PATH', 'userAgent', 'taskPath'
 
 
-module.exports = (currentWorkingDir, clojurePath) ->
+module.exports = (currentWorkingDir, clojurePath, args) ->
   callback = @async()
 
-  args = [
+  args = args.concat([
     "-e",
     "(do
       (require '[clojure.tools.nrepl.server :refer [start-server]])
@@ -17,7 +17,7 @@ module.exports = (currentWorkingDir, clojurePath) ->
         (println (str \"nREPL server started on port \" port \" on host 127.0.0.1\"))
         (println (str \"- nrepl://127.0.0.1:\" port))))",
     "-r"
-  ]
+  ])
 
   # The nREPL port is extracted from the output of the REPL process. We could
   # look on the file system for the .nrepl-port file which is more standard
