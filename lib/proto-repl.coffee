@@ -46,6 +46,10 @@ module.exports = ProtoRepl =
       description: 'The arguments to be passed to boot. For advanced users only.'
       type: 'string'
       default: "--no-colors dev repl --server wait"
+    clojureArgs:
+      description: 'The argument to be passed to clojure executable. For advanced users only.'
+      type: 'string'
+      default: ""
     gradleArgs:
       description: 'The arguments to be passed to gradle. For advanced users only.'
       type: 'string'

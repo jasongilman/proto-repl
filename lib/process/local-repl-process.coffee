@@ -41,7 +41,8 @@ class LocalReplProcess
     # for one of the configuration files
     # build.boot (Boot) or
     # project.clj (Leiningen) or
-    # gradlew or gradlew.bat (Gradle)
+    # gradlew or gradlew.bat (Gradle) or
+    # deps.edn (Clojure tools.deps)
     parentDirectory = path.resolve(currentPath, "..")
 
     if currentPath != parentDirectory and limit < 100
@@ -120,7 +121,8 @@ class LocalReplProcess
       when "clojure"
         @process = Task.once ClojureRunner,
                              path.resolve(projectPath),
-                             atom.config.get('proto-repl.clojurePath').replace("/clj","")
+                             atom.config.get('proto-repl.clojurePath').replace("/clj",""),
+                             atom.config.get('proto-repl.clojureArgs').split(" ")
       # when "lein" then
       else
         @process = Task.once LeinRunner,
