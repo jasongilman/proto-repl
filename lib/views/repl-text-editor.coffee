@@ -234,6 +234,9 @@ class ReplTextEditor
   result: (text)->
     @appendText(text)
 
+  doc: (text)->
+    @appendText(text)
+
   displayExecutedCode: (code)->
     @appendText(code)
 

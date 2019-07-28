@@ -74,6 +74,10 @@ class InkConsole
   stdout: (text)->
     @console?.stdout(text)
 
+  # Writes information with book icon.
+  doc: (text)->
+    @console?.output({type: 'info', icon: 'book', text: text})
+
   # Writes results from Clojure execution to the REPL. The results are syntactically
   # highlighted as Clojure code.
   result: (text)->
