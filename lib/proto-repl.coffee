@@ -298,6 +298,9 @@ module.exports = ProtoRepl =
   stdout: (text)->
     @repl?.stdout(text)
 
+  doc: (text)->
+    @repl?.doc(text)
+
   # Interrupts the currently executing command.
   interrupt: ()->
     @repl?.interrupt()
@@ -605,31 +608,44 @@ module.exports = ProtoRepl =
   printVarDocumentation: ->
     if editor = atom.workspace.getActiveTextEditor()
       if varName = @getClojureVarUnderCursor(editor)
-
         if @isSelfHosted()
-          code = "(doc #{varName})"
-          parser = (value)-> value.substr(26)
-        else if @ink && atom.config.get('proto-repl.showInlineResults')
-          code =
-            "(do
-              (require 'clojure.repl)
-              (clojure.repl/doc #{varName})
-              (with-out-str (clojure.repl/doc #{varName})))"
-          parser = (value)=> @parseEdn(value).substr(26)
-
-          range = editor.getSelectedBufferRange()
-          range.end.column = Infinity
-          inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
-            [varName, {}, [parser(value)]])
-          @executeCodeInNs code,
-                          displayInRepl: false
-                          resultHandler: inlineHandler
+          code = "(with-out-str (doc #{varName}))"
+          parser = (value)-> value.replace(/^-+\n/, '')
         else
           code =
             "(do
-              (require 'clojure.repl)
-              (clojure.repl/doc #{varName}))"
-          @executeCodeInNs code
+               (require 'clojure.repl)
+               (with-out-str (clojure.repl/doc #{varName})))"
+          parser = (value)=> @parseEdn(value).replace(/^-+\n/, '')
+
+        if @ink && atom.config.get('proto-repl.showInlineResults')
+          range = editor.getSelectedBufferRange()
+          range.end.column = Infinity
+          inlineHandler = @repl.makeInlineHandler(editor, range, (value)=>
+            [varName, {a: 1}, [parser(value)]])
+
+        handled = false
+
+        @executeCodeInNs code, displayInRepl: false, resultHandler: (value)=>
+          # This seems to get called twice on error, not sure why.
+          # To reproduce, try to run this command on java.lang.System.
+          return if handled
+          handled = true
+
+          inlineHandler?(value)
+
+          if value.value
+            msg = parser(value.value).trim()
+            if msg
+              @doc(msg)
+            else
+              @stderr("No doc found for #{varName}")
+          else if value.error
+            @stderr(value.error)
+          else
+            msg = 'Did not get value or error.'
+            console.error(msg, value)
+            throw new Error(msg)
 
   printVarCode: ->
     if editor = atom.workspace.getActiveTextEditor()

@@ -302,3 +302,6 @@ class Repl
 
   stdout: (text)->
     @replView?.stdout(text)
+
+  doc: (text)->
+    @replView?.doc(text)

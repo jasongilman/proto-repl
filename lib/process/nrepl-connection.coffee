@@ -123,19 +123,21 @@ class NReplConnection
       if msg.status?.length > 0
         return true if msg.status[0] == "namespace-not-found"
 
-  optionsToSession: (options, callback)->
-    if options.session
+  optionsToSessions: (options, callback)->
+    if options.allSessions
+      callback([@session, @cmdSession, Object.values(@sessionsByName)...])
+    else if options.session
       if s = @sessionsByName[options.session]
-        callback(s)
+        callback([s])
       else
         @conn.clone (err, messages)=>
           s = messages[0]["new-session"]
           @sessionsByName[options.session] = s
-          callback(s)
+          callback([s])
     else if options.displayInRepl == false
-      callback(@cmdSession)
+      callback([@cmdSession])
     else
-      callback(@session)
+      callback([@session])
 
   # Sends a command to the repl.
   # * code - string of clojure code to execute
@@ -146,7 +148,7 @@ class NReplConnection
   sendCommand: (code, options, resultHandler)->
     return null unless @connected()
 
-    @optionsToSession options, (session)=>
+    @optionsToSessions options, (sessions)=> sessions.forEach (session)=>
       # Wrap code in read eval to handle invalid code and reader conditionals
       wrappedCode = @wrapCodeInReadEval(code)
       ns = options.ns || @currentNs
@@ -178,7 +180,6 @@ class NReplConnection
           console.error error
           atom.notifications.addError "Error in handler: " + error,
             detail: error, dismissable: true
-
 
   interrupt: ->
     return null unless @connected()
