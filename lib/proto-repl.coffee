@@ -158,17 +158,17 @@ module.exports = ProtoRepl =
   consumeToolbar: (toolbar) ->
     @toolbar = toolbar 'proto-repl'
     @toolbar.addButton
-      icon: 'android-refresh'
+      icon: 'md-refresh'
       iconset: 'ion'
       callback: 'proto-repl:refresh-namespaces'
       tooltip: 'Refresh Namespaces'
     @toolbar.addButton
-      icon: 'android-sync'
+      icon: 'md-sync'
       iconset: 'ion'
       callback: 'proto-repl:super-refresh-namespaces'
       tooltip: 'Clear and Refresh Namespaces'
     @toolbar.addButton
-      icon: 'speedometer'
+      icon: 'md-speedometer'
       iconset: 'ion'
       callback: 'proto-repl:run-all-tests'
       tooltip: 'Run All Tests'
@@ -176,7 +176,7 @@ module.exports = ProtoRepl =
     @toolbar.addSpacer()
 
     @toolbar.addButton
-      icon: 'paypal'
+      icon: 'file-code'
       iconset: 'fa'
       callback: 'proto-repl:pretty-print'
       tooltip: 'Pretty Print'
@@ -184,18 +184,18 @@ module.exports = ProtoRepl =
     @toolbar.addSpacer()
 
     @toolbar.addButton
-      icon: 'code-download'
+      icon: 'md-code-download'
       iconset: 'ion'
       callback: 'proto-repl:toggle-auto-scroll'
       tooltip: 'Toggle Auto Scroll'
     @toolbar.addButton
-      icon: 'trash-a'
+      icon: 'md-trash'
       iconset: 'ion'
       callback: 'proto-repl:clear-repl'
       tooltip: 'Clear REPL'
     @toolbar.addSpacer()
     @toolbar.addButton
-      icon: 'power'
+      icon: 'md-power'
       iconset: 'ion'
       callback: 'proto-repl:exit-repl'
       tooltip: 'Quit REPL'
